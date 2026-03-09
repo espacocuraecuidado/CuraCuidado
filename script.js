@@ -475,52 +475,24 @@ async function abrirModalDetalhes(nome, preco, descricao, imagem, estoque) {
     document.getElementById('modal-preco').innerText = `R$ ${Number(preco).toFixed(2)}`;
     document.getElementById('modal-descricao').innerText = descricao;
     document.getElementById('modal-img-principal').src = imagem || 'https://via.placeholder.com/300';
-    
-    // 2. BUSCAR AVALIAÇÕES NA PLANILHA (O NOVO CAMPO)
-    const containerAvaliacoes = document.getElementById('modal-lista-avaliacoes');
-    if (containerAvaliacoes) {
-        containerAvaliacoes.innerHTML = "<p style='font-size:0.8em; color:#888; text-align:center;'>Carregando depoimentos... 🌸</p>";
-        
-        try {
-            // Faz a requisição para a aba "Avaliacoes" filtrando pelo nome deste produto
-            const res = await fetch(`${URL_PLANILHA}?acao=listarAvaliacoes&produto=${encodeURIComponent(nome)}`);
-            const avaliacoes = await res.json();
+    // 2. Limpa o campo de texto de avaliação anterior
+    if(document.getElementById('av-comentario')) document.getElementById('av-comentario').value = "";
 
-            if (avaliacoes && avaliacoes.length > 0) {
-                containerAvaliacoes.innerHTML = avaliacoes.map(av => `
-                    <div class="item-avaliacao" style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 5px;">
-                        <div style="color: #d4a373; font-size: 0.9em;">
-                            ${"★".repeat(Number(av.Nota))}${"☆".repeat(5 - Number(av.Nota))}
-                        </div>
-                        <p style="margin: 5px 0; font-size: 0.9em; font-style: italic; color: #555;">"${av.Comentario}"</p>
-                        <small style="color: #888;"><b>- ${av.Cliente}</b></small>
-                    </div>
-                `).join('');
-            } else {
-                containerAvaliacoes.innerHTML = "<p style='font-size:0.8em; color:#999; text-align:center;'>Ainda não há avaliações. Seja a primeira! ✨</p>";
-            }
-        } catch (e) {
-            console.error("Erro ao carregar avaliações:", e);
-            containerAvaliacoes.innerHTML = ""; // Limpa se der erro
-        }
-    }
-
-    // 3. Configura o botão de adicionar ao carrinho
+    // 3. Configura os botões
     const btnAdd = document.getElementById('modal-btn-add');
     if (btnAdd) {
-        btnAdd.onclick = () => {
-            addCarrinho(nome, preco, estoque); 
-            fecharModal();
-        };
+        btnAdd.onclick = () => { addCarrinho(nome, preco, estoque); fecharModal(); };
     }
 
+    // VINCULAÇÃO EXPLÍCITA DO BOTÃO DE AVALIAÇÃO
+    const btnAvaliar = document.getElementById('btn-enviar-av');
+    if (btnAvaliar) {
+        btnAvaliar.onclick = () => enviarAvaliacao(); 
+    }
+
+    // 4. Carrega os depoimentos e abre o modal
     carregarDepoimentosNoModal(nome);
     modal.style.display = 'flex';
-}
-
-function fecharModal() {
-    const modal = document.getElementById('modal-produto');
-    if (modal) modal.style.display = 'none';
 }
 
 // 8. INICIALIZAÇÃO

@@ -539,3 +539,50 @@ input, select, textarea {
     color: var(--rosa-seco);
     font-weight: bold;
 }
+/* Garante que o modal seja rolável em telas pequenas */
+#modal-produto {
+    align-items: flex-start; /* Alinha no topo para permitir rolar */
+    overflow-y: auto;        /* Ativa a rolagem vertical */
+    padding: 20px 10px;
+}
+
+.modal-content {
+    max-height: none;        /* Permite que o conteúdo cresça */
+    width: 95%;              /* Quase toda a largura no celular */
+    margin: auto;            /* Centraliza */
+    position: relative;
+}
+
+/* Ajuste específico para os campos de texto no celular */
+#av-comentario {
+    width: 100%;
+    min-height: 80px;        /* Garante altura mínima para digitar */
+    font-size: 16px;         /* Evita o zoom automático do iPhone ao clicar */
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+/* Garante que o botão de publicar seja visível e clicável */
+#btn-enviar-av {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+}
+/* Adicione isso para garantir uma folga no final do modal no celular */
+.modal-content {
+    margin-bottom: 50px; /* Evita que o botão de publicar fique colado na borda inferior */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Deixa a imagem do modal proporcional no celular */
+#modal-img-principal {
+    width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+    background: #f9f9f9;
+    border-radius: 10px;
+}
