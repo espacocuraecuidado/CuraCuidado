@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Pedidos - Espaço Cura e Cuidado</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .pedidos-container { max-width: 800px; margin: 20px auto; padding: 15px; }
+        .pedido-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-left: 6px solid #d4a373;
+        }
+        .pedido-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.95em;
+        }
+        .status-pill {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .pago { background: #d4edda; color: #155724; }
+        .pendente { background: #fff3cd; color: #856404; }
+        .envio-status { color: #d4a373; font-weight: bold; margin-top: 10px; grid-column: span 2; }
+    </style>
+</head>
+<body style="background-color: #fdf6f0;">
+
+<div class="pedidos-container">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>📦 Meus Pedidos</h2>
+        <a href="index.html" style="text-decoration: none; color: #d4a373; font-weight: bold;">← Voltar</a>
+    </header>
+
+    <div id="lista-vendas">
+        <p style="text-align: center; padding: 40px;">Buscando seus pedidos na planilha... 🌸</p>
+    </div>
+</div>
+
+<script>
+    // URL da sua API do Google Scripts
+    const URL_API = "https://script.google.com/macros/s/AKfycbyN0Uzj2HrDrP_oHM7RGsdXK_iJ54HnHIbdFJq3V9BMEj4wo6acRabBP9iB0J2gIivG/exec";
+
+    window.onload = () => {
+        const clienteLogado = localStorage.getItem("usuarioLogado");
+        if (!clienteLogado) {
+            window.location.href = "login.html";
+            return;
+        }
+        buscarVendas(clienteLogado);
+    };
+
+    async function buscarVendas(clienteLogado) {
+        const display = document.getElementById("lista-vendas");
+        
+        try {
+            // 1. Busca todos os dados da aba "Vendas"
+            // Use o parâmetro que seu GS já aceita (geralmente 'listarVendas' ou 'getVendas')
+            const res = await fetch(`${URL_API}?acao=listarVendas`); 
+            const todosOsPedidos = await res.json();
+
+            // 2. Filtra os pedidos para mostrar apenas os do cliente logado
+            const pedidosDoCliente = todosOsPedidos.filter(item => {
+                return item.Cliente === clienteLogado; 
+            });
+
+            if (pedidosDoCliente.length === 0) {
+                display.innerHTML = `<p style="text-align:center; padding:40px;">Nenhum pedido encontrado para <strong>${clienteLogado}</strong>. 🛒</p>`;
+                return;
+            }
+
+            // 3. Renderiza os cards com Rastreio abaixo do Pagamento
+            display.innerHTML = pedidosDoCliente.map(item => `
+                <div class="pedido-card">
+                    <div class="pedido-header">
+                        <strong># ${item["ID Pedido"] || '---'}</strong>
+                        <div>
+                           <span class="status-pill ${item["Status_Pagamento"] === 'Pagamento Realizado' ? 'pago' : 'pendente'}">
+                               ${item["Status_Pagamento"] || 'Pendente'}
+                           </span>
+                           
+                           ${item.Rastreio ? `
+                             <div style="margin-top: 8px; text-align: right;">
+                               <a href="https://www.linketrack.com/track?codigo=${item.Rastreio}" 
+                                  target="_blank" 
+                                  style="font-size: 0.8em; color: #d4a373; text-decoration: none; font-weight: bold; border: 1px solid #d4a373; padding: 2px 8px; border-radius: 4px;">
+                                  Rastrear: ${item.Rastreio} 🔍
+                               </a>
+                             </div>
+                           ` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div><strong>Data:</strong> ${item.Data || '---'}</div>
+                        <div><strong>Cliente:</strong> ${item.Cliente || '---'}</div>
+                        
+                        <div style="grid-column: span 2; margin-top:5px; border-top: 1px dashed #eee; padding-top: 5px;">
+                            <strong>Produtos:</strong><br>
+                            <span style="color:#555;">${item.Produto || item.Produtos || '---'}</span>
+                        </div>
+                        
+                        <div style="margin-top:10px; font-size: 1.1em;">
+                            <strong>Total:</strong> R$ ${item.ValorTotal || item.Valor || '0,00'}
+                        </div>
+                        
+                        <div class="envio-status">
+                            🚚 Status de Envio: ${item["Status_Envio"] || 'Em processamento'}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            console.error("Erro ao carregar:", error);
+            display.innerHTML = "<p style='color:red; text-align:center; padding:40px;'>⚠️ Erro ao conectar com a planilha. Verifique a configuração do seu Google Script.</p>";
+        }
+    }
+</script>
+</body>
+</html>

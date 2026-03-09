@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta name="theme-color" content="#e8b4b8" />
+    <meta charset="UTF-8" />
+    <title>Cadastro - Espaço Cura e Cuidado</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/config.js"></script>
+  </head>
+  <body>
+    <section class="hero">
+      <h2>Criar Nova Conta</h2>
+      <form
+        id="formCadastro"
+        style="
+          display: flex;
+          flex-direction: column;
+          max-width: 320px;
+          margin: 0 auto;
+          gap: 10px;
+        "
+      >
+        <input type="text" id="nome" placeholder="Nome Completo" required />
+
+        <input
+          type="text"
+          id="usuario"
+          placeholder="Nome de Usuário"
+          oninput="this.value = this.value.toLowerCase()"
+          required
+        />
+
+        <div style="display: flex; gap: 5px">
+          <input
+            type="text"
+            id="emailUser"
+            placeholder="E-mail (ex: ana)"
+            required
+            style="flex: 1"
+          />
+          <select
+            id="dominioEmail"
+            style="border-radius: 5px; border: 1px solid #ddd; background: #fff"
+          >
+            <option value="@gmail.com">@gmail.com</option>
+            <option value="@hotmail.com">@hotmail.com</option>
+            <option value="@outlook.com">@outlook.com</option>
+          </select>
+        </div>
+
+        <input
+          type="password"
+          id="senha"
+          placeholder="Senha de Acesso (mín. 6 dígitos)"
+          required
+        />
+        <small
+          id="senhaAviso"
+          style="color: #888; font-size: 0.8rem; margin-top: -5px"
+          >A senha deve ter pelo menos 6 caracteres.</small
+        >
+
+        <hr
+          style="
+            width: 100%;
+            border: 0;
+            border-top: 1px solid #eee;
+            margin: 10px 0;
+          "
+        />
+
+        <input type="text" id="rua" placeholder="Rua ou Avenida" />
+        <input type="text" id="numero" placeholder="N° da casa" />
+        <input type="text" id="bairro" placeholder="Bairro" />
+        <input type="text" id="cidade" placeholder="Cidade" />
+        <input type="text" id="estado" placeholder="Estado" />
+
+        <input
+          type="text"
+          id="cep"
+          maxlength="10"
+          placeholder="CEP: 00.000-000"
+          oninput="formatarCEP(this)"
+          required
+        />
+
+        <button
+          type="submit"
+          style="
+            background-color: #e8b4b8;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+          "
+        >
+          Finalizar Cadastro
+        </button>
+      </form>
+
+      <p><a href="login.html">Já tenho conta (Voltar ao login)</a></p>
+      <div style="margin-top: 15px">
+        <p>
+          Ou continue como
+          <a
+            href="index.html"
+            onclick="entrarComoVisitante()"
+            style="color: #e8b4b8; font-weight: bold"
+            >Visitante</a
+          >
+        </p>
+      </div>
+    </section>
+
+    <script>
+  // 1. Máscaras e Funções de Apoio
+function formatarCEP(campo) {
+    let v = campo.value.replace(/\D/g, "");
+    v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+    v = v.replace(/(\d{3})(\d)/, "$1-$2");
+    campo.value = v;
+}
+
+function entrarComoVisitante() {
+    localStorage.removeItem("usuarioLogado");
+}
+
+// 2. Lógica de Envio com Dupla Verificação
+document.getElementById("formCadastro").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const btn = e.target.querySelector('button');
+    const senha = document.getElementById("senha").value;
+    const usuario = document.getElementById("usuario").value.toLowerCase().trim();
+    
+    // URL do seu Script (Garanta que esta URL é a mesma do seu script.js)
+    const urlFinal = "https://script.google.com/macros/s/AKfycbyN0Uzj2HrDrP_oHM7RGsdXK_iJ54HnHIbdFJq3V9BMEj4wo6acRabBP9iB0J2gIivG/exec";
+
+    if (senha.length < 6) {
+        alert("🔒 A senha precisa ter pelo menos 6 caracteres.");
+        return;
+    }
+
+    btn.innerText = "Verificando disponibilidade... ⏳";
+    btn.disabled = true;
+
+    try {
+        // --- PASSO 1: CONSULTA NA ABA "Users" ---
+        // O seu GS mapeia 'listarUsuarios' para ler a aba 'Users'
+        const resConsulta = await fetch(`${urlFinal}?acao=listarUsuarios`);
+        const listaUsuarios = await resConsulta.json();
+
+        const jaExiste = listaUsuarios.find(u => 
+            u.Usuario && String(u.Usuario).toLowerCase() === usuario
+        );
+
+        if (jaExiste) {
+            alert("❌ Este nome de usuário já está em uso. Por favor, escolha outro.");
+            btn.innerText = "Finalizar Cadastro";
+            btn.disabled = false;
+            return;
+        }
+
+        // --- PASSO 2: GRAVAÇÃO NA ABA "Usuarios" ---
+        const emailFinal = document.getElementById("emailUser").value.trim() +
+                           document.getElementById("dominioEmail").value;
+
+        const dadosParaEnviar = {
+            aba: "Usuarios", // Grava na aba que o login utiliza
+            payload: {
+                "Nome": document.getElementById("nome").value.trim(),
+                "Usuario": usuario,
+                "Email": emailFinal,
+                "Senha": senha,
+                "Rua": document.getElementById("rua").value.trim(),
+                "N°": document.getElementById("numero").value.trim(), 
+                "Bairro": document.getElementById("bairro").value.trim(),
+                "Cidade": document.getElementById("cidade").value.trim(),
+                "Estado": document.getElementById("estado").value.trim(),
+                "CEP": document.getElementById("cep").value,
+                "Data Cadastro": new Date().toLocaleString("pt-BR")
+            }
+        };
+
+        btn.innerText = "Criando conta... 🌸";
+
+        await fetch(urlFinal, {
+            method: "POST",
+            body: JSON.stringify(dadosParaEnviar)
+        });
+
+        alert("Cadastro realizado com sucesso! ✨\nSeja bem-vinda ao Espaço Cura e Cuidado.");
+        window.location.href = "login.html";
+
+    } catch (err) {
+        console.error("Erro no cadastro:", err);
+        alert("Houve um problema na conexão. Tente novamente.");
+        btn.innerText = "Finalizar Cadastro";
+        btn.disabled = false;
+    }
+});
+    </script>
+  </body>
+</html>

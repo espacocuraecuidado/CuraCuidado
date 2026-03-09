@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espaço Cura e Cuidado</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <button class="btn-icon" onclick="toggleSidebar('menu-sidebar')">☰</button>
+        <button onclick="toggleTheme()" class="btn-icon" id="theme-icon" title="Alternar Modo Claro/Escuro">🌙</button>
+    </div>
+    
+    <h1 onclick="showPage('home')" style="cursor:pointer; font-size: 1.2rem;">Cura Cuidado</h1>
+    
+    <button class="btn-icon" onclick="toggleSidebar('cart-sidebar')">
+        🛒 (<span id="cart-count">0</span>)
+    </button>
+</header>
+
+    <div id="menu-sidebar" class="sidebar left">
+        <button class="close-btn" onclick="toggleSidebar('menu-sidebar')">×</button>
+        <div class="sidebar-content">
+            <div class="user-status-area" style="border-bottom: 1px solid #eee; margin-bottom: 15px;">
+                <div id="area-usuario" style="padding: 15px; text-align: center; display: none;">
+                    <span id="welcome-user" style="font-weight: bold; color: #d4a373;"></span>
+                    <br>
+                    <a href="#" onclick="deslogar()" style="color: #ff4d4d; font-size: 0.8em; text-decoration: none;">(Sair da conta)</a>
+                </div>
+                <div id="area-login" style="padding: 15px; text-align: center;">
+                    <a href="login.html" style="display: block; padding: 12px; background: #d4a373; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                        Entrar / Cadastrar
+                    </a>
+                </div>
+            </div>
+
+            <div id="secao-admin" style="display: none;">
+                <h3 style="padding-left: 15px;">Área Administrativa</h3>
+                <button class="nav-link" onclick="location.href='admin_vendas.html'">📊 Vendas e Estoque</button>
+                <button class="nav-link" onclick="diagnostico()">🔍 Diagnóstico de Conexão</button>
+                <hr>
+            </div>
+
+            <div id="secao-cliente">
+                <h3 style="padding-left: 15px;">Área do Cliente</h3>
+                <button class="nav-link" onclick="showPage('perfil')">👤 Meus Dados / Meus Pedidos</button>
+                <button class="nav-link" onclick="showPage('agendamento')">📅 Agendamentos</button>
+                <button class="nav-link" onclick="showPage('depoimentos')">⭐ Depoimentos</button>
+                <button class="nav-link" onclick="showPage('sac')">💬 SAC</button>
+            </div>
+            <hr>
+            <div style="text-align:center; padding: 10px;">🌸</div>
+        </div>
+    </div>
+
+    <div id="cart-sidebar" class="sidebar right">
+        <button class="close-btn" onclick="toggleSidebar('cart-sidebar')">×</button>
+        
+        <h3>Seu Carrinho</h3>
+        <div id="frete-progress-container" style="padding: 10px; background: #fffaf5; border-bottom: 1px solid #eee;">
+    <span id="frete-msg-progresso" style="font-size: 0.85em; display: block; margin-bottom: 5px; color: #555;">
+        Faltam <strong>R$ 0,00</strong> para <strong>Frete Grátis!</strong> 🚚
+    </span>
+    <div style="width: 90%; background: #eee; height: 10px; border-radius: 10px; overflow: hidden;">
+        <div id="frete-barra" style="width: 0%; height: 100%; background: #d4a373; transition: width 0.5s ease;"></div>
+    </div>
+</div>
+        <div id="cart-items-list">
+            </div>
+        <div class="cart-extras" style="padding: 10px; border-top: 1px solid #eee;">
+        <label style="font-size: 0.85em; color: #667;">Forma de Entrega:</label>
+        <div class="cart-entrega-section" style="padding: 5px 5px; border-bottom: 1px solid #eee; margin-bottom: 5px;">
+    <label class="label-entrega-toggle"><span class="icon-truck">🚚<span class="seta">▼</span>
+</label>
+    
+    <div class="cart-entrega-campos">
+        <select id="cart-delivery" onchange="renderCarrinho()" style="width: 100%; padding: 10px; border-radius: 5px; margin-top: 5px;">
+            <option value="0">Retirar no Local (Grátis)</option>
+            <option value="10">Entrega Local (R$ 10,00)</option>
+            <option value="20">Envio Correios (R$ 20,00)</option>
+        </select>
+    </div>
+</div>
+
+        <div style="display: flex; gap: 5px;">
+            <input type="text" id="cart-coupon" placeholder="Cupom" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+            <button onclick="aplicarCupom()" style="padding: 8px; background: #d4a373; color: white; border: none; border-radius: 5px; cursor: pointer;">Aplicar</button>
+        </div>
+        <small id="coupon-msg" style="display: block; margin-top: 5px;"></small>
+    </div>
+      <div class="cart-contato-section" style="padding: 10px 15px; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+    <label class="label-contato-toggle">
+        <span class="icon-lock">🔒</span>
+       Seus dados de contato <span class="seta">▼</span>
+</label>
+    
+    <div class="cart-dados-campos">
+        <input type="text" id="cart-whatsapp" placeholder="Seu WhatsApp (DDD)" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+        <textarea id="cart-obs" placeholder="Alguma observação? (Ex: embalagem presente...)" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; height: 60px; font-family: inherit; box-sizing: border-box;"></textarea>
+    </div>
+</div>
+
+    <div style="padding: 0 15px;">
+        <h4 style="margin: 5px 0; font-weight: normal;">Subtotal: R$ <span id="cart-subtotal-val">0.00</span></h4>
+        <h4 style="color: #d4a373; margin: 10px 0; font-size: 1.3em;">Total: R$ <span id="cart-total-val">0.00</span></h4>
+    </div>
+
+    <div style="padding: 10px 15px;">
+        <button class="btn-block" onclick="finalizarPedidoPeloCarrinho()" style="margin-bottom: 10px;">✨ Finalizar Pedido</button>
+        <button class="btn-secondary" onclick="limparCarrinho()" style="width: 100%; opacity: 0.7;">Limpar Carrinho</button>
+    </div>
+</div>
+    </div>
+
+    <main id="main-content">
+        <section id="page-perfil" class="page">
+            
+    <div class="dashboard-cliente" style="padding: 20px; text-align: center; background: white; border-radius: 15px; margin: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        <h2 style="color: #d4a373;">Minha Conta 🌸</h2>
+        <p>Bem-vinda(o) ao seu Espaço de Cuidado.</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px;">
+            
+            <div class="dash-card" onclick="showPage('perfil-dados')" style="background: #fffaf5; padding: 25px 15px; border-radius: 12px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #f2e9e1;">
+                <span style="font-size: 2.5em; display: block; margin-bottom: 10px;">👤</span>
+                <strong style="color: #555;">Meus Dados</strong>
+            </div>    
+            <div class="dash-card" onclick="location.href='meus-pedidos.html'" style="background: #fffaf5; padding: 25px 15px; border-radius: 12px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #f2e9e1;">
+                    <span style="font-size: 2.5em; display: block; margin-bottom: 10px;">📦</span>
+                    <strong style="color: #555;">Meus Pedidos</strong>
+                </div>
+            
+        </div>
+
+        <button onclick="deslogar()" style="margin-top: 40px; background: none; border: none; color: #ff4d4d; cursor: pointer; font-weight: bold; text-decoration: underline;">
+            Encerrar Sessão (Sair)
+        </button>
+    </div>
+</section>
+
+<section id="page-perfil-dados" class="page">
+    <div class="form-container">
+        <h2>👤 Meus Dados</h2>
+        <p>Informações extraídas do seu cadastro oficial.</p>
+        <hr>
+        <div style="text-align: left; padding: 10px; display: grid; gap: 10px;">
+            <label><strong>Nome:</strong> <input type="text" id="perfil-nome" readonly style="background:#f9f9f9;"></label>
+            <label><strong>Usuário:</strong> <input type="text" id="perfil-usuario" readonly style="background:#f9f9f9;"></label>
+            <label><strong>WhatsApp:</strong> <input type="tel" id="perfil-whatsapp" placeholder="(00) 00000-0000"></label>
+            <label><strong>E-mail:</strong> <input type="email" id="perfil-email"></label>
+            
+            <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 10px;">
+                <label><strong>Rua:</strong> <input type="text" id="perfil-rua"></label>
+                <label><strong>Nº:</strong> <input type="text" id="perfil-numero"></label>
+            </div>
+            
+            <label><strong>Bairro:</strong> <input type="text" id="perfil-bairro"></label>
+            
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                <label><strong>Cidade:</strong> <input type="text" id="perfil-cidade"></label>
+                <label><strong>Estado:</strong> <input type="text" id="perfil-estado"></label>
+            </div>
+            
+            <label><strong>CEP:</strong> <input type="text" id="perfil-cep"></label>
+
+            <button class="btn-block" id="btn-salvar-perfil" onclick="atualizarDadosNaPlanilha()">Atualizar Cadastro ✨</button>
+        </div>
+        <button class="btn-secondary" onclick="showPage('perfil')" style="margin-top: 20px;">← Voltar ao Painel</button>
+    </div>
+</section>
+        
+        <section id="page-home" class="page active">
+            <h2 class="section-title">Nossa Vitrine</h2>
+            <div class="vitrine-wrapper">
+                <div id="vitrine-produtos" class="vitrine-deslizante">
+                    </div>
+            </div>
+        </section>
+
+        <section id="page-agendamento" class="page">
+            <div class="form-container">
+                <h2>Agendar Atendimento</h2>
+                <form id="form-agendamento">
+                    <input type="text" id="ag-nome" placeholder="Nome Completo" required>
+                    <input type="tel" id="ag-tel" placeholder="WhatsApp (DDD)" required>
+                    <input type="date" id="ag-data" required>
+                    <input type="time" id="ag-hora" required>
+                    <input type="text" id="ag-end" placeholder="Endereço Completo">
+                    <button type="submit" class="btn-block">Confirmar e falar no WhatsApp</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="page-sac" class="page">
+            <div class="form-container">
+                <h2>SAC - Atendimento</h2>
+                <form id="form-sac">
+                    <input type="text" id="sac-nome" placeholder="Nome" required>
+                    <input type="tel" id="sac-tel" placeholder="Telefone">
+                    <select id="sac-tipo">
+                        <option value="Dúvida">Dúvida</option>
+                        <option value="Reclamação">Reclamação</option>
+                        <option value="Elogio">Elogio</option>
+                    </select>
+                    <textarea id="sac-texto" placeholder="Como podemos ajudar?" rows="5"></textarea>
+                    <button type="submit" class="btn-block">Enviar Mensagem</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="page-depoimentos" class="page">
+            <div class="form-container">
+                <h2>O que dizem sobre nós</h2>
+                <form id="form-depoimento">
+    <input type="text" id="dep-nome" placeholder="Seu Nome" required>
+    
+    <select id="dep-categoria" required style="width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+        <option value="" disabled selected>O que deseja enviar?</option>
+        <option value="Elogio">🌸 Elogio</option>
+        <option value="Sugestão">💡 Sugestão</option>
+        <option value="Reclamação">⚠️ Reclamação</option>
+    </select>
+
+    <select id="dep-estrelas">
+        <option value="5">⭐⭐⭐⭐⭐</option>
+        <option value="4">⭐⭐⭐⭐</option>
+        <option value="3">⭐⭐⭐</option>
+        <option value="2">⭐⭐</option>
+        <option value="1">⭐</option>
+    </select>
+    <textarea id="dep-texto" placeholder="Escreva aqui seu comentário..."></textarea>
+    <button type="submit" class="btn-block">Publicar Depoimento</button>
+</form>
+            </div>
+        </section>
+
+        <section id="page-meus-pedidos" class="page">
+    <h2>📦 Meus Pedidos</h2>
+    <p style="font-size: 0.9em; color: #666;">Abaixo estão os seus pedidos registrados em nossa planilha:</p>
+          
+
+    <div class="search-box" style="margin-bottom: 20px; display: flex; gap: 10px;">
+        <input type="text" id="busca-pedido" placeholder="Filtrar por nome...">
+        <button class="btn-block" style="width: auto; padding: 10px 20px;" onclick="carregarPedidos()">Atualizar 🔄</button>
+    </div>
+
+    <div id="lista-pedidos">
+        <p>Clique em atualizar ou abra esta página pelo menu lateral.</p>
+    </div>
+</section>
+
+    </main>
+    <script src="cart.js"></script>
+    <script src="script.js"></script>
+    <a href="https://wa.me/5585991561497?text=Olá! Estava navegando no site do Espaço Cura e Cuidado e gostaria de tirar uma dúvida. 🌸" 
+   target="_blank" 
+   class="whatsapp-float" 
+   title="Fale conosco no WhatsApp">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" style="width: 35px; height: 35px;">
+    <span class="tooltip-whatsapp">Dúvidas? Fale comigo! 🌸</span>
+</a>
+   <script src="script.js"></script>
+
+    <a href="https://wa.me/5585991561497?text=Olá! Estava navegando no site e gostaria de tirar uma dúvida. 🌸" 
+       class="whatsapp-float" target="_blank" title="Fale conosco no WhatsApp">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" width="30">
+        <span class="tooltip-whatsapp">Dúvidas? Fale comigo! 🌸</span>
+    </a>
+
+    <div id="modal-produto" class="modal-cura">
+        <div class="modal-content">
+            <button class="close-btn" onclick="fecharModal()" style="position: absolute; right: 20px; top: 10px;">&times;</button>
+            <div class="modal-body">
+                <div class="modal-galeria">
+                    <img id="modal-img-principal" src="https://via.placeholder.com/300" alt="Produto">
+                    <div id="modal-miniaturas" class="miniaturas"></div>
+                </div>
+                <div class="modal-info">
+                    <h2 id="modal-nome">Nome do Produto</h2>
+                    <div id="modal-preco" class="preco-destaque">R$ 0,00</div>
+                    <p id="modal-descricao">Carregando detalhes...</p>
+                    <div class="modal-acoes">
+                        <input type="number" id="modal-qtd" value="1" min="1">
+                        <button id="modal-btn-add" class="btn-block">Adicionar ao Carrinho ✨</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

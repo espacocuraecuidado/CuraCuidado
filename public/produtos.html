@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nossos Produtos - Espaço Cura e Cuidado</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/produtos-style.css"> <script src="js/config.js"></script>
+</head>
+<body>
+
+    <header class="header-produtos">
+        <a href="index.html" class="btn-voltar">← Voltar</a>
+        <h1>Nossa Vitrine 🌸</h1>
+        <div id="carrinho-icone" onclick="window.location.href='carrinho.html'">
+            🛒 <span id="carrinho-contador">0</span>
+        </div>
+    </header>
+
+    <main>
+        <section id="lista-produtos" class="produtos-grid">
+            <p class="carregando">Buscando mimos para você... ✨</p>
+        </section>
+    </main>
+
+    <div id="modalProduto" class="modal">
+        <div class="modal-content">
+            <span class="fechar-modal" onclick="fecharModal()">&times;</span>
+            
+            <div class="modal-flex">
+                <div class="carrossel">
+                    <div id="slides-container" class="slides-container">
+                        </div>
+                    <button class="seta prev" onclick="mudarSlide(-1)">&#10094;</button>
+                    <button class="seta next" onclick="mudarSlide(1)">&#10095;</button>
+                </div>
+
+                <div class="infos-detalhadas">
+                    <h2 id="modalNome"></h2>
+                    <p id="modalDescricao"></p>
+                    <div id="modalPreco" class="preco-destaque"></div>
+                    <button id="btnAdicionarModal" class="btn-comprar-modal">
+                        Adicionar ao Carrinho 🛍️
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script>
+        // Inicializa a vitrine ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            renderizarProdutosVitrine(); 
+        });
+    </script>
+</body>
+</html>

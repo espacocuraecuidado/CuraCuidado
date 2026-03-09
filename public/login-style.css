@@ -1,0 +1,246 @@
+/* =========================================================
+   1. CONFIGURAÇÕES GLOBAIS E VARIÁVEIS
+   ========================================================= */
+:root {
+    --rosa-suave: #f8ecec;
+    --rosa-medio: #e9c4c4;
+    --rosa-escuro: #d4a3a3;
+    --rosa-seco: #d4a3a3; /* Unificando com sua variável anterior */
+    --rosa-claro: #f1e1e1;
+    --creme: #fdfaf8;
+    --texto-suave: #6b5a5a;
+    --texto: #5a4a4a;
+    --branco: #ffffff;
+    --bg: #fdfaf8;
+}
+
+body { 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+    margin: 0; 
+    background: var(--bg); 
+    color: var(--texto); 
+    overflow-x: hidden; 
+}
+
+/* Estilo específico para a tela de Login */
+body.login-page {
+    background: linear-gradient(135deg, var(--rosa-suave) 0%, var(--creme) 100%);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================================================
+   2. CARD DE LOGIN
+   ========================================================= */
+.login-card {
+    background: var(--branco);
+    padding: 2.5rem;
+    border-radius: 30px;
+    box-shadow: 0 15px 35px rgba(212, 163, 163, 0.2);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    animation: slideUp 0.4s ease;
+}
+
+.login-card h2 {
+    color: var(--texto-suave);
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.lead {
+    color: #9e8e8e;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+}
+
+/* =========================================================
+   3. FORMULÁRIOS E INPUTS
+   ========================================================= */
+.input-group {
+    text-align: left;
+    margin-bottom: 1.5rem;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+    margin-bottom: 8px;
+    margin-left: 5px;
+}
+
+input, select, textarea { 
+    width: 100%; 
+    padding: 14px 18px; 
+    margin: 8px 0; 
+    border: 2px solid #f1f1f1; 
+    border-radius: 15px; 
+    background-color: #fafafa;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    font-size: 1rem;
+    color: var(--texto-suave);
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--rosa-medio);
+    background-color: var(--branco);
+    box-shadow: 0 0 10px rgba(233, 196, 196, 0.3);
+}
+
+.btn-block { 
+    background: var(--rosa-seco); 
+    color: white; 
+    border: none; 
+    width: 100%; 
+    padding: 15px; 
+    border-radius: 15px; 
+    cursor: pointer; 
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: transform 0.2s, background 0.3s;
+}
+
+.btn-block:hover {
+    background: #c08d8d;
+    transform: translateY(-2px);
+}
+
+/* Botão do Olhinho (Senha) */
+#toggleSenha {
+    font-size: 1.2rem;
+    padding: 0 10px;
+    color: var(--rosa-escuro);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* =========================================================
+   4. VITRINE E PRODUTOS
+   ========================================================= */
+.vitrine-wrapper { 
+    position: relative;
+    padding: 5px;
+    overflow: hidden;
+}
+
+.vitrine-wrapper::before, .vitrine-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 60px;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.vitrine-wrapper::before {
+    left: 0;
+    background: linear-gradient(to right, var(--bg), transparent);
+}
+
+.vitrine-wrapper::after {
+    right: 0;
+    background: linear-gradient(to left, var(--bg), transparent);
+}
+
+.vitrine-deslizante { 
+    display: flex; 
+    overflow-x: auto; 
+    -webkit-overflow-scrolling: touch; 
+    gap: 20px; 
+    padding-bottom: 15px;
+    scroll-snap-type: x proximity; 
+    scroll-behavior: smooth; 
+}
+
+.vitrine-deslizante::-webkit-scrollbar { display: none; }
+
+.card-produto { 
+    min-width: 280px; 
+    background: white; 
+    border-radius: 15px; 
+    padding: 25px;
+    border: 1px solid var(--rosa-claro); 
+    text-align: center; 
+    scroll-snap-align: start;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+.card-produto img { width: 100%; border-radius: 10px; margin-bottom: 10px; }
+
+/* =========================================================
+   5. SIDEBARS (MENU E CARRINHO)
+   ========================================================= */
+.sidebar {
+    position: fixed; 
+    top: 0; 
+    width: 380px; 
+    height: 100%; 
+    background: white;
+    box-sizing: border-box; 
+    padding: 25px; 
+    box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+    transition: 0.3s ease-in-out; 
+    z-index: 1000;
+    overflow-y: auto;
+}
+.sidebar.left { left: -380px; }
+.sidebar.right { right: -380px; }
+.sidebar.active { left: 0; }
+.sidebar.right.active { right: 0; }
+
+/* =========================================================
+   6. MODAIS E ANIMAÇÕES
+   ========================================================= */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 9999; 
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); 
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 2% auto;
+    padding: 30px;
+    width: 90%;
+    max-width: 850px;
+    border-radius: 25px;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* =========================================================
+   7. WHATSAPP FLOAT (CANTO ESQUERDO)
+   ========================================================= */
+.whatsapp-float {
+    position: fixed;
+    width: 60px; height: 60px;
+    bottom: 20px; left: 20px;
+    background-color: #25d366;
+    color: #FFF;
+    border-radius: 50px;
+    display: flex;
+    align-items: center; justify-content: center;
+    box-shadow: 2px 5px 15px rgba(0,0,0,0.2);
+    z-index: 10000;
+    text-decoration: none;
+}

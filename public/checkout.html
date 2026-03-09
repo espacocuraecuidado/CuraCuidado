@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Pedido | Cura Cuidado</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="padding:20px; background-color: #fffafb;">
+
+    <div class="form-container" style="max-width: 600px; margin: auto; border: 2px solid var(--rosa-seco); background: white;">
+        <h2 style="color: var(--rosa-seco); text-align: center;">Resumo e Pagamento</h2>
+        
+        <div id="resumo-carrinho" style="padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--rosa-claro);">
+            </div>
+
+        <form id="form-checkout">
+            <h3>Seus Dados</h3>
+            <input type="text" id="c-nome" placeholder="Nome Completo" required>
+            <input type="tel" id="c-whatsapp" placeholder="WhatsApp (DDD + Número)" required>
+            
+            <h3>Endereço de Entrega</h3>
+            <input type="text" id="c-endereco" placeholder="Rua, N°, Bairro e Cidade" required>
+            
+            <div style="background: var(--rosa-claro); padding: 15px; border-radius: 10px; margin: 15px 0; text-align: center;">
+                <p style="margin:0"><strong>Pagamento: PIX</strong></p>
+                <p style="font-size: 0.9rem;">Chave: 85991561497 (Celular)</p>
+            </div>
+
+            <button type="submit" class="btn-block" id="btn-finalizar" style="background: var(--rosa-seco); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                CONCLUIR E ENVIAR COMPROVANTE
+            </button>
+        </form>
+    </div>
+
+    <script>
+    // 1. FUNÇÕES GERAIS (Ficam fora para o navegador achar fácil)
+    const carrinho = JSON.parse(localStorage.getItem('cura_carrinho')) || [];
+
+    function renderResumo() {
+        const resumoDiv = document.getElementById('resumo-carrinho');
+        if (!resumoDiv) return;
+
+        if (carrinho.length === 0) {
+            resumoDiv.innerHTML = "<p>Seu carrinho está vazio!</p>";
+            const btn = document.getElementById('btn-finalizar');
+            if (btn) btn.disabled = true;
+            return;
+        }
+
+        const total = carrinho.reduce((a, b) => a + (b.valor * b.qtd), 0);
+        resumoDiv.innerHTML = `
+            ${carrinho.map(i => `<p style="margin:5px 0;">${i.qtd}x ${i.nome} - R$ ${(i.valor * i.qtd).toFixed(2)}</p>`).join('')}
+            <hr style="border: 0; border-top: 1px solid var(--rosa-claro);">
+            <p style="font-size: 1.2rem;"><strong>Total: R$ ${total.toFixed(2)}</strong></p>
+        `;
+    }
+
+    function baixarComprovante(dados) {
+        const conteudo = `ESPACO CURA E CUIDADO\nPedido: ${dados.protocolo}\nCliente: ${dados.cliente}\nItens: ${dados.itens}\nTotal: R$ ${dados.total.toFixed(2)}\nEntrega: ${dados.endereco}\nData: ${new Date().toLocaleString()}`;
+        const blob = new Blob([conteudo], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Pedido_CuraCuidado_${dados.protocolo}.txt`;
+        link.click();
+    }
+
+    // 2. O COMANDO DE INICIALIZAÇÃO (Roda quando a página abre)
+    window.onload = function() {
+        renderResumo();
+
+        const formulario = document.getElementById('form-checkout');
+        
+        if (formulario) {
+            formulario.onsubmit = async (e) => {
+                e.preventDefault();
+                console.log("Clique detectado! Iniciando processamento...");
+
+                const btn = document.getElementById('btn-finalizar');
+                btn.disabled = true;
+                btn.innerText = "Processando Pedido...";
+
+                const total = carrinho.reduce((a, b) => a + (b.valor * b.qtd), 0);
+                const nomeCliente = document.getElementById('c-nome').value;
+                const whatsapp = document.getElementById('c-whatsapp').value;
+                const endereco = document.getElementById('c-endereco').value;
+
+                const payloadVenda = {
+                    acao: "registrarVenda",
+                    nomeCliente: nomeCliente,
+                    produto: carrinho.map(i => `${i.qtd}x ${i.nome}`).join(", "),
+                    valor: total,
+                    quantidade: carrinho.reduce((a, b) => a + b.qtd, 0),
+                    whatsapp: whatsapp,
+                    estoqueAtual: "OK",
+                    obs: `Endereço: ${endereco}`
+                };
+
+                try {
+                    const response = await fetch('/api/post', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payloadVenda)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.status === "sucesso") {
+                        baixarComprovante({
+                            protocolo: result.id,
+                            cliente: nomeCliente,
+                            itens: payloadVenda.produto,
+                            total: total,
+                            endereco: endereco
+                        });
+
+                        localStorage.removeItem('cura_carrinho');
+                        alert("Pedido Registrado com Sucesso!");
+                        
+                        const msgWhats = `Olá! Fiz o pedido ${result.id}. Nome: ${nomeCliente}. Total: R$ ${total.toFixed(2)}. Aguardando aprovação!`;
+                        window.location.href = `https://wa.me/5585991561497?text=${encodeURIComponent(msgWhats)}`;
+                    } else {
+                        alert("Erro ao salvar na planilha: " + (result.mensagem || "Erro desconhecido"));
+                        btn.disabled = false;
+                        btn.innerText = "CONCLUIR E ENVIAR COMPROVANTE";
+                    }
+                } catch (error) {
+                    console.error("Erro no fetch:", error);
+                    alert("Servidor Offline! Verifique o terminal.");
+                    btn.disabled = false;
+                    btn.innerText = "Tentar Novamente";
+                }
+            };
+        } else {
+            console.error("Formulário 'form-checkout' não encontrado.");
+        }
+    };
+</script>
+            const whatsapp = document.getElementById('c-whatsapp').value;
+            const endereco = document.getElementById('c-endereco').value;
+
+            // Dados exatos para as colunas da Aba Vendas
+            const payloadVenda = {
+                acao: "registrarVenda",
+                nomeCliente: nomeCliente,
+                produto: carrinho.map(i => `${i.qtd}x ${i.nome}`).join(", "),
+                valor: total,
+                quantidade: carrinho.reduce((a, b) => a + b.qtd, 0),
+                whatsapp: whatsapp,
+                estoqueAtual: "OK",
+                obs: `Endereço: ${endereco}`
+            };
+
+            try {
+                // Rota do seu server.js
+                const response = await fetch('/api/post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payloadVenda)
+                });
+
+                const result = await response.json();
+
+                if (result.status === "sucesso") {
+                    baixarComprovante({
+                        protocolo: result.id,
+                        cliente: nomeCliente,
+                        itens: payloadVenda.produto,
+                        total: total,
+                        endereco: endereco
+                    });
+
+                    localStorage.removeItem('cura_carrinho');
+                    alert("Pedido Registrado com Sucesso!");
+                    
+                    // Redireciona para o seu WhatsApp
+                    const msgWhats = `Olá! Fiz o pedido ${result.id}. Nome: ${nomeCliente}. Total: R$ ${total.toFixed(2)}. Aguardando aprovação!`;
+                    window.location.href = `https://wa.me/5585991561497?text=${encodeURIComponent(msgWhats)}`;
+                } else {
+                    alert("Erro ao salvar na planilha: " + (result.mensagem || "Erro desconhecido"));
+                    btn.disabled = false;
+                    btn.innerText = "Tentar Novamente";
+                }
+            } catch (error) {
+                console.error("Erro no fetch:", error);
+                alert("Servidor Offline! Certifique-se de que rodou 'node server.js' no terminal.");
+                btn.disabled = false;
+                btn.innerText = "Tentar Novamente";
+            }
+        };
+};
+    } else {
+        console.error("Não encontrei o formulário 'form-checkout'. Verifique o ID no HTML.");
+    }
+};
+        function baixarComprovante(dados) {
+            const conteudo = `ESPACO CURA E CUIDADO\nPedido: ${dados.protocolo}\nCliente: ${dados.cliente}\nItens: ${dados.itens}\nTotal: R$ ${dados.total.toFixed(2)}\nEntrega: ${dados.endereco}\nData: ${new Date().toLocaleString()}`;
+            const blob = new Blob([conteudo], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Pedido_CuraCuidado_${dados.protocolo}.txt`;
+            link.click();
+        }
+
+        renderResumo();
+    </script>
+</body>
+</html>

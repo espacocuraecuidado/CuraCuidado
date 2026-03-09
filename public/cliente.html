@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Conta - Espaço Cura e Cuidado</title>
+    <link rel="stylesheet" href="css/style.css"> <style>
+        body { background-color: #fdf6f0; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        .container-cliente { max-width: 600px; margin: 20px auto; padding: 15px; }
+        .header-cliente { text-align: center; padding: 20px 0; color: #d4a373; }
+        
+        /* Menu Rápido */
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .dash-btn { background: white; border: none; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; text-align: center; }
+        .dash-btn i { font-size: 1.5em; display: block; margin-bottom: 5px; }
+
+        /* Lista de Pedidos */
+        .pedido-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #d4a373; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .status-badge { float: right; padding: 4px 10px; border-radius: 15px; font-size: 0.8em; font-weight: bold; }
+        .pago { background: #d4edda; color: #155724; }
+        .pendente { background: #fff3cd; color: #856404; }
+        
+        .btn-voltar { display: block; text-align: center; margin-top: 20px; color: #999; text-decoration: none; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<div class="container-cliente">
+    <div class="header-cliente">
+        <h2 id="nomeUsuario">Olá, bem-vinda! 🌸</h2>
+        <p>Acompanhe seus pedidos e agendamentos abaixo.</p>
+    </div>
+
+    <div class="dash-grid">
+        <button class="dash-btn" onclick="mostrarSecao('pedidos')"><i>📦</i> Meus Pedidos</button>
+        <button class="dash-btn" onclick="mostrarSecao('dados')"><i>👤</i> Meus Dados</button>
+    </div>
+
+    <div id="secao-pedidos">
+        <h3 style="color: #555;">Meus Pedidos</h3>
+        <div id="lista-pedidos">
+            <p style="text-align:center;">Carregando pedidos... ⏳</p>
+        </div>
+    </div>
+
+    <div id="secao-dados" style="display: none;">
+        <h3 style="color: #555;">Seus Dados de Entrega</h3>
+        <div class="form-container" style="background: white; padding: 20px; border-radius: 12px;">
+            <label>Endereço:</label>
+            <input type="text" id="c-end" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd;">
+            <label>WhatsApp:</label>
+            <input type="tel" id="c-tel" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd;">
+            <button class="btn-block" onclick="salvarLocalmente()" style="width: 100%; padding: 12px; background: #d4a373; color: white; border: none; border-radius: 5px;">Salvar Alterações</button>
+        </div>
+    </div>
+
+    <a href="index.html" class="btn-voltar">← Voltar para a loja</a>
+</div>
+
+<script>
+    const URL_API = "https://script.google.com/macros/s/AKfycbyN0Uzj2HrDrP_oHM7RGsdXK_iJ54HnHIbdFJq3V9BMEj4wo6acRabBP9iB0J2gIivG/exec"; // MESMA URL DO LOGIN
+
+    window.onload = () => {
+        const user = localStorage.getItem("usuarioLogado");
+        if (!user) {
+            window.location.href = "login.html"; // Se não logou, vai pro login
+            return;
+        }
+        document.getElementById("nomeUsuario").innerText = `Olá, ${user} 🌸`;
+        
+        // Carrega dados salvos no navegador
+        document.getElementById("c-end").value = localStorage.getItem("end_cliente") || "";
+        document.getElementById("c-tel").value = localStorage.getItem("tel_cliente") || "";
+
+        carregarPedidos(user);
+    };
+
+    async function carregarPedidos(cliente) {
+        const container = document.getElementById("lista-pedidos");
+        try {
+            const res = await fetch(`${URL_API}?acao=listarPedidos&cliente=${encodeURIComponent(cliente)}`);
+            const dados = await res.json();
+
+            if (dados.length === 0) {
+                container.innerHTML = "<p style='text-align:center;'>Nenhum pedido encontrado. 🛒</p>";
+                return;
+            }
+
+            container.innerHTML = dados.map(p => `
+                <div class="pedido-card">
+                    <span class="status-badge ${p.Status_Pagamento === 'Pago' ? 'pago' : 'pendente'}">
+                        ${p.Status_Pagamento || 'Pendente'}
+                    </span>
+                    <strong>ID: ${p["ID Pedido"] || '---'}</strong><br>
+                    <small>${p.Data}</small>
+                    <p><strong>Itens:</strong> ${p.Produto}</p>
+                    <p><strong>Valor:</strong> R$ ${p.Valor}</p>
+                </div>
+            `).join('');
+        } catch (e) {
+            container.innerHTML = "<p>Erro ao carregar. Verifique a conexão.</p>";
+        }
+    }
+
+    function mostrarSecao(secao) {
+        document.getElementById("secao-pedidos").style.display = secao === 'pedidos' ? 'block' : 'none';
+        document.getElementById("secao-dados").style.display = secao === 'dados' ? 'block' : 'none';
+    }
+
+    function salvarLocalmente() {
+        localStorage.setItem("end_cliente", document.getElementById("c-end").value);
+        localStorage.setItem("tel_cliente", document.getElementById("c-tel").value);
+        alert("Dados salvos com sucesso! ✨");
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,179 @@
+// @ts-nocheck
+
+/**
+ * ESPAÇO CURA E CUIDADO - SCRIPT CENTRAL v3.5
+ * CORREÇÃO DEFINITIVA DE SINTAXE (CHAVES E BLOCOS)
+ */
+
+function doGet(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const acao = e.parameter.acao;
+  
+  try {
+    if (acao === "listarProdutos") return produzirJSON(obterDadosAba(ss, "Produtos"));
+
+    if (acao === "listarVendasGeral" || acao === "listarVendas") {
+      const dados = obterDadosAba(ss, "Vendas");
+      const formatados = dados.map(item => {
+        if (item.Data instanceof Date) {
+          item.Data = Utilities.formatDate(item.Data, "GMT-3", "dd/MM/yyyy HH:mm");
+        }
+        return item;
+      });
+      return produzirJSON(formatados);
+    }
+
+    if (acao === "meusPedidos") {
+      const user = e.parameter.usuario;
+      const todos = obterDadosAba(ss, "Vendas");
+      const filtrados = todos.filter(p => p["Cliente"] && String(p["Cliente"]).toLowerCase() === String(user).toLowerCase());
+      return produzirJSON(filtrados);
+    }
+
+    if (acao === "listarDepoimentos") return produzirJSON(obterDadosAba(ss, "Depoimentos"));
+    if (acao === "listarAgendamentos") return produzirJSON(obterDadosAba(ss, "Agendamentos"));
+    if (acao === "listarUsuarios") return produzirJSON(obterDadosAba(ss, "Users"));
+
+    if (e.parameter.usuario && e.parameter.senha) {
+      const users = obterDadosAba(ss, "Usuarios");
+      const uIn = e.parameter.usuario.toLowerCase().trim();
+      const pIn = e.parameter.senha.toString().trim();
+      
+      const achado = users.find(u => 
+        u["Usuario"] && String(u["Usuario"]).toLowerCase().trim() === uIn && 
+        u["Senha"] && String(u["Senha"]).trim() === pIn
+      );
+      
+      if (achado) return produzirJSON({ status: "sucesso", nome: achado.Nome });
+      return produzirJSON({ status: "erro", mensagem: "Usuário ou senha incorretos" });
+    }
+
+    return produzirJSON({ status: "erro", mensagem: "Ação não encontrada" });
+  } catch (err) {
+    return produzirJSON({ status: "erro", log: err.toString() });
+  }
+}
+
+function doPost(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let dados;
+  try {
+    dados = JSON.parse(e.postData.contents);
+  } catch (err) {
+    return produzirJSON({ status: "erro", mensagem: "Erro no formato JSON" });
+  }
+
+  const acao = dados.acao;
+  const abaVendas = ss.getSheetByName("Vendas");
+  const abaProdutos = ss.getSheetByName("Produtos");
+
+  // --- MANTENDO SUAS FUNÇÕES ORIGINAIS ---
+
+  // 1. REGISTRAR VENDA
+  if (acao === "criarVenda" || acao === "registrarVenda") {
+    const idPed = "PED-" + new Date().getTime();
+    
+    // ABA VENDAS - Sequência exata de colunas:
+    abaVendas.appendRow([
+      idPed,                  // A - ID Pedido
+      new Date(),             // B - Data
+      dados.nomeCliente,      // C - Cliente
+      dados.produto,          // D - Produto
+      dados.valor,            // E - Valor
+      dados.estoqueAtual,     // F - Estoque (Referência)
+      "Aguardando Pagamento", // G - Status_Pagamento
+      dados.quantidade,       // H - Quantidade (Corrigido: dados.quantidade)
+      "Não Enviado",          // I - Status_Envio
+      "",                     // J - Rastreio
+      "",                     // K - Obs
+      dados.whatsapp || ""    // L - WhatsApp
+    ]);
+    
+    return produzirJSON({ status: "sucesso", id: idPed });
+  }
+
+  // 2. CANCELAR PEDIDO E DEVOLVER ESTOQUE
+  if (acao === "excluirPedido") {
+    const idPedido = dados.idPedido;
+    const dataVendas = abaVendas.getDataRange().getValues();
+    for (let i = 1; i < dataVendas.length; i++) {
+      if (String(dataVendas[i][0]) === String(idPedido)) {
+        abaVendas.getRange(i + 1, 6).setValue("Pedido Cancelado");
+        const nomeProduto = dataVendas[i][3];
+        const dataProdutos = abaProdutos.getDataRange().getValues();
+        for (let j = 1; j < dataProdutos.length; j++) {
+          if (dataProdutos[j][0] == nomeProduto || dataProdutos[j][1] == nomeProduto) {
+            let estoqueAtual = Number(dataProdutos[j][3]) || 0;
+            abaProdutos.getRange(j + 1, 4).setValue(estoqueAtual + 1);
+            break;
+          }
+        }
+        return produzirJSON({ status: "sucesso", mensagem: "Cancelado" });
+      }
+    }
+  }
+
+  // 3. ATUALIZAR STATUS PARA "AGUARDANDO"
+  if (acao === "finalizarPagamento") {
+    const idPedido = dados.idPedido;
+    const dataVendas = abaVendas.getDataRange().getValues();
+    for (let i = 1; i < dataVendas.length; i++) {
+      if (String(dataVendas[i][0]) === String(idPedido)) {
+        abaVendas.getRange(i + 1, 6).setValue("Aguardando Pagamento");
+        return produzirJSON({ status: "sucesso" });
+      }
+    }
+  }
+
+  // 4. ATUALIZAR STATUS (PAGO)
+  if (acao === "atualizarPagamento") {
+    const rows = abaVendas.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(dados.idPedido)) {
+        abaVendas.getRange(i + 1, 6).setValue("Pagamento Realizado");
+        return produzirJSON({ status: "sucesso" });
+      }
+    }
+  }
+
+  // --- NOVA LÓGICA DINÂMICA (PARA CADASTROS E OUTROS) ---
+  
+  // Se a ação for "dinamica" ou se houver um nome de aba especificado
+  if (dados.aba) {
+    const abaDestino = ss.getSheetByName(dados.aba);
+    if (!abaDestino) return produzirJSON({ status: "erro", mensagem: "Aba não encontrada: " + dados.aba });
+
+    // Pega os cabeçalhos da primeira linha da aba
+    const headers = abaDestino.getRange(1, 1, 1, abaDestino.getLastColumn()).getValues()[0];
+    
+    // Mapeia os dados do payload para as colunas corretas
+    const novaLinha = headers.map(h => {
+      if (h === "Data Cadastro" || h === "Data") return new Date();
+      return dados.payload ? dados.payload[h] || "" : "";
+    });
+
+    abaDestino.appendRow(novaLinha);
+    return produzirJSON({ status: "sucesso", mensagem: "Dados salvos em " + dados.aba });
+  }
+
+  return produzirJSON({ status: "erro", mensagem: "Ação POST inválida ou Aba não informada" });
+}
+
+// FUNÇÃO AUXILIAR ÚNICA
+function produzirJSON(objeto) {
+  return ContentService.createTextOutput(JSON.stringify(objeto)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/* FUNÇÕES AUXILIARES DE LEITURA */
+function obterDadosAba(ss, nomeAba) {
+  const sheet = ss.getSheetByName(nomeAba);
+  if (!sheet) return [];
+  const rows = sheet.getDataRange().getValues();
+  if (rows.length < 1) return [];
+  const headers = rows.shift();
+  return rows.map(r => {
+    let obj = {};
+    headers.forEach((h, i) => { if (h) obj[h] = r[i]; });
+    return obj;
+  });
+}

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Espaço Cura e Cuidado</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="login-style.css"
+</head>
+<body class="login-page">
+    <main class="login-card">
+        <h2>Bem-vinda(o) 🌸</h2>
+        <p class="lead">Acesse para ver seus pedidos e agendamentos</p>
+
+        <form id="formLogin">
+            <div class="input-group">
+                <label for="usuario">Usuário</label>
+                <input type="text" id="usuario" placeholder="Seu nome ou e-mail" required>
+            </div>
+
+            <div class="input-group">
+                <label for="senha">Senha</label>
+                <div style="position: relative;">
+                    <input type="password" id="senha" placeholder="••••••••" required>
+                    <button type="button" id="toggleSenha" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">👁️</button>
+                </div>
+            </div>
+
+            <p id="mensagemErro" style="color: #ff4d4d; font-size: 0.9em; min-height: 20px; margin: 10px 0;"></p>
+
+            <button type="submit" id="btnSubmit" class="btn-block">Entrar</button>
+        </form>
+
+        <div class="login-footer">
+            <a href="#" id="esqueci">Esqueci minha senha</a>
+            
+            <div class="opcoes-cadastro" style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;">
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px;">Novo por aqui?</p>
+                <button 
+                    onclick="window.location.href='cadastro.html'" 
+                    style="background: none; border: 2px solid #e8b4b8; color: #e8b4b8; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%;">
+                    🌸 Abrir Nova Conta
+                </button>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <a href="index.html" onclick="localStorage.removeItem('usuarioLogado')" style="color: #999; font-size: 0.8rem; text-decoration: none;">
+                    Continuar como Visitante
+                </a>
+            </div>
+            
+            <hr style="border: 0; border-top: 1px solid #f4f4f4; margin: 20px 0;">
+            <a href="index.html" style="text-decoration: none; color: #555;">← Voltar para a loja</a>
+        </div>
+    </main>
+
+    <script>
+        const URL_API = "https://script.google.com/macros/s/AKfycbyN0Uzj2HrDrP_oHM7RGsdXK_iJ54HnHIbdFJq3V9BMEj4wo6acRabBP9iB0J2gIivG/exec"; 
+
+        const form = document.getElementById("formLogin");
+        const msgErro = document.getElementById("mensagemErro");
+        const btn = document.getElementById("btnSubmit");
+        const senhaInput = document.getElementById("senha");
+
+        // 1. Mostrar/Esconder Senha
+        document.getElementById("toggleSenha").addEventListener("click", function() {
+            const isPassword = senhaInput.type === "password";
+            senhaInput.type = isPassword ? "text" : "password";
+            this.textContent = isPassword ? "🙈" : "👁️";
+        });
+
+        // 2. Lógica de Login
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            msgErro.textContent = "";
+            
+            const usuarioIn = document.getElementById("usuario").value.trim();
+            const senhaIn = senhaInput.value;
+
+            btn.disabled = true;
+            btn.textContent = "Verificando... ⏳";
+
+            try {
+                const res = await fetch(`${URL_API}?acao=login&usuario=${encodeURIComponent(usuarioIn)}&senha=${encodeURIComponent(senhaIn)}`);
+                const dados = await res.json();
+
+                if (dados.status === "sucesso") {
+                    const usuarioParaSalvar = {
+                        nome: dados.nome || usuarioIn,
+                        id: dados.id || usuarioIn,
+                        regra: usuarioIn.toLowerCase() === "admin" ? "admin" : "cliente"
+                    };
+
+                    localStorage.setItem("cura_usuario", JSON.stringify(usuarioParaSalvar));
+                    localStorage.setItem("usuarioLogado", usuarioParaSalvar.nome);
+                    localStorage.setItem("tipoUsuario", usuarioParaSalvar.regra);
+                    localStorage.setItem("usuarioID", usuarioParaSalvar.id);
+
+                    if (!localStorage.getItem('cura_carrinho')) {
+                        localStorage.setItem('cura_carrinho', JSON.stringify([]));
+                    }
+
+                    alert(`Bem-vinda(o), ${usuarioParaSalvar.nome}! ✨`);
+                    window.location.href = "index.html"; 
+                } else {
+                    msgErro.textContent = "Usuário ou senha incorretos.";
+                    btn.disabled = false;
+                    btn.textContent = "Entrar";
+                }
+            } catch (err) {
+                console.error(err);
+                msgErro.textContent = "Erro de ligação ao servidor.";
+                btn.disabled = false;
+                btn.textContent = "Entrar";
+            }
+        }); // Fecha o EventListener do form
+
+        // 3. Recuperação de Senha via WhatsApp
+        document.getElementById("esqueci").onclick = (e) => {
+            e.preventDefault();
+            const mensagem = encodeURIComponent("Olá! Gostaria de recuperar a minha senha de acesso ao Espaço Cura e Cuidado.");
+            window.open(`https://wa.me/5585991561497?text=${mensagem}`, "_blank");
+        };
+    </script>
+</body>
+</html>
