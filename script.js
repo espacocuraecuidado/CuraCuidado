@@ -53,26 +53,34 @@ async function carregarProdutos() {
         const vitrine = document.getElementById('vitrine-produtos');
         if (!vitrine) return;
         
-        vitrine.innerHTML = produtos.map(p => {
-            const precoExibicao = p.Valor || p.Preco || 0;
-            // Transformamos o objeto em string para passar para o modal
-            const pStatus = JSON.stringify(p).replace(/"/g, '&quot;');
-            
-            return `
-            <div class="card-produto">
-                <img src="${p.Imagem || 'https://via.placeholder.com/150'}" alt="Produto">
-                <h3>${p.Nome}</h3>
-                <p><strong>R$ ${Number(precoExibicao).toFixed(2)}</strong></p>
-                <p><small>Estoque: ${p.Estoque || 0}</small></p>
-                <input type="number" id="qtd-${p.Nome}" value="1" min="1" style="width:60px; margin-bottom: 5px;">
-                
-                <button class="btn-block" onclick="addCarrinho('${p.Nome}', ${precoExibicao}, ${p.Estoque})">Adicionar</button>
-                <button class="btn-secondary" style="width:100%; margin-top:5px; font-size: 0.8em; padding: 8px;" 
-                        onclick="abrirModalDetalhes('${p.Nome}', '${precoExibicao}', '${p.Descricao || 'Sem descrição disponível.'}', '${p.Imagem}', ${p.Estoque})">
-                    Ver Detalhes
-                </button>
-            </div>
-        `}).join('');
+      // Localize dentro de vitrine.innerHTML = produtos.map(p => { ...
+vitrine.innerHTML = produtos.map(p => {
+    const precoExibicao = p.Valor || p.Preco || 0;
+    
+    // NOVIDADE: Lógica para múltiplas fotos
+    const fotos = p.Imagem ? p.Imagem.split(',') : ['https://via.placeholder.com/150'];
+    const foto1 = fotos[0].trim();
+    const foto2 = fotos[1] ? fotos[1].trim() : foto1; // Se não houver 2ª foto, usa a 1ª
+
+    return `
+    <div class="card-produto">
+        <div class="container-foto">
+            <img src="${foto1}" class="img-principal" alt="${p.Nome}">
+            <img src="${foto2}" class="img-hover" alt="${p.Nome}">
+        </div>
+        
+        <h3>${p.Nome}</h3>
+        <p><strong>R$ ${Number(precoExibicao).toFixed(2)}</strong></p>
+        <p><small>Estoque: ${p.Estoque || 0}</small></p>
+        <input type="number" id="qtd-${p.Nome}" value="1" min="1" style="width:60px; margin-bottom: 5px;">
+        
+        <button class="btn-block" onclick="addCarrinho('${p.Nome}', ${precoExibicao}, ${p.Estoque})">Adicionar</button>
+        <button class="btn-secondary" style="width:100%; margin-top:5px; font-size: 0.8em; padding: 8px;" 
+                onclick="abrirModalDetalhes('${p.Nome}', '${precoExibicao}', '${p.Descricao || 'Sem descrição disponível.'}', '${foto1}', ${p.Estoque})">
+            Ver Detalhes
+        </button>
+    </div>
+`;}).join('');
         console.log("Vitrine carregada com sucesso! 🌸");
     } catch (e) { 
         console.error("Erro ao carregar produtos:", e); 
