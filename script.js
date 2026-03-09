@@ -561,16 +561,19 @@ async function carregarDepoimentosNoModal(nomeProduto) {
     const container = document.getElementById('modal-lista-avaliacoes');
     if (!container) return;
     
-    // Mostra um aviso enquanto carrega
     container.innerHTML = "<small style='color:#888;'>Buscando depoimentos... 🌸</small>";
     
     try {
-        // Faz a requisição para a planilha usando o filtro de produto
-        const res = await fetch(`${URL_PLANILHA}?acao=listarAvaliacoes&produto=${encodeURIComponent(nomeProduto)}`);
-        const avaliacoes = await res.json();
+        // Como não vamos mexer no GS, pedimos a lista bruta da aba Avaliacoes
+        // O seu GS deve aceitar acoes que retornem dados de abas
+        const res = await fetch(`${URL_PLANILHA}?acao=listarAvaliacoes`); 
+        const todasAvaliacoes = await res.json();
         
-        if (avaliacoes && avaliacoes.length > 0) {
-            container.innerHTML = avaliacoes.map(av => `
+        // Filtramos aqui no JavaScript mesmo
+        const avaliacoesFiltradas = todasAvaliacoes.filter(av => av.Produto === nomeProduto);
+        
+        if (avaliacoesFiltradas.length > 0) {
+            container.innerHTML = avaliacoesFiltradas.map(av => `
                 <div style="border-bottom: 1px solid #eee; padding: 8px 0; margin-bottom: 5px;">
                     <div style="color: #d4a373; font-size: 0.85em;">
                         ${"★".repeat(Number(av.Nota))}${"☆".repeat(5 - Number(av.Nota))}
@@ -580,62 +583,10 @@ async function carregarDepoimentosNoModal(nomeProduto) {
                 </div>
             `).join('');
         } else {
-            container.innerHTML = "<p style='font-size:0.8em; color:#999; text-align:center;'>Este produto ainda não tem avaliações. <br>Seja a primeira a contar sua experiência! ✨</p>";
+            container.innerHTML = "<p style='font-size:0.8em; color:#999; text-align:center;'>Este produto ainda não tem avaliações. <br>Seja a primeira! ✨</p>";
         }
     } catch (e) {
         console.error("Erro ao carregar depoimentos:", e);
-        container.innerHTML = "<small style='color:red;'>Erro ao carregar avaliações.</small>";
-    }
-}
-
-// Função acionada pelo botão "Publicar Avaliação"
-async function enviarAvaliacao() {
-    const nomeProd = document.getElementById('modal-nome').innerText;
-    const nota = document.getElementById('av-nota').value;
-    const coment = document.getElementById('av-comentario').value;
-    const cliente = localStorage.getItem("usuarioLogado") || "Cliente Especial";
-    const btn = document.getElementById('btn-enviar-av');
-
-    // Validação simples
-    if (!coment.trim()) {
-        alert("Por favor, escreva um pequeno comentário sobre o produto. 🌸");
-        return;
-    }
-
-    // Feedback visual de carregamento
-    btn.innerText = "Publicando... ⏳";
-    btn.disabled = true;
-
-    try {
-        const res = await fetch(URL_PLANILHA, {
-            method: 'POST',
-            body: JSON.stringify({
-                aba: "Avaliacoes",
-                payload: {
-                    "Produto": nomeProd,
-                    "Cliente": cliente,
-                    "Nota": nota,
-                    "Comentario": coment
-                }
-            })
-        });
-
-        const r = await res.json();
-
-        if (r.status === "sucesso") {
-            alert("Muito obrigada! Sua avaliação foi registrada com carinho. ✨");
-            document.getElementById('av-comentario').value = ""; // Limpa o texto
-            
-            // Atualiza a lista de depoimentos no modal na hora
-            carregarDepoimentosNoModal(nomeProd);
-        } else {
-            throw new Error(r.mensagem);
-        }
-    } catch (e) {
-        console.error("Erro ao enviar avaliação:", e);
-        alert("Houve um probleminha ao enviar. Tente novamente em instantes.");
-    } finally {
-        btn.innerText = "Publicar Avaliação";
-        btn.disabled = false;
+        container.innerHTML = "<small style='color:red;'>Nenhum depoimento encontrado.</small>";
     }
 }
