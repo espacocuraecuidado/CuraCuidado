@@ -294,6 +294,7 @@
     </a>
 
     <div id="modal-produto" class="modal-cura">
+        
         <div class="modal-content">
             <button class="close-btn" onclick="fecharModal()" style="position: absolute; right: 20px; top: 10px;">&times;</button>
             <div class="modal-body">
@@ -309,6 +310,26 @@
                         <input type="number" id="modal-qtd" value="1" min="1">
                         <button id="modal-btn-add" class="btn-block">Adicionar ao Carrinho ✨</button>
                     </div>
+                    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+<h4 style="color: var(--rosa-seco); margin-bottom: 10px;">Depoimentos de Clientes 🌸</h4>
+
+<div id="modal-lista-avaliacoes" style="max-height: 150px; overflow-y: auto; margin-bottom: 15px; font-size: 0.9em; color: #666;">
+    </div>
+
+<div id="form-avaliacao" style="background: #fdf8f5; padding: 10px; border-radius: 8px; border: 1px dashed #d4a373;">
+    <p style="font-size: 0.8em; margin-bottom: 5px; font-weight: bold;">Deixe sua avaliação:</p>
+    <select id="av-nota" style="width: 100%; margin-bottom: 5px; padding: 3px;">
+        <option value="5">⭐⭐⭐⭐⭐</option>
+        <option value="4">⭐⭐⭐⭐</option>
+        <option value="3">⭐⭐⭐</option>
+        <option value="2">⭐⭐</option>
+        <option value="1">⭐</option>
+    </select>
+    <textarea id="av-comentario" placeholder="O que achou do produto?" style="width: 100%; height: 40px; margin-bottom: 5px; font-size: 0.8em; padding: 5px;"></textarea>
+    <button onclick="enviarAvaliacao()" id="btn-enviar-av" style="width: 100%; background: #d4a373; color: white; border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 0.8em;">
+        Publicar Avaliação
+    </button>
+</div>
                 </div>
             </div>
         </div>
