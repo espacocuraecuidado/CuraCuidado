@@ -607,3 +607,20 @@ input, select, textarea {
     overflow-y: auto; 
     -webkit-overflow-scrolling: touch; /* Rolagem suave no iPhone */
 }
+#vitrine-depoimentos {
+    display: flex;
+    overflow-x: auto; /* Permite rolar para o lado */
+    gap: 15px;
+    padding: 20px 10px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+#vitrine-depoimentos::-webkit-scrollbar {
+    height: 4px;
+}
+
+#vitrine-depoimentos::-webkit-scrollbar-thumb {
+    background: #d4a373;
+    border-radius: 10px;
+}
