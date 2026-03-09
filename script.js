@@ -793,8 +793,6 @@ async function enviarAvaliacao() {
         if(btn) { btn.innerText = "Publicar Avaliação"; btn.disabled = false; }
     }
 }
-
-}
 // ==========================================
 // 11. SISTEMA DE AGENDAMENTO
 // ==========================================
