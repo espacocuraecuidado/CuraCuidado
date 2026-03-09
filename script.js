@@ -10,11 +10,17 @@ function showPage(pageId) {
     
     if (targetPage) {
         targetPage.classList.add('active');
-        console.log("Navegando para: " + pageId);
         if (pageId === 'agendamento') {
             carregarHorariosDisponiveis();
         }
-    } else {
+    }
+    
+    // ESTA LINHA É A QUE FECHA O MENU:
+    // Certifique-se de que o ID 'menu-sidebar' é o mesmo do seu HTML
+    toggleSidebar('menu-sidebar', false); 
+    
+    window.scrollTo(0, 0);
+} else {
         console.error("Página não encontrada: page-" + pageId);
     }
     toggleSidebar('menu-sidebar', false);
