@@ -38,20 +38,74 @@ function toggleDarkMode() {
     if(btn) btn.innerText = isDark ? "☀️ Modo Claro" : "🌙 Modo Noturno";
 }
 
-// Adicione isso dentro do seu window.addEventListener('load', ...)
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme === 'dark') {
-    document.body.classList.add('dark-mode');
-} else {
-    document.body.classList.remove('dark-mode');
+// Adicione isso dentro do seu // Vincular o envio do formulário no carregamento da página
+window.addEventListener('load', () => {
+    const formDep = document.getElementById('form-depoimento');
+    if (formDep) {
+        formDep.onsubmit = async (e) => {
+            e.preventDefault();
+            await enviarDepoimentoGeral();
+        };
+    }
+});
+
+async function enviarDepoimentoGeral() {
+    const nome = document.getElementById('dep-nome').value;
+    const texto = document.getElementById('dep-texto').value;
+    const categoriaForm = document.getElementById('dep-categoria').value;
+    const estrelas = document.getElementById('dep-estrelas').value;
+
+    if (!texto || texto.trim() === "") {
+        return alert("Por favor, escreva seu comentário. 🌸");
+    }
+
+    // Enviamos para a aba 'Produtos' com a categoria 'depoimento' 
+    // para que ele apareça na vitrine principal automaticamente
+    const dados = {
+        aba: "Produtos", 
+        payload: {
+            "Nome": nome || "Cliente Especial",
+            "Categoria": "depoimento", // Crucial para o filtro da vitrine
+            "Descricao": texto,
+            "Valor": estrelas, // Usamos a coluna valor para guardar as estrelas se quiser
+            "Imagem": "https://cdn-icons-png.flaticon.com/512/1144/1144760.png", // Ícone de avatar
+            "Data": new Date().toLocaleDateString('pt-BR')
+        }
+    };
+
+    try {
+        const btn = document.querySelector('#form-depoimento .btn-block');
+        btn.innerText = "Publicando... ⏳";
+        btn.disabled = true;
+
+        const res = await fetch(URL_PLANILHA, {
+            method: 'POST',
+            body: JSON.stringify(dados)
+        });
+        
+        const r = await res.json();
+        if (r.status === "sucesso") {
+            alert("Obrigada! Seu depoimento foi enviado para nossa vitrine. ✨");
+            document.getElementById('form-depoimento').reset();
+            showPage('home'); // Redireciona para a home
+            carregarProdutos(); // Atualiza a vitrine
+        }
+    } catch (e) {
+        alert("Erro ao enviar depoimento.");
+    } finally {
+        const btn = document.querySelector('#form-depoimento .btn-block');
+        btn.innerText = "Publicar Depoimento";
+        btn.disabled = false;
+    }
 }
+// 2. CARREGAR VITRINE E SCROLL
 // 2. CARREGAR VITRINE E SCROLL
 async function carregarProdutos() {
     try {
         const res = await fetch(URL_PLANILHA + '?acao=listarProdutos');
         const produtos = await res.json();
         
-        // Limpa as vitrines antes de carregar (evita duplicar ao atualizar)
+        // Limpa as vitrines antes de carregar
         const vits = ['vitrine-produtos', 'vitrine-bebe', 'vitrine-mamae', 'vitrine-noticias', 'vitrine-depoimentos'];
         vits.forEach(id => { 
             const el = document.getElementById(id);
@@ -59,26 +113,40 @@ async function carregarProdutos() {
         });
 
         produtos.forEach(p => {
+            const categoria = p.Categoria ? p.Categoria.toLowerCase().trim() : 'geral';
+
+            // --- LÓGICA ESPECIAL PARA DEPOIMENTOS NA HOME ---
+            if (categoria === 'depoimento') {
+                const vitrineDepo = document.getElementById('vitrine-depoimentos');
+                if (vitrineDepo) {
+                    const estrelas = "⭐".repeat(Number(p.Valor) || 5);
+                    vitrineDepo.innerHTML += `
+                        <div class="card-depoimento-vitrine" style="min-width: 280px; background: var(--bg-card); padding: 25px; border-radius: 20px; margin: 10px; border-left: 5px solid #d4a373; box-shadow: 0 6px 15px rgba(0,0,0,0.05); flex-shrink: 0; position: relative;">
+                            <span style="font-size: 40px; color: #d4a373; opacity: 0.2; position: absolute; top: 10px; left: 15px; font-family: serif;">“</span>
+                            <div style="margin-bottom: 10px; font-size: 0.8em; padding-left: 10px;">${estrelas}</div>
+                            <p style="font-style: italic; color: #555; font-size: 0.95em; line-height: 1.5; padding: 0 10px;">${p.Descricao || p.Texto || 'Sem texto.'}</p>
+                            <h4 style="margin-top: 15px; color: #d4a373; font-size: 0.9em; text-align: right; font-weight: bold;">- ${p.Nome}</h4>
+                        </div>
+                    `;
+                }
+                return; // Pula a criação do card de produto para esta linha
+            }
+
+            // --- LÓGICA PARA PRODUTOS NORMAIS ---
             const precoExibicao = p.Valor || p.Preco || 0;
             const fotos = p.Imagem ? p.Imagem.split(',') : ['https://via.placeholder.com/150'];
             const foto1 = fotos[0].trim();
             const foto2 = fotos[1] ? fotos[1].trim() : foto1;
-            
-            // Pega a categoria da planilha (supondo que a coluna se chame 'Categoria')
-            const categoria = p.Categoria ? p.Categoria.toLowerCase().trim() : 'geral';
 
-            // Define em qual ID de vitrine o produto vai entrar
-            let idAlvo = 'vitrine-produtos'; // Padrão
+            let idAlvo = 'vitrine-produtos';
             if (categoria === 'bebe') idAlvo = 'vitrine-bebe';
             else if (categoria === 'mamae') idAlvo = 'vitrine-mamae';
             else if (categoria === 'noticia') idAlvo = 'vitrine-noticias';
-            else if (categoria === 'depoimento') idAlvo = 'vitrine-depoimentos';
 
             const vitrineDestino = document.getElementById(idAlvo);
             if (!vitrineDestino) return;
 
-            // Lógica especial para "Notícias" ou "Depoimentos" (remover botões de compra se quiser)
-            const botoesCompra = (categoria === 'noticia' || categoria === 'depoimento') ? '' : `
+            const botoesCompra = (categoria === 'noticia') ? '' : `
                 <input type="number" id="qtd-${p.Nome}" value="1" min="1" style="width:60px; margin-bottom: 5px;">
                 <button class="btn-block" onclick="addCarrinho('${p.Nome}', ${precoExibicao}, ${p.Estoque})">Adicionar</button>
             `;
@@ -99,11 +167,10 @@ async function carregarProdutos() {
                     </button>
                 </div>
             `;
-            
             vitrineDestino.innerHTML += htmlCard;
         });
 
-        console.log("Vitrines categorizadas com sucesso! 🌸");
+        console.log("Vitrines e Depoimentos carregados! 🌸");
     } catch (e) { 
         console.error("Erro ao carregar produtos:", e); 
     }
