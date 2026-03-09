@@ -203,19 +203,28 @@
 </div>
         </section>
 
-        <section id="page-agendamento" class="page">
-            <div class="form-container">
-                <h2>Agendar Atendimento</h2>
-                <form id="form-agendamento" onsubmit="event.preventDefault();" class="form-scroll-ajuste">
-    <input type="text" id="ag-nome" placeholder="Nome Completo" required>
-    <input type="tel" id="ag-tel" placeholder="WhatsApp (DDD)" required>
-    <input type="date" id="ag-data" required>
-    <input type="time" id="ag-hora" required>
-    <input type="text" id="ag-end" placeholder="Endereço Completo">
-    <button type="button" class="btn-block" onclick="enviarAgendamento()">Confirmar e falar no WhatsApp</button>
-</form>
-            </div>
-        </section>
+       <section id="page-agendamento" class="page">
+    <div class="form-container">
+        <h2>Agendar Atendimento 🌸</h2>
+        <p style="font-size: 0.8em; color: #888; margin-bottom: 15px;">Selecione um horário disponível para sua sessão de 4h.</p>
+        
+        <form id="form-agendamento" onsubmit="event.preventDefault();" class="form-scroll-ajuste">
+            <input type="text" id="ag-nome" placeholder="Nome Completo" required>
+            <input type="tel" id="ag-tel" placeholder="WhatsApp (DDD)" required>
+            
+            <label style="font-size: 0.85em; color: #d4a373; margin-top: 10px; display: block; text-align: left;">Escolha o melhor horário:</label>
+            <select id="ag-horario-selecionado" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px; background: white;">
+                <option value="">Carregando horários disponíveis...</option>
+            </select>
+
+            <input type="text" id="ag-end" placeholder="Endereço Completo (Opcional)">
+            
+            <button type="button" class="btn-block" onclick="finalizarAgendamentoComAgenda()">
+                Confirmar Agendamento ✨
+            </button>
+        </form>
+    </div>
+</section>
 
         <section id="page-sac" class="page">
             <div class="form-container">

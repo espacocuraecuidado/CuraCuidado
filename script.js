@@ -11,6 +11,9 @@ function showPage(pageId) {
     if (targetPage) {
         targetPage.classList.add('active');
         console.log("Navegando para: " + pageId);
+        if (pageId === 'agendamento') {
+            carregarHorariosDisponiveis();
+        }
     } else {
         console.error("Página não encontrada: page-" + pageId);
     }
