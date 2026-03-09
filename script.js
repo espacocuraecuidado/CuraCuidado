@@ -19,26 +19,6 @@ function showPage(pageId) {
     toggleSidebar('menu-sidebar', false); 
     window.scrollTo(0, 0);
 }
-    
-    // 3. FECHA O MENU (Ajustado para o ID padrão do seu sidebar)
-    // Se o seu HTML usa <aside id="menu-sidebar">, mantenha como abaixo:
-    toggleSidebar('menu-sidebar', false); 
-    
-    // 4. Volta ao topo da página
-    window.scrollTo(0, 0);
-}
-    
-    // ESTA LINHA É A QUE FECHA O MENU:
-    // Certifique-se de que o ID 'menu-sidebar' é o mesmo do seu HTML
-    toggleSidebar('menu-sidebar', false); 
-    
-    window.scrollTo(0, 0);
-} else {
-        console.error("Página não encontrada: page-" + pageId);
-    }
-    toggleSidebar('menu-sidebar', false);
-    window.scrollTo(0, 0);
-}
 
 function toggleSidebar(id, force) {
     const el = document.getElementById(id);
@@ -717,7 +697,8 @@ window.addEventListener('load', () => {
         sidebar.addEventListener('mouseleave', () => sidebar.classList.remove('active'));
     });
 
-    carregarProdutos().then(() => { configurarScrollExtremidades(); });
+    carregarProdutos();
+    if (typeof configurarScrollExtremidades === "function") configurarScrollExtremidades();
     renderCarrinho();   
 });
 // ==========================================
