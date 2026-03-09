@@ -495,6 +495,14 @@ async function abrirModalDetalhes(nome, preco, descricao, imagem, estoque) {
     modal.style.display = 'flex';
 }
 
+// Função para fechar o modal de detalhes do produto
+function fecharModal() {
+    const modal = document.getElementById('modal-produto');
+    if (modal) {
+        modal.style.display = 'none';
+        console.log("Modal fechado. 🌸");
+    }
+}
 // 8. INICIALIZAÇÃO
 window.addEventListener('load', () => {
     const usuario = localStorage.getItem("usuarioLogado");
@@ -564,6 +572,60 @@ async function carregarDepoimentosNoModal(nomeProduto) {
 }
 // ==========================================
 // 10. SISTEMA DE AGENDAMENTO
+// ==========================================
+async function enviarAvaliacao() {
+    // 1. Captura os dados usando os IDs corretos do seu HTML
+    const produto = document.getElementById('modal-nome').innerText;
+    const cliente = document.getElementById('nome-cliente')?.value || localStorage.getItem("usuarioLogado") || "Cliente";
+    const nota = document.getElementById('av-nota')?.value || "5";
+    const comentario = document.getElementById('av-comentario')?.value;
+
+    if(!comentario || comentario.trim() === "") {
+        return alert("Por favor, escreva seu comentário antes de publicar. 🌸");
+    }
+
+    // 2. Monta o objeto no formato que o seu Script da Planilha espera (POST)
+    const dadosVenda = {
+        aba: "Avaliacoes", 
+        payload: {
+            "Produto": produto,
+            "Cliente": cliente,
+            "Nota": nota,
+            "Comentario": comentario,
+            "Data": new Date().toLocaleDateString('pt-BR')
+        }
+    };
+
+    try {
+        const btn = document.getElementById('btn-enviar-av');
+        if(btn) { btn.innerText = "Publicando... ⏳"; btn.disabled = true; }
+
+        // Envia para a planilha
+        const res = await fetch(URL_PLANILHA, {
+            method: 'POST',
+            body: JSON.stringify(dadosVenda)
+        });
+        
+        const r = await res.json();
+
+        if(r.status === "sucesso") {
+            alert("Avaliação publicada com sucesso! ✨");
+            // Limpa o campo e fecha o modal
+            document.getElementById('av-comentario').value = "";
+            fecharModal();
+            // Opcional: recarregar os depoimentos na tela
+            carregarDepoimentosNoModal(produto);
+        }
+    } catch (e) {
+        console.error("Erro ao publicar:", e);
+        alert("Erro de conexão. Verifique se você está logada.");
+    } finally {
+        const btn = document.getElementById('btn-enviar-av');
+        if(btn) { btn.innerText = "Publicar Avaliação"; btn.disabled = false; }
+    }
+}
+// ==========================================
+// 11. SISTEMA DE AGENDAMENTO
 // ==========================================
 function enviarAgendamento() {
     // Captura os valores dos campos do formulário
