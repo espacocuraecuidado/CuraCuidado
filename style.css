@@ -121,18 +121,20 @@ header {
     background: #d69ea2; /* Um tom de rosa levemente mais escuro */
 }
 
+/* --- CARD REDUZIDO --- */
 .card-produto { 
-    min-width: 280px; 
-    background: var(--card-bg); /* Mudado de white para variável */
-    border-radius: 15px; 
-    padding: 25px;
+    min-width: 150px; 
+    max-width: 180px; /* Evita que o card cresça demais em telas médias */
+    background: var(--card-bg); 
+    border-radius: 12px; 
+    padding: 12px; /* Reduzido de 15px */
     border: 1px solid var(--rosa-claro); 
     text-align: center; 
     scroll-snap-align: start;
     box-shadow: 0 4px 6px rgba(0,0,0,0.02);
     color: var(--texto);
 }
-.card-produto img { width: 100%; border-radius: 10px; margin-bottom: 10px; }
+
 
 /* --- SIDEBARS (CARRINHO E MENU) --- */
 .sidebar {
@@ -459,4 +461,66 @@ input, select, textarea {
 @keyframes brilhoBarra {
     0% { left: -100%; }
     100% { left: 100%; }
+}
+/* --- CONTAINER DA FOTO AJUSTADO --- */
+.container-foto {
+    position: relative;
+    width: 100%;
+    height: 160px; /* Ajustado para melhor proporção com 150px de largura */
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background-color: var(--input-bg);
+}
+
+.container-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Faz a foto preencher o espaço sem distorcer */
+   transition: opacity 0.5s ease-in-out, transform 0.5s ease;
+}
+/* Efeito extra: Zoom suave ao passar o mouse */
+.card-produto:hover .container-foto img {
+    transform: scale(1.05);
+}
+
+/* A segunda foto fica por cima da primeira, mas invisível */
+.img-hover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+}
+
+/* Quando o mouse entra no card, troca a opacidade */
+.card-produto:hover .img-principal {
+    opacity: 0;
+}
+
+.card-produto:hover .img-hover {
+    opacity: 1;
+}
+/* --- TEXTOS E BOTÕES COMPACTOS --- */
+.card-produto h3 {
+    font-size: 0.85rem; /* Um pouco menor para não quebrar tantas linhas */
+    margin: 8px 0 4px 0;
+    line-height: 1.2;
+    height: 2.4em; /* Garante que títulos de 2 linhas fiquem alinhados */
+    overflow: hidden;
+}
+
+.card-produto p {
+    font-size: 0.8rem; 
+    margin: 4px 0;
+}
+/* Botões menores dentro da vitrine */
+.card-produto .btn-block {
+    padding: 8px; /* Menor que o padrão de 15px */
+    font-size: 0.8rem;
+    border-radius: 6px;
+}
+
+.card-produto .btn-secondary {
+    font-size: 0.7rem !important;
+    padding: 6px !important;
 }
