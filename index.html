@@ -206,14 +206,14 @@
         <section id="page-agendamento" class="page">
             <div class="form-container">
                 <h2>Agendar Atendimento</h2>
-                <form id="form-agendamento">
-                    <input type="text" id="ag-nome" placeholder="Nome Completo" required>
-                    <input type="tel" id="ag-tel" placeholder="WhatsApp (DDD)" required>
-                    <input type="date" id="ag-data" required>
-                    <input type="time" id="ag-hora" required>
-                    <input type="text" id="ag-end" placeholder="Endereço Completo">
-                    <button type="submit" class="btn-block">Confirmar e falar no WhatsApp</button>
-                </form>
+                <form id="form-agendamento" onsubmit="event.preventDefault();" class="form-scroll-ajuste">
+    <input type="text" id="ag-nome" placeholder="Nome Completo" required>
+    <input type="tel" id="ag-tel" placeholder="WhatsApp (DDD)" required>
+    <input type="date" id="ag-data" required>
+    <input type="time" id="ag-hora" required>
+    <input type="text" id="ag-end" placeholder="Endereço Completo">
+    <button type="button" class="btn-block" onclick="enviarAgendamento()">Confirmar e falar no WhatsApp</button>
+</form>
             </div>
         </section>
 

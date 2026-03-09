@@ -562,3 +562,33 @@ async function carregarDepoimentosNoModal(nomeProduto) {
         container.innerHTML = "<small style='color:red;'>Nenhum depoimento encontrado.</small>";
     }
 }
+// ==========================================
+// 10. SISTEMA DE AGENDAMENTO
+// ==========================================
+function enviarAgendamento() {
+    // Captura os valores dos campos do formulário
+    const nome = document.getElementById('ag-nome').value;
+    const tel = document.getElementById('ag-tel').value;
+    const data = document.getElementById('ag-data').value;
+    const hora = document.getElementById('ag-hora').value;
+    const endereco = document.getElementById('ag-end').value;
+
+    // Validação básica
+    if (!nome || !tel || !data || !hora) {
+        alert("Por favor, preencha os campos obrigatórios (Nome, Telefone, Data e Hora). 🌸");
+        return;
+    }
+
+    // Formata a mensagem para o WhatsApp
+    const mensagem = `*Novo Agendamento - Espaço Cura* 🌸\n\n` +
+                     `*Nome:* ${nome}\n` +
+                     `*WhatsApp:* ${tel}\n` +
+                     `*Data:* ${data}\n` +
+                     `*Hora:* ${hora}\n` +
+                     `*Endereço:* ${endereco || "Não informado"}`;
+
+    const urlZap = `https://wa.me/5585991561497?text=${encodeURIComponent(mensagem)}`;
+
+    // Abre o WhatsApp em uma nova aba
+    window.open(urlZap, '_blank');
+}

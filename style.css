@@ -586,3 +586,24 @@ input, select, textarea {
     background: #f9f9f9;
     border-radius: 10px;
 }
+.form-scroll-ajuste {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 30px; /* Dá espaço para o teclado não cobrir o botão */
+}
+
+.form-scroll-ajuste input {
+    width: 100%;
+    height: 45px; /* Altura ideal para o dedo no celular */
+    font-size: 16px !important; /* Impede o zoom forçado no iPhone */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+/* Ajuste para o Modal que contém esse formulário */
+#modal-produto, #page-agendamento {
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; /* Rolagem suave no iPhone */
+}
