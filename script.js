@@ -1,5 +1,5 @@
 // 0. INICIALIZAÇÃO E VARIÁVEIS GLOBAIS
-const URL_PLANILHA = "https://script.google.com/macros/s/AKfycbyN0Uzj2HrDrP_oHM7RGsdXK_iJ54HnHIbdFJq3V9BMEj4wo6acRabBP9iB0J2gIivG/exec";
+const URL_PLANILHA = "https://script.google.com/macros/s/AKfycbyYzf2_AkOI9CDpozsUnU2dxlog5ZPsdEsmq2_CyCU6nebMBp4zzIcx_t7BkEbX3-d6/exec";
 window.carrinho = JSON.parse(localStorage.getItem('cura_carrinho')) || [];
 let descontoAtivo = 0;
 
@@ -689,6 +689,71 @@ async function enviarAvaliacao() {
     } finally {
         const btn = document.getElementById('btn-enviar-av');
         if(btn) { btn.innerText = "Publicar Avaliação"; btn.disabled = false; }
+    }
+}
+
+async function finalizarAgendamentoComAgenda() {
+    const nome = document.getElementById('ag-nome').value;
+    const tel = document.getElementById('ag-tel').value;
+    const dataHoraInicio = document.getElementById('ag-horario-selecionado').value; 
+    const endereco = document.getElementById('ag-end').value || "Não informado";
+
+    if (!nome || !tel || !dataHoraInicio) {
+        return alert("Preencha os campos obrigatórios (Nome, Telefone e Horário). 🌸");
+    }
+
+    // Cálculo do fim (Exatamente 4 horas depois)
+    let inicio = new Date(dataHoraInicio);
+    let fim = new Date(inicio.getTime() + (4 * 60 * 60 * 1000));
+    
+    // Montagem do objeto EXATO que o seu Google Script espera
+    const dadosParaEnvio = {
+        acao: "criarEventoAgenda", 
+        payload: {
+            "cliente": nome,
+            "telefone": tel,
+            "start": inicio.toISOString(), // Envia em formato ISO para o Google Agenda
+            "end": fim.toISOString(),
+            "endereco": endereco
+        }
+    };
+
+    try {
+        // Mostra um aviso de carregamento
+        const btn = document.querySelector('button[onclick="finalizarAgendamentoComAgenda()"]');
+        if(btn) { btn.innerText = "Agendando... ⏳"; btn.disabled = true; }
+
+        const res = await fetch(URL_PLANILHA, {
+            method: 'POST',
+            body: JSON.stringify(dadosParaEnvio)
+        });
+        
+        const r = await res.json();
+
+        if (r.status === "sucesso") {
+            alert("Agendamento confirmado na agenda e na planilha! ✨");
+            
+            // Abre o WhatsApp para o toque final
+            const mensagem = `*Novo Agendamento Confirmado* 🌸\n\n` +
+                             `*Cliente:* ${nome}\n` +
+                             `*Início:* ${inicio.toLocaleString('pt-BR')}\n` +
+                             `*Fim:* ${fim.toLocaleString('pt-BR')}\n` +
+                             `*Endereço:* ${endereco}`;
+                             
+            window.open(`https://wa.me/5585991561497?text=${encodeURIComponent(mensagem)}`, '_blank');
+            
+            // Limpa o formulário ou redireciona
+            document.getElementById('form-agendamento').reset();
+            showPage('home');
+        } else {
+            throw new Error(r.log || "Erro desconhecido");
+        }
+    } catch (e) {
+        console.error("Erro no agendamento:", e);
+        alert("Houve um problema ao salvar na agenda, mas você pode finalizar pelo WhatsApp.");
+    } finally {
+        const btn = document.querySelector('button[onclick="finalizarAgendamentoComAgenda()"]');
+        if(btn) { btn.innerText = "Confirmar Agendamento ✨"; btn.disabled = false; }
     }
 }
 // ==========================================
