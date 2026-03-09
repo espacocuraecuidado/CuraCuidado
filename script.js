@@ -50,41 +50,62 @@ async function carregarProdutos() {
     try {
         const res = await fetch(URL_PLANILHA + '?acao=listarProdutos');
         const produtos = await res.json();
-        const vitrine = document.getElementById('vitrine-produtos');
-        if (!vitrine) return;
         
-      // Localize dentro de vitrine.innerHTML = produtos.map(p => { ...
-vitrine.innerHTML = produtos.map(p => {
-    const precoExibicao = p.Valor || p.Preco || 0;
-    
-    // NOVIDADE: Lógica para múltiplas fotos
-    const fotos = p.Imagem ? p.Imagem.split(',') : ['https://via.placeholder.com/150'];
-    const foto1 = fotos[0].trim();
-    const foto2 = fotos[1] ? fotos[1].trim() : foto1; // Se não houver 2ª foto, usa a 1ª
+        // Limpa as vitrines antes de carregar (evita duplicar ao atualizar)
+        const vits = ['vitrine-produtos', 'vitrine-bebe', 'vitrine-mamae', 'vitrine-noticias', 'vitrine-depoimentos'];
+        vits.forEach(id => { 
+            const el = document.getElementById(id);
+            if(el) el.innerHTML = ''; 
+        });
 
-    return `
-    <div class="card-produto">
-        <div class="container-foto">
-            <img src="${foto1}" class="img-principal" alt="${p.Nome}">
-            <img src="${foto2}" class="img-hover" alt="${p.Nome}">
-        </div>
-        
-        <h3>${p.Nome}</h3>
-        <p><strong>R$ ${Number(precoExibicao).toFixed(2)}</strong></p>
-        <p><small>Estoque: ${p.Estoque || 0}</small></p>
-        <input type="number" id="qtd-${p.Nome}" value="1" min="1" style="width:60px; margin-bottom: 5px;">
-        
-        <button class="btn-block" onclick="addCarrinho('${p.Nome}', ${precoExibicao}, ${p.Estoque})">Adicionar</button>
-        <button class="btn-secondary" style="width:100%; margin-top:5px; font-size: 0.8em; padding: 8px;" 
-                onclick="abrirModalDetalhes('${p.Nome}', '${precoExibicao}', '${p.Descricao || 'Sem descrição disponível.'}', '${foto1}', ${p.Estoque})">
-            Ver Detalhes
-        </button>
-    </div>
-`;}).join('');
-        console.log("Vitrine carregada com sucesso! 🌸");
+        produtos.forEach(p => {
+            const precoExibicao = p.Valor || p.Preco || 0;
+            const fotos = p.Imagem ? p.Imagem.split(',') : ['https://via.placeholder.com/150'];
+            const foto1 = fotos[0].trim();
+            const foto2 = fotos[1] ? fotos[1].trim() : foto1;
+            
+            // Pega a categoria da planilha (supondo que a coluna se chame 'Categoria')
+            const categoria = p.Categoria ? p.Categoria.toLowerCase().trim() : 'geral';
+
+            // Define em qual ID de vitrine o produto vai entrar
+            let idAlvo = 'vitrine-produtos'; // Padrão
+            if (categoria === 'bebe') idAlvo = 'vitrine-bebe';
+            else if (categoria === 'mamae') idAlvo = 'vitrine-mamae';
+            else if (categoria === 'noticia') idAlvo = 'vitrine-noticias';
+            else if (categoria === 'depoimento') idAlvo = 'vitrine-depoimentos';
+
+            const vitrineDestino = document.getElementById(idAlvo);
+            if (!vitrineDestino) return;
+
+            // Lógica especial para "Notícias" ou "Depoimentos" (remover botões de compra se quiser)
+            const botoesCompra = (categoria === 'noticia' || categoria === 'depoimento') ? '' : `
+                <input type="number" id="qtd-${p.Nome}" value="1" min="1" style="width:60px; margin-bottom: 5px;">
+                <button class="btn-block" onclick="addCarrinho('${p.Nome}', ${precoExibicao}, ${p.Estoque})">Adicionar</button>
+            `;
+
+            const htmlCard = `
+                <div class="card-produto">
+                    <div class="container-foto">
+                        <img src="${foto1}" class="img-principal" alt="${p.Nome}">
+                        <img src="${foto2}" class="img-hover" alt="${p.Nome}">
+                    </div>
+                    <h3>${p.Nome}</h3>
+                    <p><strong>${categoria === 'noticia' ? '' : 'R$ ' + Number(precoExibicao).toFixed(2)}</strong></p>
+                    ${categoria === 'noticia' ? `<p style="font-size:0.85em; color:var(--texto-suave)">${p.Descricao || ''}</p>` : ''}
+                    ${botoesCompra}
+                    <button class="btn-secondary" style="width:100%; margin-top:5px; font-size: 0.8em; padding: 8px;" 
+                            onclick="abrirModalDetalhes('${p.Nome}', '${precoExibicao}', '${p.Descricao || 'Sem descrição.'}', '${foto1}', ${p.Estoque})">
+                        Ver Detalhes
+                    </button>
+                </div>
+            `;
+            
+            vitrineDestino.innerHTML += htmlCard;
+        });
+
+        console.log("Vitrines categorizadas com sucesso! 🌸");
     } catch (e) { 
         console.error("Erro ao carregar produtos:", e); 
-        document.getElementById('vitrine-produtos').innerHTML = "<p>Erro ao conectar com a base de dados. Por favor, nos desculpe.</p>";
     }
 }
 
