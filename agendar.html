@@ -122,25 +122,17 @@
         btn.disabled = true;
         btn.innerText = "Processando... 🌸";
 
-        // Preparar data legível (DD/MM/AAAA)
-// Substitua as linhas de formatação por estas:
-const partesData = horarioSelecionado.data.split("T")[0].split("-");
-// Corrigido: partesData[1] em vez de partesPartes[1]
-const dataParaPlanilha = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
-
-const horaParaPlanilha = horarioSelecionado.hora.split("T")[1].substring(0, 5);
-
-const payload = {
-    acao: "agendar",
-    aba: "Agendamentos",
-    payload: {
-        "DataAgenda": dataParaPlanilha,
-        "Hour": horaParaPlanilha,
-        "Cliente": cliente,
-        "Telefone": telefone,
-        "Status": "Ocupado"
-    }
-};
+        const payload = {
+            acao: "agendar", // Adicionado para seu Script saber o que fazer
+            aba: "Agendamentos",
+            payload: {
+                "DataAgenda": horarioSelecionado.data,
+                "Hour": horarioSelecionado.hora,
+                "Cliente": cliente,
+                "Telefone": telefone,
+                "Status": "Ocupado"
+            }
+        };
 
         try {
             // No Google Apps Script, o POST precisa ser enviado como texto
