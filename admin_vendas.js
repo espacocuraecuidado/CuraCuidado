@@ -430,14 +430,21 @@ async function liberarHorarioNoSite() {
     const dataFormatada = dataInput.split('-').reverse().join('/');
 
     const payload = {
-        aba: "Agendamentos",
-        payload: {
-            "Data": new Date().toLocaleDateString('pt-BR'),
-            "DataAgenda": dataFormatada,
-            "Hour": horaInput,
-            "Status": "Disponível"
-        }
-    };
+    aba: "Agendamentos",
+    payload: {
+        "ID": Date.now(), // Gera um número único baseado no tempo (Coluna A)
+        "Data Registro": new Date().toLocaleDateString('pt-BR'), // Data de hoje (Coluna B)
+        "Nome": valorDoInputNome,        // (Coluna C)
+        "Servico": valorDoInputServico,    // (Coluna D)
+        "Profissional": valorDoInputProf, // (Coluna E)
+        "Valor": valorDoInputPreco,      // (Coluna F)
+        "DataAgenda": valorDoInputData,  // (Coluna G)
+        "Hour": valorDoInputHora,        // (Coluna H)
+        "Status": "Disponível",          // (Coluna I)
+        "Cliente": "",                   // (Coluna J - Vazio no Admin)
+        "Telefone": ""                   // (Coluna K - Vazio no Admin)
+    }
+};
 
     try {
         // Certifique-se que a variável da URL da API é a mesma que você já usa no admin_vendas.js
