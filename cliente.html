@@ -33,7 +33,11 @@
 
     <div class="dash-grid">
         <button class="dash-btn" onclick="mostrarSecao('pedidos')"><i>📦</i> Meus Pedidos</button>
-        <button class="dash-btn" onclick="mostrarSecao('dados')"><i>👤</i> Meus Dados</button>
+        <button class="dash-btn" onclick="mostrarSecao('agenda')"><i>📅</i> Minha Agenda</button> <button class="dash-btn" onclick="mostrarSecao('dados')"><i>👤</i> Meus Dados</button>
+        <button onclick="window.location.href='agendar.html'" 
+            style="width: 100%; margin-bottom: 25px; padding: 15px; background: #e8b4b8; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(232, 180, 184, 0.3); font-family: 'Segoe UI', sans-serif;">
+        ✨ Agendar Novo Atendimento
+    </button>
     </div>
 
     <div id="secao-pedidos">
@@ -42,7 +46,12 @@
             <p style="text-align:center;">Carregando pedidos... ⏳</p>
         </div>
     </div>
-
+    <div id="secao-agenda" style="display: none;">
+        <h3 style="color: #555;">Meus Agendamentos 🌸</h3>
+        <div id="lista-agendamentos">
+            <p style="text-align:center;">Carregando sua agenda... ⏳</p>
+        </div>
+    </div>
     <div id="secao-dados" style="display: none;">
         <h3 style="color: #555;">Seus Dados de Entrega</h3>
         <div class="form-container" style="background: white; padding: 20px; border-radius: 12px;">
@@ -58,12 +67,12 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbwn7JIBHox0h7jM6dad9gyuhl6ApCQQ6yy8is0OkViToKmD6T6wwVLE7LTVh42XBrcE/exec"; // MESMA URL DO LOGIN
+    const URL_API = "https://script.google.com/macros/s/AKfycbwn7JIBHox0h7jM6dad9gyuhl6ApCQQ6yy8is0OkViToKmD6T6wwVLE7LTVh42XBrcE/exec"; 
 
     window.onload = () => {
         const user = localStorage.getItem("usuarioLogado");
         if (!user) {
-            window.location.href = "login.html"; // Se não logou, vai pro login
+            window.location.href = "login.html"; 
             return;
         }
         document.getElementById("nomeUsuario").innerText = `Olá, ${user} 🌸`;
@@ -72,23 +81,32 @@
         document.getElementById("c-end").value = localStorage.getItem("end_cliente") || "";
         document.getElementById("c-tel").value = localStorage.getItem("tel_cliente") || "";
 
+        // Carrega as duas frentes de dados
         carregarPedidos(user);
+        carregarAgendamentos(user);
     };
 
+    // 1. CARREGAR PEDIDOS DE PRODUTOS
     async function carregarPedidos(cliente) {
         const container = document.getElementById("lista-pedidos");
         try {
-            const res = await fetch(`${URL_API}?acao=listarPedidos&cliente=${encodeURIComponent(cliente)}`);
-            const dados = await res.json();
+            // Chamamos 'listarVendas' que é o nome da ação no seu Script Central
+            const res = await fetch(`${URL_API}?acao=listarVendas`);
+            const todosOsDados = await res.json();
 
-            if (dados.length === 0) {
+            // Filtramos aqui no navegador para garantir que só apareçam os do cliente logado
+            const meusPedidos = todosOsDados.filter(p => 
+                p.Cliente && String(p.Cliente).toLowerCase() === String(cliente).toLowerCase()
+            );
+
+            if (meusPedidos.length === 0) {
                 container.innerHTML = "<p style='text-align:center;'>Nenhum pedido encontrado. 🛒</p>";
                 return;
             }
 
-            container.innerHTML = dados.map(p => `
+            container.innerHTML = meusPedidos.map(p => `
                 <div class="pedido-card">
-                    <span class="status-badge ${p.Status_Pagamento === 'Pago' ? 'pago' : 'pendente'}">
+                    <span class="status-badge ${p.Status_Pagamento === 'Pagamento Realizado' ? 'pago' : 'pendente'}">
                         ${p.Status_Pagamento || 'Pendente'}
                     </span>
                     <strong>ID: ${p["ID Pedido"] || '---'}</strong><br>
@@ -98,15 +116,49 @@
                 </div>
             `).join('');
         } catch (e) {
-            container.innerHTML = "<p>Erro ao carregar. Verifique a conexão.</p>";
+            container.innerHTML = "<p style='text-align:center;'>Erro ao carregar pedidos. Verifique sua conexão.</p>";
         }
     }
 
+    // 2. CARREGAR AGENDAMENTOS DE SERVIÇOS
+    async function carregarAgendamentos(cliente) {
+        const container = document.getElementById("lista-agendamentos");
+        try {
+            const res = await fetch(`${URL_API}?acao=listarAgendamentos`);
+            const dados = await res.json();
+
+            // Filtra: Tem que estar Ocupado e ser deste Cliente
+            const minhaAgenda = dados.filter(a => 
+                a.Status === "Ocupado" && 
+                a.Cliente && String(a.Cliente).toLowerCase() === String(cliente).toLowerCase()
+            );
+
+            if (minhaAgenda.length === 0) {
+                container.innerHTML = "<p style='text-align:center;'>Você não possui agendamentos. 📅</p>";
+                return;
+            }
+
+            container.innerHTML = minhaAgenda.map(a => `
+                <div class="pedido-card" style="border-left-color: #e8b4b8;">
+                    <span class="status-badge pago">Confirmado</span>
+                    <strong>📅 ${a.DataAgenda} às ${a.Hour}</strong><br>
+                    <p style="margin-top:5px;"><strong>Serviço:</strong> Atendimento Cura e Cuidado</p>
+                    <p><strong>Local:</strong> ${a.Endereco || 'A combinar'}</p>
+                </div>
+            `).join('');
+        } catch (e) {
+            container.innerHTML = "<p style='text-align:center;'>Erro ao carregar agenda.</p>";
+        }
+    }
+
+    // 3. ALTERNAR ABAS
     function mostrarSecao(secao) {
         document.getElementById("secao-pedidos").style.display = secao === 'pedidos' ? 'block' : 'none';
+        document.getElementById("secao-agenda").style.display = secao === 'agenda' ? 'block' : 'none';
         document.getElementById("secao-dados").style.display = secao === 'dados' ? 'block' : 'none';
     }
 
+    // 4. SALVAR DADOS DE ENTREGA
     function salvarLocalmente() {
         localStorage.setItem("end_cliente", document.getElementById("c-end").value);
         localStorage.setItem("tel_cliente", document.getElementById("c-tel").value);

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Atendimento - Cura & Cuidado</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { background-color: #fdf6f0; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .agendar-container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .titulo { color: #d4a373; text-align: center; margin-bottom: 20px; }
+        
+        .grid-horarios { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        .btn-horario { 
+            padding: 12px; border: 2px solid #e8b4b8; background: white; color: #d69ea2; 
+            border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .btn-horario.selected { background: #e8b4b8; color: white; }
+        .btn-horario:disabled { border-color: #eee; color: #ccc; cursor: not-allowed; }
+
+        .btn-confirmar { 
+            width: 100%; margin-top: 25px; padding: 15px; background: #25d366; 
+            color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="agendar-container">
+    <h2 class="titulo">Escolha seu Horário 🌸</h2>
+    <p style="text-align: center; font-size: 0.9em; color: #888;">Selecione uma das opções abaixo para realizar seu agendamento.</p>
+
+    <div id="lista-horarios" class="grid-horarios">
+        <p style="grid-column: span 2; text-align: center;">Buscando horários disponíveis... ⏳</p>
+    </div>
+
+    <button id="btnConfirmar" class="btn-confirmar" style="display: none;" onclick="finalizarAgendamento()">
+        Confirmar Agendamento ✨
+    </button>
+    
+    <a href="cliente.html" style="display: block; text-align: center; margin-top: 15px; color: #999; text-decoration: none;">Voltar para minha conta</a>
+</div>
+
+<script>
+    const URL_API = "SUA_URL_DO_GOOGLE_SCRIPT_AQUI"; // Use a mesma URL do cliente.html
+    let horarioSelecionado = null;
+
+    window.onload = () => {
+        if (!localStorage.getItem("usuarioLogado")) {
+            window.location.href = "login.html";
+            return;
+        }
+        carregarHorarios();
+    };
+
+    async function carregarHorarios() {
+        const container = document.getElementById("lista-horarios");
+        try {
+            const res = await fetch(`${URL_API}?acao=listarAgendamentos`);
+            const dados = await res.json();
+            
+            // Filtra apenas o que você marcou como "Disponível" no Admin
+            const disponiveis = dados.filter(h => h.Status === "Disponível");
+
+            if (disponiveis.length === 0) {
+                container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Não há horários disponíveis para esta semana. 🌸</p>";
+                return;
+            }
+
+            container.innerHTML = disponiveis.map(h => `
+                <button class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
+                    ${h.DataAgenda}<br>${h.Hour}
+                </button>
+            `).join('');
+        } catch (e) {
+            container.innerHTML = "<p>Erro ao carregar. Tente novamente.</p>";
+        }
+    }
+
+    function selecionar(btn, data, hora) {
+        // Remove seleção visual dos outros
+        document.querySelectorAll('.btn-horario').forEach(b => b.classList.remove('selected'));
+        // Marca o atual
+        btn.classList.add('selected');
+        // Guarda os dados
+        horarioSelecionado = { data, hora };
+        document.getElementById("btnConfirmar").style.display = "block";
+    }
+
+    async function finalizarAgendamento() {
+        const btn = document.getElementById("btnConfirmar");
+        const cliente = localStorage.getItem("usuarioLogado");
+        const telefone = localStorage.getItem("tel_cliente") || "Não informado";
+
+        btn.disabled = true;
+        btn.innerText = "Processando... 🌸";
+
+        const payload = {
+            aba: "Agendamentos",
+            payload: {
+                "DataAgenda": horarioSelecionado.data,
+                "Hour": horarioSelecionado.hora,
+                "Cliente": cliente,
+                "Telefone": telefone,
+                "Status": "Ocupado"
+            }
+        };
+
+        try {
+            const res = await fetch(URL_API, { method: 'POST', body: JSON.stringify(payload) });
+            const r = await res.json();
+            
+            if (r.status === "sucesso") {
+                alert("Agendamento realizado com sucesso! Esperamos por você. ✨");
+                window.location.href = "cliente.html"; // Volta para a conta para ele ver o agendamento lá
+            }
+        } catch (e) {
+            alert("Erro ao confirmar. Tente novamente.");
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
