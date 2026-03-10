@@ -760,31 +760,34 @@ async function enviarAvaliacao() {
 async function finalizarAgendamentoComAgenda() {
     const nome = document.getElementById('ag-nome').value;
     const tel = document.getElementById('ag-tel').value;
-    const dataHoraInicio = document.getElementById('ag-horario-selecionado').value; 
+    const horarioISO = document.getElementById('ag-horario-selecionado').value; // Ex: 2026-02-26T08:00
     const endereco = document.getElementById('ag-end').value || "Não informado";
 
-    if (!nome || !tel || !dataHoraInicio) {
-        return alert("Preencha os campos obrigatórios (Nome, Telefone e Horário). 🌸");
+    if (!nome || !tel || !horarioISO) {
+        return alert("Preencha os campos obrigatórios. 🌸");
     }
 
-    // Cálculo do fim (Exatamente 4 horas depois)
-    let inicio = new Date(dataHoraInicio);
-    let fim = new Date(inicio.getTime() + (4 * 60 * 60 * 1000));
+    // --- O TRUQUE PARA DAR CERTO SEM MEXER NO GS ---
+    // Em vez de deixar o JS criar um objeto de data que muda o fuso,
+    // vamos garantir que o 'start' e 'end' sejam strings limpas.
     
-    // Montagem do objeto EXATO que o seu Google Script espera
+    const dataInicio = new Date(horarioISO);
+    const dataFim = new Date(dataInicio.getTime() + (4 * 60 * 60 * 1000));
+
     const dadosParaEnvio = {
         acao: "criarEventoAgenda", 
         payload: {
             "cliente": nome,
             "telefone": tel,
-            "start": inicio.toISOString(), // Envia em formato ISO para o Google Agenda
-            "end": fim.toISOString(),
-            "endereco": endereco
+            "endereco": endereco,
+            // Usamos replace para garantir que o formato seja aceito pelo 'new Date()' do GS
+            "start": horarioISO.replace('Z', ''), 
+            "end": dataFim.toISOString().replace('Z', '')
         }
     };
 
     try {
-        // Mostra um aviso de carregamento
+        // ... (seu código de fetch permanece igual)
         const btn = document.querySelector('button[onclick="finalizarAgendamentoComAgenda()"]');
         if(btn) { btn.innerText = "Agendando... ⏳"; btn.disabled = true; }
 
@@ -796,22 +799,20 @@ async function finalizarAgendamentoComAgenda() {
         const r = await res.json();
 
         if (r.status === "sucesso") {
-            alert("Agendamento confirmado na agenda e na planilha! ✨");
+            alert("Agendamento confirmado! ✨");
             
-            // Abre o WhatsApp para o toque final
             const mensagem = `*Novo Agendamento Confirmado* 🌸\n\n` +
                              `*Cliente:* ${nome}\n` +
-                             `*Início:* ${inicio.toLocaleString('pt-BR')}\n` +
-                             `*Fim:* ${fim.toLocaleString('pt-BR')}\n` +
+                             `*Data:* ${dataParte.split('-').reverse().join('/')}\n` +
+                             `*Horário:* ${horaParte}\n` +
                              `*Endereço:* ${endereco}`;
-                             
+                               
             window.open(`https://wa.me/5585991561497?text=${encodeURIComponent(mensagem)}`, '_blank');
             
-            // Limpa o formulário ou redireciona
             document.getElementById('form-agendamento').reset();
-            showPage('home');
+            if(typeof showPage === 'function') showPage('home');
         } else {
-            throw new Error(r.log || "Erro desconhecido");
+            throw new Error(r.log || "Erro ao salvar");
         }
     } catch (e) {
         console.error("Erro no agendamento:", e);
