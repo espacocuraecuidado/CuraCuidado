@@ -12,7 +12,8 @@ function showPage(pageId) {
     if (targetPage) {
         targetPage.classList.add('active');
         // 2. Carrega horários se for a página de agendamento
-        if (pageId === 'agendamento') carregarHorariosDisponiveis();
+        if (pageId === 'agendamento') {
+            carregarHorariosDisponiveis();
         }
     } else {
         console.error("Página não encontrada: page-" + pageId);
@@ -43,38 +44,6 @@ function toggleSidebar(id, force) {
     if (!el) return;
     if (force !== undefined) force ? el.classList.add('active') : el.classList.remove('active');
     else el.classList.toggle('active');
-}
-async function carregarHorariosDisponiveis() {
-    const select = document.getElementById('ag-horario-selecionado');
-    if (!select) return;
-
-    try {
-        // Usamos 'listarAgendamentos' porque seu Google Script já reconhece essa ação
-        const res = await fetch(`${URL_PLANILHA}?acao=listarAgendamentos`);
-        const dados = await res.json();
-        
-        // Filtramos apenas as linhas onde você escreveu "Disponível" na coluna Status
-        const disponiveis = dados.filter(h => h.Status && h.Status.toLowerCase() === 'disponível');
-
-        if (disponiveis.length === 0) {
-            select.innerHTML = '<option value="">Nenhum horário livre na planilha 🌸</option>';
-            return;
-        }
-
-        select.innerHTML = '<option value="">Selecione um horário...</option>' + 
-            disponiveis.map(h => {
-                // Formata a data e hora para o select
-                let dataTexto = h.Data; 
-                // Se a data vier do Google como ISO, limpamos ela:
-                if(dataTexto.includes('T')) dataTexto = dataTexto.split('T')[0].split('-').reverse().join('/');
-                
-                return `<option value="${h.Data.split('T')[0]}T${h.Hora}">${dataTexto} às ${h.Hora}</option>`;
-            }).join('');
-
-    } catch (e) {
-        console.error("Erro ao carregar horários:", e);
-        select.innerHTML = '<option value="">Erro ao conectar com a planilha ❌</option>';
-    }
 }
 
 //darkmode
