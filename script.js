@@ -102,7 +102,6 @@ async function enviarDepoimentoGeral() {
     }
 }
 // 2. CARREGAR VITRINE E SCROLL
-// 2. CARREGAR VITRINE E SCROLL
 async function carregarProdutos() {
     try {
         const res = await fetch(URL_PLANILHA + '?acao=listarProdutos');
@@ -176,6 +175,69 @@ async function carregarProdutos() {
         console.log("Vitrines e Depoimentos carregados! 🌸");
     } catch (e) { 
         console.error("Erro ao carregar produtos:", e); 
+    }
+}
+async function carregarHorariosDisponiveis() {
+    const select = document.getElementById('ag-horario-selecionado');
+    if (!select) return;
+
+    try {
+        select.innerHTML = '<option value="">Buscando horários... ⏳</option>';
+
+        const res = await fetch(`${URL_PLANILHA}?acao=listarAgendamentos`);
+        const dados = await res.json();
+        
+        // 1. FILTRO: Busca pelo Status (Coluna I)
+        const disponiveis = dados.filter(h => {
+            const statusRaw = h.Status || ""; 
+            const statusLimpo = statusRaw.toString().toLowerCase().trim();
+            return statusLimpo === 'disponível' || statusLimpo === 'disponivel';
+        });
+
+        if (disponiveis.length === 0) {
+            select.innerHTML = '<option value="">Nenhum horário livre no momento 🌸</option>';
+            return;
+        }
+
+        select.innerHTML = '<option value="">Selecione um horário...</option>';
+        
+        disponiveis.forEach(h => {
+            // 1. DATA (Coluna G - DataAgenda)
+            let dataOriginal = h.DataAgenda ? h.DataAgenda.toString() : "";
+            let dataExibicao = "";
+            if (dataOriginal.includes('T')) {
+                dataExibicao = dataOriginal.split('T')[0].split('-').reverse().join('/');
+            } else {
+                dataExibicao = dataOriginal.split(' ')[0];
+            }
+
+            // 2. HORA (Coluna H - Hour) - TRATAMENTO ANTI-FUSO HORÁRIO
+            let horaBruta = h.Hour ? h.Hour.toString() : "";
+            let horaLimpa = "";
+
+            if (horaBruta.includes('T')) {
+                // Se o Google enviar o formato ISO, pegamos a parte após o 'T'
+                // e ignoramos qualquer deslocamento de fuso (Z ou -03:00)
+                horaLimpa = horaBruta.split('T')[1].substring(0, 5);
+            } else {
+                // Se vier como string, pegamos os primeiros 5 caracteres (HH:mm)
+                horaLimpa = horaBruta.trim().substring(0, 5);
+            }
+
+            // 3. VALOR PARA O SISTEMA (ISO)
+            let partes = dataExibicao.split('/');
+            let dataISO = `${partes[2]}-${partes[1]}-${partes[0]}`;
+            const valorISO = `${dataISO}T${horaLimpa}`;
+            
+            const option = document.createElement('option');
+            option.value = valorISO;
+            option.textContent = `${dataExibicao} às ${horaLimpa}`;
+            select.appendChild(option);
+        });
+
+    } catch (e) {
+        console.error("Erro ao carregar horários:", e);
+        select.innerHTML = '<option value="">Erro ao conectar com a planilha ❌</option>';
     }
 }
 
@@ -697,8 +759,6 @@ async function enviarAvaliacao() {
 
 async function finalizarAgendamentoComAgenda() {
     const nome = document.getElementById('ag-nome').value;
-    const tel = document.getElementById('ag-tel').value;
-    const dataHoraInicio = document.getElementById('ag-horario-selecionado').value; 
     const endereco = document.getElementById('ag-end').value || "Não informado";
 
     if (!nome || !tel || !dataHoraInicio) {
