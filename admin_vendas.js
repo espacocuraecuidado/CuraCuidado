@@ -164,6 +164,7 @@ function normalizeResponse(data) {
 
 async function carregarDados() {
     console.log("🔄 Sincronizando dados em segundo plano...");
+    atualizarTabelaAgendamentos();
     atualizarIndicadorConexao("buscando");
 
     // REMOVEMOS: A limpeza visual ("Sincronizando...") foi retirada daqui 
