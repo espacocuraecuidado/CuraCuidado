@@ -412,3 +412,78 @@ async function abrirPopUpRastreio(idPedido) {
         alert("Erro ao salvar rastreio.");
     }
 }
+// 1. Função para enviar o novo horário para a planilha
+async function liberarHorarioNoSite() {
+    const dataInput = document.getElementById('adminDataAgenda').value;
+    const horaInput = document.getElementById('adminHoraAgenda').value;
+    const btn = document.getElementById('btnLiberar');
+
+    if (!dataInput || !horaInput) {
+        alert("Selecione data e hora primeiro! 🌸");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Salvando...";
+
+    const dataFormatada = dataInput.split('-').reverse().join('/');
+
+    const payload = {
+        aba: "Agendamentos",
+        payload: {
+            "Data": new Date().toLocaleDateString('pt-BR'),
+            "DataAgenda": dataFormatada,
+            "Hour": horaInput,
+            "Status": "Disponível"
+        }
+    };
+
+    try {
+        // Certifique-se que a variável da URL da API é a mesma que você já usa no admin_vendas.js
+        const response = await fetch(API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify(payload) 
+        });
+        
+        const res = await response.json();
+        if (res.status === "sucesso") {
+            alert("Horário liberado! ✨");
+            document.getElementById('adminHoraAgenda').value = ""; 
+            atualizarTabelaAgendamentos(); // Atualiza a lista abaixo
+        }
+    } catch (error) {
+        alert("Erro ao salvar horário.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "✨ Liberar Horário";
+    }
+}
+
+// 2. Função para mostrar quem agendou
+async function atualizarTabelaAgendamentos() {
+    try {
+        const response = await fetch(API_URL + "?acao=listarAgendamentos");
+        const agendamentos = await response.json();
+        const tbody = document.getElementById('tabelaAgendamentosConfirmados');
+        
+        // Filtra apenas horários que já foram ocupados por clientes
+        const confirmados = agendamentos.filter(a => a.Status === "Ocupado");
+
+        if (confirmados.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center'>Nenhum agendamento confirmado.</td></tr>";
+            return;
+        }
+
+        tbody.innerHTML = confirmados.map(a => `
+            <tr>
+                <td>${a.DataAgenda}</td>
+                <td>${a.Hour}</td>
+                <td>${a.Cliente || '---'}</td>
+                <td>${a.Telefone || '---'}</td>
+                <td><b style="color: #25d366;">Confirmado</b></td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        console.error("Erro agenda:", e);
+    }
+}

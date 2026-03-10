@@ -131,6 +131,43 @@
         </form>
       </section>
 
+        <section class="form-section" style="border-left: 10px solid #d63384;">
+        <h2 style="color: #d63384;">🌸 Gerenciador de Agenda</h2>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">Libere novos horários para as clientes agendarem no site.</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: end;">
+          <div class="form-group">
+            <label>Data do Atendimento</label>
+            <input type="date" id="adminDataAgenda" required />
+          </div>
+          <div class="form-group">
+            <label>Horário</label>
+            <input type="time" id="adminHoraAgenda" required />
+          </div>
+          <button onclick="liberarHorarioNoSite()" id="btnLiberar" style="padding: 12px; background: #d63384; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
+            ✨ Liberar Horário
+          </button>
+        </div>
+
+        <div class="table-wrapper" style="margin-top: 20px; box-shadow: none; border: 1px solid #eee;">
+          <h3 style="padding: 15px; font-size: 1rem; color: #d69ea2; background: #fffcfd;">📅 Próximos Atendimentos Confirmados</h3>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Hora</th>
+                <th>Cliente</th>
+                <th>WhatsApp</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaAgendamentosConfirmados">
+              <tr><td colspan="5" style="text-align:center;">Carregando agenda...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+        
       <section class="table-wrapper">
         <h2 style="padding: 20px 20px 0 20px; color: #d69ea2;">💰 Vendas Recentes</h2>
         <table class="admin-table">
