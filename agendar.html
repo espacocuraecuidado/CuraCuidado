@@ -123,18 +123,19 @@
         btn.innerText = "Processando... 🌸";
 
         // Preparar data legível (DD/MM/AAAA)
+// Substitua as linhas de formatação por estas:
 const partesData = horarioSelecionado.data.split("T")[0].split("-");
-const dataParaPlanilha = `${partesData[2]}/${partesPartes[1]}/${partesData[0]}`;
+// Corrigido: partesData[1] em vez de partesPartes[1]
+const dataParaPlanilha = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
-// Preparar hora legível (HH:MM)
 const horaParaPlanilha = horarioSelecionado.hora.split("T")[1].substring(0, 5);
 
 const payload = {
     acao: "agendar",
     aba: "Agendamentos",
     payload: {
-        "DataAgenda": dataParaPlanilha, // Envia "11/03/2026"
-        "Hour": horaParaPlanilha,       // Envia "15:49"
+        "DataAgenda": dataParaPlanilha,
+        "Hour": horaParaPlanilha,
         "Cliente": cliente,
         "Telefone": telefone,
         "Status": "Ocupado"
