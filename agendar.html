@@ -55,27 +55,43 @@
 
 async function carregarHorarios() {
     const container = document.getElementById("lista-horarios");
+    // Limpa o container e coloca o status de carregando
+    container.innerHTML = "Carregando horários... ⏳";
+
     try {
+        console.log("Tentando conectar com:", URL_API); // Verificação no F12
         const res = await fetch(`${URL_API}?acao=listarAgendamentos`);
-        const dados = await res.json();
         
-        // Agora o Status está na Coluna I, o código vai achar o "Disponível" lá
+        if (!res.ok) throw new Error("Erro na resposta do servidor");
+
+        const dados = await res.json();
+        console.log("Dados recebidos:", dados);
+
         const disponiveis = dados.filter(h => 
             h.Status && String(h.Status).trim() === "Disponível"
         );
 
         if (disponiveis.length === 0) {
-            container.innerHTML = "<p style='text-align: center;'>Sem horários disponíveis. 🌸</p>";
+            container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Sem horários para agendar no momento. 🌸</p>";
             return;
         }
 
-        container.innerHTML = disponiveis.map(h => `
+        // Desenha os botões
+        const botoesHTML = disponiveis.map(h => `
             <button class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
                 ${h.DataAgenda}<br>${h.Hour}
             </button>
         `).join('');
+
+        // Aplica os botões e remove a mensagem de erro
+        container.innerHTML = botoesHTML;
+
     } catch (e) {
-        container.innerHTML = "<p>Erro ao carregar. Verifique a conexão.</p>";
+        console.error("Erro detalhado:", e);
+        // Só mostra o erro se o container ainda estiver vazio ou com o "Carregando"
+        if (container.innerHTML.includes("Carregando")) {
+            container.innerHTML = "<p>Erro ao carregar. Verifique a conexão.</p>";
+        }
     }
 }
 
