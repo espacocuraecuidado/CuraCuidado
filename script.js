@@ -19,6 +19,18 @@ function showPage(pageId) {
     toggleSidebar('menu-sidebar', false); 
     window.scrollTo(0, 0);
 }
+    // 3. FECHA O MENU (Ajustado para o ID padrão do seu sidebar)
+    toggleSidebar('menu-sidebar', false); 
+    
+    // 4. Volta ao topo da página
+    window.scrollTo(0, 0);
+}
+    // Certifique-se de que o ID 'menu-sidebar' é o mesmo do seu HTML
+    toggleSidebar('menu-sidebar', false); 
+    
+    window.scrollTo(0, 0);
+
+} 
 
 function toggleSidebar(id, force) {
     const el = document.getElementById(id);
@@ -199,6 +211,7 @@ async function enviarDepoimentoGeral() {
         btn.disabled = false;
     }
 }
+// 2. CARREGAR VITRINE E SCROLL
 // 2. CARREGAR VITRINE E SCROLL
 async function carregarProdutos() {
     try {
@@ -696,8 +709,7 @@ window.addEventListener('load', () => {
         sidebar.addEventListener('mouseleave', () => sidebar.classList.remove('active'));
     });
 
-    carregarProdutos();
-    if (typeof configurarScrollExtremidades === "function") configurarScrollExtremidades();
+    carregarProdutos().then(() => { configurarScrollExtremidades(); });
     renderCarrinho();   
 });
 // ==========================================
@@ -735,60 +747,64 @@ async function carregarDepoimentosNoModal(nomeProduto) {
         }
     } catch (e) {
         console.error("Erro ao carregar depoimentos:", e);
-        container.innerHTML = "<small style='color:#999;'>Ainda não há avaliações para este item. 🌸</small>";
+        container.innerHTML = "<small style='color:red;'>Nenhum depoimento encontrado.</small>";
     }
 }
 // ==========================================
 // 10. SISTEMA DE AGENDAMENTO
 // ==========================================
 async function enviarAvaliacao() {
-    const nomeProduto = document.getElementById('modal-nome').innerText;
-    const nota = document.getElementById('av-nota').value;
-    const comentario = document.getElementById('av-comentario').value;
-    const cliente = localStorage.getItem("usuarioLogado") || "Visitante";
+    // 1. Captura os dados usando os IDs corretos do seu HTML
+    const produto = document.getElementById('modal-nome').innerText;
+    const cliente = document.getElementById('nome-cliente')?.value || localStorage.getItem("usuarioLogado") || "Cliente";
+    const nota = document.getElementById('av-nota')?.value || "5";
+    const comentario = document.getElementById('av-comentario')?.value;
 
-    if (!comentario || comentario.trim() === "") {
-        return alert("Por favor, escreva um pequeno comentário sobre o produto. 🌸");
+    if(!comentario || comentario.trim() === "") {
+        return alert("Por favor, escreva seu comentário antes de publicar. 🌸");
     }
 
-    const btn = document.getElementById('btn-enviar-av');
-    btn.innerText = "Publicando... ⏳";
-    btn.disabled = true;
-
-    // Objeto exato que o seu Google Script espera (Aba e Payload)
-    const dados = {
-        aba: "Avaliacoes",
+    // 2. Monta o objeto no formato que o seu Script da Planilha espera (POST)
+    const dadosVenda = {
+        aba: "Avaliacoes", 
         payload: {
-            "Data": new Date().toLocaleString('pt-BR'),
-            "Produto": nomeProduto,
+            "Produto": produto,
             "Cliente": cliente,
             "Nota": nota,
-            "Comentario": comentario
+            "Comentario": comentario,
+            "Data": new Date().toLocaleDateString('pt-BR')
         }
     };
 
     try {
+        const btn = document.getElementById('btn-enviar-av');
+        if(btn) { btn.innerText = "Publicando... ⏳"; btn.disabled = true; }
+
+        // Envia para a planilha
         const res = await fetch(URL_PLANILHA, {
             method: 'POST',
-            body: JSON.stringify(dados)
+            body: JSON.stringify(dadosVenda)
         });
-
+        
         const r = await res.json();
 
-        if (r.status === "sucesso") {
-            alert("Obrigada! Sua avaliação foi publicada com sucesso. ✨");
-            document.getElementById('av-comentario').value = ""; // Limpa o campo
-            carregarDepoimentosNoModal(nomeProduto); // Atualiza a lista no modal
-        } else {
-            throw new Error(r.mensagem);
+        if(r.status === "sucesso") {
+            alert("Avaliação publicada com sucesso! ✨");
+            // Limpa o campo e fecha o modal
+            document.getElementById('av-comentario').value = "";
+            fecharModal();
+            // Opcional: recarregar os depoimentos na tela
+            carregarDepoimentosNoModal(produto);
         }
     } catch (e) {
-        console.error("Erro ao enviar avaliação:", e);
-        alert("Não conseguimos salvar sua avaliação agora, mas ela é muito importante para nós! 🌸");
+        console.error("Erro ao publicar:", e);
+        alert("Erro de conexão. Verifique se você está logada.");
     } finally {
-        btn.innerText = "Publicar Avaliação";
-        btn.disabled = false;
+        const btn = document.getElementById('btn-enviar-av');
+        if(btn) { btn.innerText = "Publicar Avaliação"; btn.disabled = false; }
     }
+}
+
 }
 // ==========================================
 // 11. SISTEMA DE AGENDAMENTO
