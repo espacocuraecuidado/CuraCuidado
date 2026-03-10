@@ -200,7 +200,6 @@ async function enviarDepoimentoGeral() {
     }
 }
 // 2. CARREGAR VITRINE E SCROLL
-// 2. CARREGAR VITRINE E SCROLL
 async function carregarProdutos() {
     try {
         const res = await fetch(URL_PLANILHA + '?acao=listarProdutos');
@@ -736,61 +735,59 @@ async function carregarDepoimentosNoModal(nomeProduto) {
         }
     } catch (e) {
         console.error("Erro ao carregar depoimentos:", e);
-        container.innerHTML = "<small style='color:red;'>Nenhum depoimento encontrado.</small>";
+        container.innerHTML = "<small style='color:#999;'>Ainda não há avaliações para este item. 🌸</small>";
     }
 }
 // ==========================================
 // 10. SISTEMA DE AGENDAMENTO
 // ==========================================
 async function enviarAvaliacao() {
-    // 1. Captura os dados usando os IDs corretos do seu HTML
-    const produto = document.getElementById('modal-nome').innerText;
-    const cliente = document.getElementById('nome-cliente')?.value || localStorage.getItem("usuarioLogado") || "Cliente";
-    const nota = document.getElementById('av-nota')?.value || "5";
-    const comentario = document.getElementById('av-comentario')?.value;
+    const nomeProduto = document.getElementById('modal-nome').innerText;
+    const nota = document.getElementById('av-nota').value;
+    const comentario = document.getElementById('av-comentario').value;
+    const cliente = localStorage.getItem("usuarioLogado") || "Visitante";
 
-    if(!comentario || comentario.trim() === "") {
-        return alert("Por favor, escreva seu comentário antes de publicar. 🌸");
+    if (!comentario || comentario.trim() === "") {
+        return alert("Por favor, escreva um pequeno comentário sobre o produto. 🌸");
     }
 
-    // 2. Monta o objeto no formato que o seu Script da Planilha espera (POST)
-    const dadosVenda = {
-        aba: "Avaliacoes", 
+    const btn = document.getElementById('btn-enviar-av');
+    btn.innerText = "Publicando... ⏳";
+    btn.disabled = true;
+
+    // Objeto exato que o seu Google Script espera (Aba e Payload)
+    const dados = {
+        aba: "Avaliacoes",
         payload: {
-            "Produto": produto,
+            "Data": new Date().toLocaleString('pt-BR'),
+            "Produto": nomeProduto,
             "Cliente": cliente,
             "Nota": nota,
-            "Comentario": comentario,
-            "Data": new Date().toLocaleDateString('pt-BR')
+            "Comentario": comentario
         }
     };
 
     try {
-        const btn = document.getElementById('btn-enviar-av');
-        if(btn) { btn.innerText = "Publicando... ⏳"; btn.disabled = true; }
-
-        // Envia para a planilha
         const res = await fetch(URL_PLANILHA, {
             method: 'POST',
-            body: JSON.stringify(dadosVenda)
+            body: JSON.stringify(dados)
         });
-        
+
         const r = await res.json();
 
-        if(r.status === "sucesso") {
-            alert("Avaliação publicada com sucesso! ✨");
-            // Limpa o campo e fecha o modal
-            document.getElementById('av-comentario').value = "";
-            fecharModal();
-            // Opcional: recarregar os depoimentos na tela
-            carregarDepoimentosNoModal(produto);
+        if (r.status === "sucesso") {
+            alert("Obrigada! Sua avaliação foi publicada com sucesso. ✨");
+            document.getElementById('av-comentario').value = ""; // Limpa o campo
+            carregarDepoimentosNoModal(nomeProduto); // Atualiza a lista no modal
+        } else {
+            throw new Error(r.mensagem);
         }
     } catch (e) {
-        console.error("Erro ao publicar:", e);
-        alert("Erro de conexão. Verifique se você está logada.");
+        console.error("Erro ao enviar avaliação:", e);
+        alert("Não conseguimos salvar sua avaliação agora, mas ela é muito importante para nós! 🌸");
     } finally {
-        const btn = document.getElementById('btn-enviar-av');
-        if(btn) { btn.innerText = "Publicar Avaliação"; btn.disabled = false; }
+        btn.innerText = "Publicar Avaliação";
+        btn.disabled = false;
     }
 }
 // ==========================================
