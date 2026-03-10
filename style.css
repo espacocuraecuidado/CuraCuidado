@@ -624,3 +624,30 @@ input, select, textarea {
     background: #d4a373;
     border-radius: 10px;
 }   
+/* Correção para aparência no iOS (iPhone/Safari) */
+input, 
+select, 
+textarea, 
+button {
+    -webkit-appearance: none; /* Remove o estilo padrão do iOS */
+    appearance: none;
+    border-radius: 8px; /* Garante que as bordas arredondadas funcionem */
+}
+
+/* Impede o zoom automático ao clicar em campos no iPhone */
+@media screen and (max-width: 768px) {
+    input, 
+    select, 
+    textarea {
+        font-size: 16px !important; /* iOS dá zoom se a fonte for menor que 16px */
+    }
+}
+
+/* Restaura a setinha do select que o 'appearance: none' remove */
+select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 1em;
+    padding-right: 40px;
+}

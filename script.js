@@ -759,6 +759,8 @@ async function enviarAvaliacao() {
 
 async function finalizarAgendamentoComAgenda() {
     const nome = document.getElementById('ag-nome').value;
+    const tel = document.getElementById('ag-tel').value;
+    const dataHoraInicio = document.getElementById('ag-horario-selecionado').value; 
     const endereco = document.getElementById('ag-end').value || "Não informado";
 
     if (!nome || !tel || !dataHoraInicio) {
