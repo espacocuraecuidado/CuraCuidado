@@ -46,7 +46,7 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbwn7JIBHox0h7jM6dad9gyuhl6ApCQQ6yy8is0OkViToKmD6T6wwVLE7LTVh42XBrcE/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycby82CaoClGi9FBcYujgVbbDlamubXyxZkrEMs3uYFxtXgjs8qDSUed4XmHjpdKKTlw4/exec";
     let horarioSelecionado = null;
 
     window.onload = () => {
@@ -58,52 +58,49 @@
     };
 
     async function carregarHorarios() {
-        const container = document.getElementById("lista-horarios");
-        container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Buscando horários... ⏳</p>";
+    const container = document.getElementById("lista-horarios");
+    container.innerHTML = "Buscando horários... ⏳";
 
-        try {
-            const resposta = await fetch(`${URL_API}?acao=listarAgendamentos`);
-            const dados = await resposta.json();
-            
-            const disponiveis = dados.filter(item => {
-                return item.Status && String(item.Status).trim() === "Disponível";
-            });
+    try {
+        const resposta = await fetch(`${URL_API}?acao=listarAgendamentos`);
+        const dados = await resposta.json();
 
-            if (disponiveis.length === 0) {
-                container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Nenhum horário disponível no momento. 🌸</p>";
-                return;
-            }
+        // 1. Criamos um conjunto (Set) de todos os horários que já estão OCUPADOS
+        const ocupados = new Set(
+            dados.filter(item => String(item.Status).trim() === "Ocupado")
+                 .map(item => `${item.DataAgenda}|${item.Hour}`)
+        );
 
-            let botoesHtml = "";
-            disponiveis.forEach(h => {
-                // FORMATAÇÃO DA DATA (Transforma 2026-03-19T... em 19/03/2026)
-                let dataBR = h.DataAgenda;
-                if(h.DataAgenda.includes("T")) {
-                    const partes = h.DataAgenda.split("T")[0].split("-");
-                    dataBR = `${partes[2]}/${partes[1]}/${partes[0]}`;
-                }
+        // 2. Filtramos apenas os "Disponíveis" que NÃO estão na lista de ocupados
+        const disponiveisParaMostrar = dados.filter(item => {
+            const chave = `${item.DataAgenda}|${item.Hour}`;
+            const estaDisponivel = String(item.Status).trim() === "Disponível";
+            return estaDisponivel && !ocupados.has(chave);
+        });
 
-                // FORMATAÇÃO DA HORA (Transforma ...T03:34:00 em 03:34)
-                let horaLimpa = h.Hour;
-                if(h.Hour.includes("T")) {
-                    horaLimpa = h.Hour.split("T")[1].substring(0, 5);
-                }
-
-                botoesHtml += `
-                    <button type="button" class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
-                        ${dataBR}<br>
-                        <span style="font-size: 1.2em;">${horaLimpa}</span>
-                    </button>
-                `;
-            });
-
-            container.innerHTML = botoesHtml;
-
-        } catch (erro) {
-            console.error("Erro detalhado:", erro);
-            container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Erro ao carregar os dados. 🌸</p>";
+        if (disponiveisParaMostrar.length === 0) {
+            container.innerHTML = "<p>Nenhum horário disponível no momento. 🌸</p>";
+            return;
         }
+
+        let botoesHtml = "";
+        disponiveisParaMostrar.forEach(h => {
+            const dataBR = h.DataAgenda.includes("T") ? h.DataAgenda.split("T").split("-").reverse().join("/") : h.DataAgenda;
+            const horaBR = h.Hour.includes("T") ? h.Hour.split("T").substring(0, 5) : h.Hour;
+
+            botoesHtml += `
+                <button type="button" class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
+                    ${dataBR}<br><b>${horaBR}</b>
+                </button>
+            `;
+        });
+
+        container.innerHTML = botoesHtml;
+
+    } catch (erro) {
+        container.innerHTML = "<p>Erro ao carregar os dados. 🌸</p>";
     }
+}
 
     function selecionar(btn, data, hora) {
         document.querySelectorAll('.btn-horario').forEach(b => b.classList.remove('selected'));
