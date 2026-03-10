@@ -13,8 +13,6 @@ function showPage(pageId) {
         targetPage.classList.add('active');
         // 2. Carrega horários se for a página de agendamento
         if (pageId === 'agendamento') carregarHorariosDisponiveis();
-        if (pageId === 'perfil') carregarDadosDaPlanilha();
-    }
         }
     } else {
         console.error("Página não encontrada: page-" + pageId);
@@ -56,7 +54,7 @@ async function carregarHorariosDisponiveis() {
         const dados = await res.json();
         
         // Filtramos apenas as linhas onde você escreveu "Disponível" na coluna Status
-        const disponiveis = dados.filter(h => h.Status && h.Status.toLowerCase() === 'Disponível');
+        const disponiveis = dados.filter(h => h.Status && h.Status.toLowerCase() === 'disponível');
 
         if (disponiveis.length === 0) {
             select.innerHTML = '<option value="">Nenhum horário livre na planilha 🌸</option>';
