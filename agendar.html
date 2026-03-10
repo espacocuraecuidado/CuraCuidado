@@ -79,7 +79,6 @@ const disponiveis = dados.filter(item => {
         .replace(/[\u0300-\u036f]/g, ""); // Remove os acentos
         
     return statusLimpo === "disponivel";
-});
 
         // Desenha os botões
         const botoesHTML = disponiveis.map(h => `
