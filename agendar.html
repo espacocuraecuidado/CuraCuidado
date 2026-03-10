@@ -67,14 +67,18 @@ async function carregarHorarios() {
         const dados = await res.json();
         console.log("Dados recebidos:", dados);
 
-        const disponiveis = dados.filter(h => 
-            h.Status && String(h.Status).trim() === "Disponível"
-        );
-
-        if (disponiveis.length === 0) {
-            container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Sem horários para agendar no momento. 🌸</p>";
-            return;
-        }
+        // Esta versão ignora maiúsculas/minúsculas e aceita com ou sem acento
+const disponiveis = dados.filter(h => {
+    if (!h.Status) return false;
+    
+    const statusLimpo = String(h.Status)
+        .trim()                         // Remove espaços extras
+        .toLowerCase()                  // Deixa tudo minúsculo
+        .normalize("NFD")               // Decompõe acentos
+        .replace(/[\u0300-\u036f]/g, ""); // Remove os acentos
+        
+    return statusLimpo === "disponivel";
+});
 
         // Desenha os botões
         const botoesHTML = disponiveis.map(h => `
