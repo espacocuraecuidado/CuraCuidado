@@ -53,37 +53,44 @@
         carregarHorarios();
     };
 
-   async function carregarHorarios() {
+async function carregarHorarios() {
     const container = document.getElementById("lista-horarios");
     try {
+        // Busca os dados do GS
         const res = await fetch(`${URL_API}?acao=listarAgendamentos`);
         const dados = await res.json();
         
-        // Filtramos apenas os que têm Status "Disponível"
-        // E garantimos que estamos pegando linhas que possuem DataAgenda preenchida
+        // Filtro Robusto:
+        // 1. Garante que 'h' existe
+        // 2. Garante que o Status é 'Disponível' (sem espaços extras)
+        // 3. Garante que existe algo na coluna DataAgenda
         const disponiveis = dados.filter(h => 
-            String(h.Status).trim() === "Disponível" && h.DataAgenda
+            h && 
+            h.Status && 
+            String(h.Status).trim() === "Disponível" &&
+            h.DataAgenda
         );
 
         if (disponiveis.length === 0) {
-            container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Não há horários disponíveis. 🌸</p>";
+            container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Não há horários disponíveis no momento. 🌸</p>";
             return;
         }
 
+        // Mapeia os botões tratando o formato da data
         container.innerHTML = disponiveis.map(h => {
-            // Se o GS enviar a DataAgenda como objeto de data completo, 
-            // limpamos para exibir apenas o dia.
-            let diaExibicao = String(h.DataAgenda).split(' ')[0]; 
+            // Se o Google mandar a data como objeto completo, pegamos só os primeiros 10 caracteres (DD/MM/AAAA)
+            let dataLimpa = String(h.DataAgenda).substring(0, 10);
             
             return `
-                <button class="btn-horario" onclick="selecionar(this, '${diaExibicao}', '${h.Hour}')">
-                    ${diaExibicao}<br>${h.Hour}
+                <button class="btn-horario" onclick="selecionar(this, '${dataLimpa}', '${h.Hour}')">
+                    ${dataLimpa}<br>${h.Hour}
                 </button>
             `;
         }).join('');
+
     } catch (e) {
-        console.error("Erro na leitura dos dados:", e);
-        container.innerHTML = "<p>Erro ao carregar horários. Verifique a planilha.</p>";
+        console.error("Erro na carga:", e);
+        container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Erro ao carregar. Por favor, atualize a página.</p>";
     }
 }
 
