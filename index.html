@@ -197,37 +197,25 @@
     <div id="vitrine-mamae" class="vitrine-deslizante"></div>
 </div>
 
-<h2 class="titulo-secao"> O que dizem sobre nós💌</h2>
+<h2 class="titulo-secao">O que dizem sobre nós</h2>
 <div class="vitrine-wrapper">
     <div id="vitrine-depoimentos" class="vitrine-deslizante"></div>
 </div>
         </section>
 
-       <section id="page-agendamento" class="page">
-    <div class="form-container">
-        <h2>Agendar Atendimento 🌸</h2>
-        <p style="font-size: 0.8em; color: #888; margin-bottom: 15px;">Selecione um horário disponível para sua sessão de 4h.</p>
-        
-        <form id="form-agendamento" onsubmit="event.preventDefault();" class="form-scroll-ajuste">
+        <section id="page-agendamento" class="page">
+            <div class="form-container">
+                <h2>Agendar Atendimento</h2>
+                <form id="form-agendamento" onsubmit="event.preventDefault();" class="form-scroll-ajuste">
     <input type="text" id="ag-nome" placeholder="Nome Completo" required>
     <input type="tel" id="ag-tel" placeholder="WhatsApp (DDD)" required>
-    
-    <input type="date" id="ag-data" required style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;">
-    <input type="time" id="ag-hora" required style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;">
-
-    <label>Escolha o melhor horário:</label>
-    <select id="ag-horario-selecionado" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px; background: white;">
-                <option value="">Carregando horários disponíveis...</option>
-            </select>
-
-            <input type="text" id="ag-end" placeholder="Endereço Completo (Opcional)">
-            
-            <button type="button" class="btn-block" onclick="finalizarAgendamentoComAgenda()">
-                Confirmar Agendamento ✨
-            </button>
-        </form>
-    </div>
-</section>
+    <input type="date" id="ag-data" required>
+    <input type="time" id="ag-hora" required>
+    <input type="text" id="ag-end" placeholder="Endereço Completo">
+    <button type="button" class="btn-block" onclick="enviarAgendamento()">Confirmar e falar no WhatsApp</button>
+</form>
+            </div>
+        </section>
 
         <section id="page-sac" class="page">
             <div class="form-container">
@@ -288,6 +276,9 @@
 </section>
 
     </main>
+    <script src="cart.js"></script>
+    <script src="script.js"></script>
+
     <div id="modal-produto" class="modal-cura">
         
         <div class="modal-content">
@@ -325,11 +316,7 @@
                         <button type="button" onclick="enviarAvaliacao()" id="btn-enviar-av" style="width: 100%; background: #d4a373; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 0.85em;">
                             Publicar Avaliação
                         </button>
-                    </div> 
-                </div> 
-            </div> 
-        </div> 
-    </div> <a href="https://wa.me/5585991561497?text=Olá! Gostaria de tirar uma dúvida. 🌸" class="whatsapp-float" target="_blank">
+                   </div> </div> </div> </div> </div> <a href="https://wa.me/5585991561497?text=Olá! Gostaria de tirar uma dúvida. 🌸" class="whatsapp-float" target="_blank">
         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" style="width: 35px;">
     </a>
 
