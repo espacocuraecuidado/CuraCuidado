@@ -56,41 +56,26 @@
 async function carregarHorarios() {
     const container = document.getElementById("lista-horarios");
     try {
-        // Busca os dados do GS
         const res = await fetch(`${URL_API}?acao=listarAgendamentos`);
         const dados = await res.json();
         
-        // Filtro Robusto:
-        // 1. Garante que 'h' existe
-        // 2. Garante que o Status é 'Disponível' (sem espaços extras)
-        // 3. Garante que existe algo na coluna DataAgenda
+        // Agora o Status está na Coluna I, o código vai achar o "Disponível" lá
         const disponiveis = dados.filter(h => 
-            h && 
-            h.Status && 
-            String(h.Status).trim() === "Disponível" &&
-            h.DataAgenda
+            h.Status && String(h.Status).trim() === "Disponível"
         );
 
         if (disponiveis.length === 0) {
-            container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Não há horários disponíveis no momento. 🌸</p>";
+            container.innerHTML = "<p style='text-align: center;'>Sem horários disponíveis. 🌸</p>";
             return;
         }
 
-        // Mapeia os botões tratando o formato da data
-        container.innerHTML = disponiveis.map(h => {
-            // Se o Google mandar a data como objeto completo, pegamos só os primeiros 10 caracteres (DD/MM/AAAA)
-            let dataLimpa = String(h.DataAgenda).substring(0, 10);
-            
-            return `
-                <button class="btn-horario" onclick="selecionar(this, '${dataLimpa}', '${h.Hour}')">
-                    ${dataLimpa}<br>${h.Hour}
-                </button>
-            `;
-        }).join('');
-
+        container.innerHTML = disponiveis.map(h => `
+            <button class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
+                ${h.DataAgenda}<br>${h.Hour}
+            </button>
+        `).join('');
     } catch (e) {
-        console.error("Erro na carga:", e);
-        container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Erro ao carregar. Por favor, atualize a página.</p>";
+        container.innerHTML = "<p>Erro ao carregar. Verifique a conexão.</p>";
     }
 }
 
