@@ -54,53 +54,41 @@
 
 async function carregarHorarios() {
     const container = document.getElementById("lista-horarios");
-    // Limpa o container e coloca o status de carregando
-    container.innerHTML = "Carregando horários... ⏳";
+    container.innerHTML = "Buscando horários... ⏳";
 
     try {
-        console.log("Tentando conectar com:", URL_API); // Verificação no F12
-        const res = await fetch(`${URL_API}?acao=listarAgendamentos`);
+        const resposta = await fetch(`${URL_API}?acao=listarAgendamentos`);
+        const dados = await resposta.json();
         
-        if (!res.ok) throw new Error("Erro na resposta do servidor");
+        console.log("Dados recebidos da Agenda:", dados); 
 
-        const dados = await res.json();
-        console.log("Dados recebidos:", dados);
+        // Filtrando os disponíveis
+        const disponiveis = dados.filter(item => {
+            return item.Status && String(item.Status).trim() === "Disponível";
+        });
 
-        // Esta versão ignora maiúsculas/minúsculas e aceita com ou sem acento
-// Filtro simplificado para teste
-const disponiveis = dados.filter(item => {
-    return String(item.Status).trim() === "Disponível";
-});
-    
-    const statusLimpo = String(h.Status)
-        .trim()                         // Remove espaços extras
-        .toLowerCase()                  // Deixa tudo minúsculo
-        .normalize("NFD")               // Decompõe acentos
-        .replace(/[\u0300-\u036f]/g, ""); // Remove os acentos
-        
-    return statusLimpo === "disponivel";
-
-        // Desenha os botões
-       container.innerHTML = disponiveis.map(h => {
-    return `
-        <button type="button" class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
-            ${h.DataAgenda}<br>${h.Hour}
-        </button>
-    `;
-}).join('');
-
-        // Aplica os botões e remove a mensagem de erro
-        container.innerHTML = botoesHTML;
-
-    } catch (e) {
-        console.error("Erro detalhado:", e);
-        // Só mostra o erro se o container ainda estiver vazio ou com o "Carregando"
-        if (container.innerHTML.includes("Carregando")) {
-            container.innerHTML = "<p>Erro ao carregar. Verifique a conexão.</p>";
+        if (disponiveis.length === 0) {
+            container.innerHTML = "<p>Nenhum horário disponível no momento. 🌸</p>";
+            return;
         }
+
+        // AQUI ESTÁ O SEGREDO: o 'h' tem que estar dentro do map
+        let botoesHtml = "";
+        disponiveis.forEach(h => {
+            botoesHtml += `
+                <button type="button" class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
+                    ${h.DataAgenda}<br>${h.Hour}
+                </button>
+            `;
+        });
+
+        container.innerHTML = botoesHtml;
+
+    } catch (erro) {
+        console.error("Erro detalhado:", erro);
+        container.innerHTML = "<p>Erro ao carregar os dados. 🌸</p>";
     }
 }
-
     function selecionar(btn, data, hora) {
         // Remove seleção visual dos outros
         document.querySelectorAll('.btn-horario').forEach(b => b.classList.remove('selected'));
