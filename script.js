@@ -19,12 +19,14 @@ function showPage(pageId) {
     toggleSidebar('menu-sidebar', false); 
     window.scrollTo(0, 0);
 }
+    
     // 3. FECHA O MENU (Ajustado para o ID padrão do seu sidebar)
     toggleSidebar('menu-sidebar', false); 
     
     // 4. Volta ao topo da página
     window.scrollTo(0, 0);
 }
+    
     // Certifique-se de que o ID 'menu-sidebar' é o mesmo do seu HTML
     toggleSidebar('menu-sidebar', false); 
     
