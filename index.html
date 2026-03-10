@@ -40,18 +40,24 @@
 
             <div id="secao-admin" style="display: none;">
                 <h3 style="padding-left: 15px;">Área Administrativa</h3>
-                <button class="nav-link" onclick="location.href='admin_vendas.html'">📊 Vendas e Estoque</button>
-                <button class="nav-link" onclick="diagnostico()">🔍 Diagnóstico de Conexão</button>
-                <hr>
+    <button class="nav-link" onclick="location.href='admin_vendas.html'">📊 Vendas e Estoque</button>
+    <button class="nav-link" onclick="location.href='admin_vendas.html#agenda'">📅 Gestão de Agenda</button> 
+    <button class="nav-link" onclick="diagnostico()">🔍 Diagnóstico de Conexão</button>
+    <hr>
             </div>
 
             <div id="secao-cliente">
-                <h3 style="padding-left: 15px;">Área do Cliente</h3>
-                <button class="nav-link" onclick="showPage('perfil')">👤 Meus Dados / Meus Pedidos</button>
-                <button class="nav-link" onclick="showPage('agendamento')">📅 Agendamentos</button>
-                <button class="nav-link" onclick="showPage('depoimentos')">⭐ Depoimentos</button>
-                <button class="nav-link" onclick="showPage('sac')">💬 SAC</button>
-            </div>
+    <h3 style="padding-left: 15px;">Área do Cliente</h3>
+    
+    <button class="nav-link" onclick="location.href='cliente.html'">👤 Meus Dados / Pedidos</button>
+    
+    <button class="nav-link" onclick="location.href='agendar.html'" style="color: #d69ea2; font-weight: bold;">✨ Agendar Agora</button>
+    
+    <button class="nav-link" onclick="location.href='cliente.html?secao=agenda'">📅 Minha Agenda</button>
+    
+    <button class="nav-link" onclick="showPage('depoimentos')">⭐ Depoimentos</button>
+    <button class="nav-link" onclick="showPage('sac')">💬 SAC</button>
+</div>
             <hr>
             <div style="text-align:center; padding: 10px;">🌸</div>
         </div>

@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minha Conta - Espaço Cura e Cuidado</title>
-    <link rel="stylesheet" href="css/style.css"> <style>
+    <link rel="stylesheet" href="css/style.css"> 
+    <style>
         body { background-color: #fdf6f0; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
         .container-cliente { max-width: 600px; margin: 20px auto; padding: 15px; }
         .header-cliente { text-align: center; padding: 20px 0; color: #d4a373; }
         
         /* Menu Rápido */
-        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .dash-btn { background: white; border: none; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; text-align: center; }
-        .dash-btn i { font-size: 1.5em; display: block; margin-bottom: 5px; }
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .dash-btn { background: white; border: none; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; text-align: center; font-family: inherit; }
+        .dash-btn i { font-size: 1.5em; display: block; margin-bottom: 5px; font-style: normal; }
 
-        /* Lista de Pedidos */
-        .pedido-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #d4a373; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        /* Lista de Pedidos/Agenda */
+        .pedido-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #d4a373; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: relative; }
         .status-badge { float: right; padding: 4px 10px; border-radius: 15px; font-size: 0.8em; font-weight: bold; }
         .pago { background: #d4edda; color: #155724; }
         .pendente { background: #fff3cd; color: #856404; }
@@ -33,12 +34,14 @@
 
     <div class="dash-grid">
         <button class="dash-btn" onclick="mostrarSecao('pedidos')"><i>📦</i> Meus Pedidos</button>
-        <button class="dash-btn" onclick="mostrarSecao('agenda')"><i>📅</i> Minha Agenda</button> <button class="dash-btn" onclick="mostrarSecao('dados')"><i>👤</i> Meus Dados</button>
-        <button onclick="window.location.href='agendar.html'" 
-            style="width: 100%; margin-bottom: 25px; padding: 15px; background: #e8b4b8; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(232, 180, 184, 0.3); font-family: 'Segoe UI', sans-serif;">
+        <button class="dash-btn" onclick="mostrarSecao('agenda')"><i>📅</i> Minha Agenda</button>
+        <button class="dash-btn" onclick="mostrarSecao('dados')" style="grid-column: span 2;"><i>👤</i> Meus Dados de Entrega</button>
+    </div>
+
+    <button onclick="window.location.href='agendar.html'" 
+            style="width: 100%; margin-bottom: 25px; padding: 15px; background: #e8b4b8; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(232, 180, 184, 0.3); font-family: inherit; font-size: 1em;">
         ✨ Agendar Novo Atendimento
     </button>
-    </div>
 
     <div id="secao-pedidos">
         <h3 style="color: #555;">Meus Pedidos</h3>
@@ -46,20 +49,24 @@
             <p style="text-align:center;">Carregando pedidos... ⏳</p>
         </div>
     </div>
+
     <div id="secao-agenda" style="display: none;">
         <h3 style="color: #555;">Meus Agendamentos 🌸</h3>
         <div id="lista-agendamentos">
             <p style="text-align:center;">Carregando sua agenda... ⏳</p>
         </div>
     </div>
+
     <div id="secao-dados" style="display: none;">
         <h3 style="color: #555;">Seus Dados de Entrega</h3>
-        <div class="form-container" style="background: white; padding: 20px; border-radius: 12px;">
-            <label>Endereço:</label>
-            <input type="text" id="c-end" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd;">
-            <label>WhatsApp:</label>
-            <input type="tel" id="c-tel" style="width:100%; padding:10px; margin-bottom:15px; border:1px solid #ddd;">
-            <button class="btn-block" onclick="salvarLocalmente()" style="width: 100%; padding: 12px; background: #d4a373; color: white; border: none; border-radius: 5px;">Salvar Alterações</button>
+        <div class="form-container" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <label style="display:block; margin-bottom:5px;">Endereço completo:</label>
+            <input type="text" id="c-end" placeholder="Rua, número, bairro..." style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
+            
+            <label style="display:block; margin-bottom:5px;">WhatsApp:</label>
+            <input type="tel" id="c-tel" placeholder="(00) 00000-0000" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
+            
+            <button onclick="salvarLocalmente()" style="width: 100%; padding: 15px; background: #d4a373; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Salvar Alterações</button>
         </div>
     </div>
 
@@ -77,24 +84,30 @@
         }
         document.getElementById("nomeUsuario").innerText = `Olá, ${user} 🌸`;
         
-        // Carrega dados salvos no navegador
+        // Carrega dados salvos localmente
         document.getElementById("c-end").value = localStorage.getItem("end_cliente") || "";
         document.getElementById("c-tel").value = localStorage.getItem("tel_cliente") || "";
 
-        // Carrega as duas frentes de dados
+        // Lógica de abas via URL (?secao=agenda)
+        const params = new URLSearchParams(window.location.search);
+        const secaoAlvo = params.get('secao');
+        
+        if (secaoAlvo) {
+            mostrarSecao(secaoAlvo);
+        } else {
+            mostrarSecao('pedidos'); // Padrão
+        }
+
         carregarPedidos(user);
         carregarAgendamentos(user);
     };
 
-    // 1. CARREGAR PEDIDOS DE PRODUTOS
     async function carregarPedidos(cliente) {
         const container = document.getElementById("lista-pedidos");
         try {
-            // Chamamos 'listarVendas' que é o nome da ação no seu Script Central
             const res = await fetch(`${URL_API}?acao=listarVendas`);
             const todosOsDados = await res.json();
 
-            // Filtramos aqui no navegador para garantir que só apareçam os do cliente logado
             const meusPedidos = todosOsDados.filter(p => 
                 p.Cliente && String(p.Cliente).toLowerCase() === String(cliente).toLowerCase()
             );
@@ -116,18 +129,16 @@
                 </div>
             `).join('');
         } catch (e) {
-            container.innerHTML = "<p style='text-align:center;'>Erro ao carregar pedidos. Verifique sua conexão.</p>";
+            container.innerHTML = "<p style='text-align:center; color:red;'>Erro ao carregar pedidos.</p>";
         }
     }
 
-    // 2. CARREGAR AGENDAMENTOS DE SERVIÇOS
     async function carregarAgendamentos(cliente) {
         const container = document.getElementById("lista-agendamentos");
         try {
             const res = await fetch(`${URL_API}?acao=listarAgendamentos`);
             const dados = await res.json();
 
-            // Filtra: Tem que estar Ocupado e ser deste Cliente
             const minhaAgenda = dados.filter(a => 
                 a.Status === "Ocupado" && 
                 a.Cliente && String(a.Cliente).toLowerCase() === String(cliente).toLowerCase()
@@ -147,18 +158,16 @@
                 </div>
             `).join('');
         } catch (e) {
-            container.innerHTML = "<p style='text-align:center;'>Erro ao carregar agenda.</p>";
+            container.innerHTML = "<p style='text-align:center; color:red;'>Erro ao carregar agenda.</p>";
         }
     }
 
-    // 3. ALTERNAR ABAS
     function mostrarSecao(secao) {
         document.getElementById("secao-pedidos").style.display = secao === 'pedidos' ? 'block' : 'none';
         document.getElementById("secao-agenda").style.display = secao === 'agenda' ? 'block' : 'none';
         document.getElementById("secao-dados").style.display = secao === 'dados' ? 'block' : 'none';
     }
 
-    // 4. SALVAR DADOS DE ENTREGA
     function salvarLocalmente() {
         localStorage.setItem("end_cliente", document.getElementById("c-end").value);
         localStorage.setItem("tel_cliente", document.getElementById("c-tel").value);
