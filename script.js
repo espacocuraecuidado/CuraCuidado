@@ -5,27 +5,15 @@ let descontoAtivo = 0;
 
 // 1. NAVEGAÇÃO
 function showPage(pageId) {
-    // 1. Remove a classe ativa de todas as páginas e ativa a correta
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const targetPage = document.getElementById(`page-${pageId}`);
     
     if (targetPage) {
         targetPage.classList.add('active');
-        // 2. Carrega horários se for a página de agendamento
         if (pageId === 'agendamento') {
             carregarHorariosDisponiveis();
         }
-    } else {
-        console.error("Página não encontrada: page-" + pageId);
     }
-    
-    // 3. FECHA O MENU (Ajustado para o ID padrão do seu sidebar)
-    // Se o seu HTML usa <aside id="menu-sidebar">, mantenha como abaixo:
-    toggleSidebar('menu-sidebar', false); 
-    
-    // 4. Volta ao topo da página
-    window.scrollTo(0, 0);
-}
     
     // ESTA LINHA É A QUE FECHA O MENU:
     // Certifique-se de que o ID 'menu-sidebar' é o mesmo do seu HTML
