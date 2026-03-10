@@ -81,11 +81,11 @@ const disponiveis = dados.filter(item => {
     return statusLimpo === "disponivel";
 
         // Desenha os botões
-        const botoesHTML = disponiveis.map(h => `
-            <button class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
-                ${h.DataAgenda}<br>${h.Hour}
-            </button>
-        `).join('');
+       container.innerHTML = disponiveis.map(h => `
+    <button class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
+        ${h.DataAgenda}<br>${h.Hour}
+    </button>
+`).join('');
 
         // Aplica os botões e remove a mensagem de erro
         container.innerHTML = botoesHTML;
