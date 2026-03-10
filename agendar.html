@@ -67,8 +67,10 @@ async function carregarHorarios() {
         console.log("Dados recebidos:", dados);
 
         // Esta versão ignora maiúsculas/minúsculas e aceita com ou sem acento
-const disponiveis = dados.filter(h => {
-    if (!h.Status) return false;
+// Filtro simplificado para teste
+const disponiveis = dados.filter(item => {
+    return String(item.Status).trim() === "Disponível";
+});
     
     const statusLimpo = String(h.Status)
         .trim()                         // Remove espaços extras
