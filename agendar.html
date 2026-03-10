@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendar Atendimento - Cura & Cuidado</title>
-  <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 
     <style>
         body { background-color: #fdf6f0; font-family: 'Segoe UI', sans-serif; padding: 20px; }
@@ -15,14 +15,17 @@
         .btn-horario { 
             padding: 12px; border: 2px solid #e8b4b8; background: white; color: #d69ea2; 
             border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s;
+            text-align: center; line-height: 1.4;
         }
-        .btn-horario.selected { background: #e8b4b8; color: white; }
+        .btn-horario.selected { background: #e8b4b8; color: white; border-color: #d69ea2; }
         .btn-horario:disabled { border-color: #eee; color: #ccc; cursor: not-allowed; }
 
         .btn-confirmar { 
             width: 100%; margin-top: 25px; padding: 15px; background: #25d366; 
             color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
+            transition: 0.3s;
         }
+        .btn-confirmar:hover { background: #1eb954; transform: scale(1.02); }
     </style>
 </head>
 <body>
@@ -43,7 +46,7 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbwn7JIBHox0h7jM6dad9gyuhl6ApCQQ6yy8is0OkViToKmD6T6wwVLE7LTVh42XBrcE/exec"; // Use a mesma URL do cliente.html
+    const URL_API = "https://script.google.com/macros/s/AKfycbwn7JIBHox0h7jM6dad9gyuhl6ApCQQ6yy8is0OkViToKmD6T6wwVLE7LTVh42XBrcE/exec";
     let horarioSelecionado = null;
 
     window.onload = () => {
@@ -54,49 +57,57 @@
         carregarHorarios();
     };
 
-async function carregarHorarios() {
-    const container = document.getElementById("lista-horarios");
-    container.innerHTML = "Buscando horários... ⏳";
+    async function carregarHorarios() {
+        const container = document.getElementById("lista-horarios");
+        container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Buscando horários... ⏳</p>";
 
-    try {
-        const resposta = await fetch(`${URL_API}?acao=listarAgendamentos`);
-        const dados = await resposta.json();
-        
-        console.log("Dados recebidos da Agenda:", dados); 
+        try {
+            const resposta = await fetch(`${URL_API}?acao=listarAgendamentos`);
+            const dados = await resposta.json();
+            
+            const disponiveis = dados.filter(item => {
+                return item.Status && String(item.Status).trim() === "Disponível";
+            });
 
-        // Filtrando os disponíveis
-        const disponiveis = dados.filter(item => {
-            return item.Status && String(item.Status).trim() === "Disponível";
-        });
+            if (disponiveis.length === 0) {
+                container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Nenhum horário disponível no momento. 🌸</p>";
+                return;
+            }
 
-        if (disponiveis.length === 0) {
-            container.innerHTML = "<p>Nenhum horário disponível no momento. 🌸</p>";
-            return;
+            let botoesHtml = "";
+            disponiveis.forEach(h => {
+                // FORMATAÇÃO DA DATA (Transforma 2026-03-19T... em 19/03/2026)
+                let dataBR = h.DataAgenda;
+                if(h.DataAgenda.includes("T")) {
+                    const partes = h.DataAgenda.split("T")[0].split("-");
+                    dataBR = `${partes[2]}/${partes[1]}/${partes[0]}`;
+                }
+
+                // FORMATAÇÃO DA HORA (Transforma ...T03:34:00 em 03:34)
+                let horaLimpa = h.Hour;
+                if(h.Hour.includes("T")) {
+                    horaLimpa = h.Hour.split("T")[1].substring(0, 5);
+                }
+
+                botoesHtml += `
+                    <button type="button" class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
+                        ${dataBR}<br>
+                        <span style="font-size: 1.2em;">${horaLimpa}</span>
+                    </button>
+                `;
+            });
+
+            container.innerHTML = botoesHtml;
+
+        } catch (erro) {
+            console.error("Erro detalhado:", erro);
+            container.innerHTML = "<p style='grid-column: span 2; text-align: center;'>Erro ao carregar os dados. 🌸</p>";
         }
-
-        // AQUI ESTÁ O SEGREDO: o 'h' tem que estar dentro do map
-        let botoesHtml = "";
-        disponiveis.forEach(h => {
-            botoesHtml += `
-                <button type="button" class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
-                    ${h.DataAgenda}<br>${h.Hour}
-                </button>
-            `;
-        });
-
-        container.innerHTML = botoesHtml;
-
-    } catch (erro) {
-        console.error("Erro detalhado:", erro);
-        container.innerHTML = "<p>Erro ao carregar os dados. 🌸</p>";
     }
-}
+
     function selecionar(btn, data, hora) {
-        // Remove seleção visual dos outros
         document.querySelectorAll('.btn-horario').forEach(b => b.classList.remove('selected'));
-        // Marca o atual
         btn.classList.add('selected');
-        // Guarda os dados
         horarioSelecionado = { data, hora };
         document.getElementById("btnConfirmar").style.display = "block";
     }
@@ -106,10 +117,13 @@ async function carregarHorarios() {
         const cliente = localStorage.getItem("usuarioLogado");
         const telefone = localStorage.getItem("tel_cliente") || "Não informado";
 
+        if(!horarioSelecionado) return;
+
         btn.disabled = true;
         btn.innerText = "Processando... 🌸";
 
         const payload = {
+            acao: "agendar", // Adicionado para seu Script saber o que fazer
             aba: "Agendamentos",
             payload: {
                 "DataAgenda": horarioSelecionado.data,
@@ -121,16 +135,25 @@ async function carregarHorarios() {
         };
 
         try {
-            const res = await fetch(URL_API, { method: 'POST', body: JSON.stringify(payload) });
+            // No Google Apps Script, o POST precisa ser enviado como texto
+            const res = await fetch(URL_API, { 
+                method: 'POST', 
+                body: JSON.stringify(payload) 
+            });
             const r = await res.json();
             
             if (r.status === "sucesso") {
                 alert("Agendamento realizado com sucesso! Esperamos por você. ✨");
-                window.location.href = "cliente.html"; // Volta para a conta para ele ver o agendamento lá
+                window.location.href = "cliente.html";
+            } else {
+                alert("Erro: " + (r.mensagem || "Erro desconhecido"));
+                btn.disabled = false;
+                btn.innerText = "Confirmar Agendamento ✨";
             }
         } catch (e) {
-            alert("Erro ao confirmar. Tente novamente.");
+            alert("Erro ao conectar com o servidor. Verifique sua internet.");
             btn.disabled = false;
+            btn.innerText = "Confirmar Agendamento ✨";
         }
     }
 </script>
