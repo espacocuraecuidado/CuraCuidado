@@ -1,450 +1,284 @@
 :root {
-    /* Cores Fixas */
-    --rosa-seco: #e8b4b8;
-    --rosa-claro: #f3d6d8;
+    /* Cores de Identidade (Mais escuras para destaque) */
+    --rosa-principal: #ff4d8d;  /* Rosa "Queimado" - melhor para leitura */
+    --rosa-suave: #f3d6d8;      /* Fundo de inputs e bordas leves */
+    --rosa-hover: #a66269;      /* Efeito de destaque ao passar o mouse */
     
-    /* Cores Modo Claro (Padrão) */
+    /* Variáveis Dinâmicas - Modo Claro */
     --bg: #fffafb;
     --card-bg: #ffffff;
-    --texto: #4a4a4a;
-    --texto-suave: #888888;
+    --texto: #2d2d2d;           /* Quase preto para máximo contraste */
+    --texto-suave: #5a5a5a;     /* Cinza escuro para subtextos */
     --input-bg: #ffffff;
     --border: #f3d6d8;
     --sidebar-bg: #ffffff;
+    --shadow: rgba(0, 0, 0, 0.08);
 }
 
-/* Força o Modo Escuro quando a classe .dark-mode estiver no body */
+/* Modo Escuro - Cores mais profundas */
 body.dark-mode {
     --bg: #1a1617; 
     --card-bg: #251f20; 
-    --texto: #f3e5e6; 
+    --texto: #fceeee;           /* Rosa esbranquiçado para leitura no escuro */
     --texto-suave: #b5a4a5;
     --input-bg: #2d2627;
     --border: #4a3a3b;
     --sidebar-bg: #211b1c;
+    --shadow: rgba(0, 0, 0, 0.4);
 }
 
+/* --- ESTILOS GERAIS --- */
 body {
-    background-color: var(--bg); /* Usa a variável */
-    color: var(--texto);         /* Usa a variável */
+    background-color: var(--bg);
+    color: var(--texto);
     transition: background 0.3s, color 0.3s;
     margin: 0;
-    font-family: sans-serif;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
 }
 
-/* Ajuste nos elementos para usarem as variáveis */
+/* Centralização de estilos de container para evitar repetição */
 .card-produto, .sidebar, .form-container {
     background-color: var(--card-bg) !important;
     color: var(--texto) !important;
-    border-color: var(--border) !important;
+    border: 1px solid var(--border) !important;
 }
 
-.nav-link {
-    color: var(--texto);
-    border-bottom: 1px solid var(--border);
-}
 /* --- HEADER --- */
 header { 
-    background: var(--rosa-seco); 
+    background: var(--rosa-principal); 
     color: white; 
-    padding: 15px; 
+    padding: 15px 20px; 
     display: flex; 
     justify-content: space-between; 
     align-items: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+    box-shadow: 0 2px 10px var(--shadow); 
     position: sticky; 
     top: 0; 
     z-index: 100;
 }
 
-/* --- VITRINE --- */
-.vitrine-wrapper { 
-    position: relative;
-    padding: 5px;
-    overflow: hidden;
-    }
-/* Criando o efeito de "esfumaçado" nas pontas */
-/* O código que você enviou deve vir logo abaixo */
-.vitrine-wrapper::before {
-    content: ""; /* CRUCIAL: sem o content o elemento não aparece */
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 60px; /* Largura da sombra esquerda */
-    height: 100%;
-    z-index: 2; /* Fica acima dos produtos */
-    background: linear-gradient(to right, var(--bg), transparent);
-    pointer-events: none; /* Permite clicar/rolar através da sombra */
-}
+/* --- VITRINE DESLIZANTE --- */
+.vitrine-wrapper { position: relative; padding: 10px 5px; overflow: hidden; }
 
-.vitrine-wrapper::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 60px; /* Largura da sombra direita */
-    height: 100%;
-    z-index: 2;
-    background: linear-gradient(to left, var(--bg), transparent);
-    pointer-events: none;
+/* Efeito esfumaçado usando a variável de fundo */
+.vitrine-wrapper::before, .vitrine-wrapper::after {
+    content: ""; position: absolute; top: 0; width: 50px; height: 100%; z-index: 2; pointer-events: none;
 }
+.vitrine-wrapper::before { left: 0; background: linear-gradient(to right, var(--bg), transparent); }
+.vitrine-wrapper::after { right: 0; background: linear-gradient(to left, var(--bg), transparent); }
+
 .vitrine-deslizante { 
-    display: flex; 
-    overflow-x: auto; 
-    -webkit-overflow-scrolling: touch; 
-    gap: 20px; 
-    padding-bottom: 15px;
-    /* Mude de 'mandatory' para 'proximity' ou comente a linha abaixo para testar */
-    scroll-snap-type: x proximity; 
-    scroll-behavior: smooth; 
-}
-/* Esconde a barra de rolagem mas mantém a função */
-.vitrine-deslizante::-webkit-scrollbar { display: block; /* Garante que ela apareça */
-    height: 8px;    /* Espessura da barra horizontal */
-}
-/* 2. Estiliza o fundo da barra (trilho) */
-.vitrine-deslizante::-webkit-scrollbar-track {
-    background: var(--bg);
-    border-radius: 10px;
+    display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px;
+    scroll-snap-type: x proximity; scroll-behavior: smooth;
+    scrollbar-width: thin; /* Para Firefox */
 }
 
-/* 3. Estiliza a parte que desliza (o "puxador") */
-.vitrine-deslizante::-webkit-scrollbar-thumb {
-    background: var(--rosa-seco);
-    padding-bottom: 15px;
-    border-radius: 10px;
-    border: 2px solid var(--bg); /* Cria um espaçamento visual */
+/* Customizando Scrollbar */
+.vitrine-deslizante::-webkit-scrollbar { height: 6px; }
+.vitrine-deslizante::-webkit-scrollbar-track { background: var(--bg); }
+.vitrine-deslizante::-webkit-scrollbar-thumb { 
+    background: var(--rosa-principal); border-radius: 10px; 
 }
 
-/* 4. Efeito ao passar o mouse */
-.vitrine-deslizante::-webkit-scrollbar-thumb:hover {
-    background: #d69ea2; /* Um tom de rosa levemente mais escuro */
-}
-
-/* --- CARD REDUZIDO --- */
+/* --- CARDS --- */
 .card-produto { 
-    min-width: 150px; 
-    max-width: 180px; /* Evita que o card cresça demais em telas médias */
-    background: var(--card-bg); 
-    border-radius: 12px; 
-    padding: 12px; /* Reduzido de 15px */
-    border: 1px solid var(--rosa-claro); 
-    text-align: center; 
-    scroll-snap-align: start;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-    color: var(--texto);
+    min-width: 160px; max-width: 180px;
+    border-radius: 12px; padding: 12px;
+    text-align: center; scroll-snap-align: start;
+    box-shadow: 0 4px 8px var(--shadow);
 }
 
-
-/* --- SIDEBARS (CARRINHO E MENU) --- */
+/* --- SIDEBARS --- */
 .sidebar {
-    position: fixed; 
-    top: 0; 
-    width: 380px; 
-    height: 100%; 
-    background: white;
-    
-    /* 1. CORREÇÃO: Escrita correta de box-sizing */
-    box-sizing: border-box; 
-    
-    /* 2. AJUSTE: O padding que afasta a letra da borda */
-    padding: 25px; 
-    
-    box-shadow: 0 0 20px rgba(0,0,0,0.1); 
-    transition: 0.3s ease-in-out; 
-    z-index: 1000;
-    
-    /* 3. ADICIONAL: Garante que se tiver muitos itens, apareça a rolagem */
+    position: fixed; top: 0; width: 320px; height: 100%;
+    box-sizing: border-box; padding: 25px;
+    box-shadow: 0 0 25px var(--shadow);
+    transition: 0.3s ease-in-out; z-index: 1000;
     overflow-y: auto;
 }
-.sidebar.left { left: -380px; }
-.sidebar.right { right: -380px; }
-
-/* Correção para abrir apenas a respectiva sidebar */
-.sidebar.left.active { left: 0; }
-.sidebar.right.active { right: 0; }
-
-.close-btn {
-    background: none; border: none; font-size: 2rem; 
-    padding: 10px; cursor: pointer; color: var(--rosa-seco);
-}
-
-/* --- PÁGINAS --- */
-.page { display: none !important; padding: 20px; animation: fadeIn 0.3s; }
-.page.active { display: block !important; }
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.sidebar.left { left: -320px; }
+.sidebar.right { right: -320px; }
+.sidebar.active { transform: translateX(320px); } /* Suave */
+.sidebar.right.active { transform: translateX(-320px); }
 
 /* --- FORMULÁRIOS --- */
-.form-container { 
-    max-width: 500px; 
-    margin: auto; 
-    background: var(--card-bg); /* Mudado de white para variável */ 
-    padding: 25px; 
-    border-radius: 15px; 
-    border: 1px solid var(--border); 
-}
+.form-container { max-width: 450px; margin: 20px auto; border-radius: 15px; }
+
 input, select, textarea { 
-    width: 100%; padding: 12px; margin: 8px 0; 
-    border: 1px solid var(--rosa-claro); 
-    border-radius: 8px; 
-    box-sizing: border-box; 
+    width: 100%; padding: 12px; margin: 10px 0;
+    background-color: var(--input-bg);
+    color: var(--texto);
+    border: 1px solid var(--border); 
+    border-radius: 8px; box-sizing: border-box; 
 }
 
+/* Botões com contraste forte */
 .btn-block { 
-    background: var(--rosa-seco); color: white; border: none; 
-    width: 100%; padding: 15px; border-radius: 8px; 
-    cursor: pointer; font-weight: bold; 
+    background: var(--rosa-principal); color: white; border: none; 
+    width: 100%; padding: 16px; border-radius: 8px; 
+    cursor: pointer; font-weight: 700; text-transform: uppercase;
+    transition: 0.2s;
 }
-.btn-icon { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+.btn-block:hover { background: var(--rosa-hover); transform: translateY(-1px); }
+
 .nav-link { 
     background: none; border: none; width: 100%; 
-    text-align: left; padding: 12px; 
-    border-bottom: 1px solid #eee; cursor: pointer; 
-    color: var(--texto); 
+    text-align: left; padding: 14px; 
+    border-bottom: 1px solid var(--border); cursor: pointer; 
+    color: var(--texto); font-weight: 500;
 }
-
-/* --- BOTÃO FLUTUANTE WHATSAPP (LADO ESQUERDO) --- */
+/* --- BOTÃO FLUTUANTE WHATSAPP (ESQUERDA) --- */
 .whatsapp-float {
     position: fixed;
-    width: 60px;
-    height: 60px;
-    bottom: 20px;
-    left: 20px; /* Mudado de right: 20px para left: 20px */
+    width: 55px; /* Ligeiramente menor para não poluir */
+    height: 55px;
+    bottom: 25px;
+    left: 20px;
     background-color: #25d366;
     color: #FFF;
-    border-radius: 50px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 2px 5px 15px rgba(0,0,0,0.2);
-    z-index: 10000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 9999;
     text-decoration: none;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Ajuste da legenda (tooltip) para abrir para a direita agora */
+.whatsapp-float:hover { transform: scale(1.1); }
+
+/* Tooltip agora abre para a direita */
 .tooltip-whatsapp {
     position: absolute;
-    left: 75px; /* Mudado de right: 75px para left: 75px */
-    background: white;
+    left: 70px;
+    background: var(--card-bg);
     color: var(--texto);
     padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 14px;
+    border-radius: 18px;
+    font-size: 13px;
+    font-weight: 600;
     white-space: nowrap;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    border: 1px solid var(--rosa-claro);
+    box-shadow: 0 4px 12px var(--shadow);
+    border: 1px solid var(--border);
     pointer-events: none;
-}
-
-/* --- ESTILO PARA AS SEÇÕES RETRÁTEIS (ENTREGA E DADOS) --- */
-
-/* 1. Esconde os campos por padrão */
-.cart-entrega-campos, 
-.cart-dados-campos {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-out, opacity 0.3s ease;
     opacity: 0;
-    margin-top: 0;
-}
-
-/* 2. Estilo dos títulos (Botões de revelação) */
-.label-entrega-toggle, 
-.label-contato-toggle {
-    font-size: 0.85em;
-    color: var(--rosa-seco);
-    display: block;
-    cursor: pointer;
-    font-weight: bold;
-    text-align: center;
-    padding: 10px;
-    background: #fffafa;
-    border-radius: 8px;
-    border: 1px solid var(--rosa-claro);
     transition: 0.3s;
 }
 
-/* 3. Efeito de REVELAR ao passar o mouse ou focar no campo */
+.whatsapp-float:hover .tooltip-whatsapp { opacity: 1; }
+
+/* --- SEÇÕES RETRÁTEIS (CARRINHO) --- */
+.cart-entrega-section, .cart-contato-section {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+}
+
+.label-entrega-toggle, .label-contato-toggle {
+    font-size: 0.85em;
+    color: var(--rosa-principal);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 700;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.seta {
+    display: inline-block;
+    transition: transform 0.4s ease;
+    margin-left: 8px;
+    font-size: 10px;
+}
+
+/* Revelação Suave */
+.cart-entrega-campos, .cart-dados-campos {
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.4s ease-in-out;
+    opacity: 0;
+    padding: 0 10px;
+}
+
 .cart-entrega-section:hover .cart-entrega-campos,
 .cart-entrega-section:focus-within .cart-entrega-campos,
 .cart-contato-section:hover .cart-dados-campos,
 .cart-contato-section:focus-within .cart-dados-campos {
-    max-height: 250px; /* Espaço suficiente para os inputs/select */
+    max-height: 300px;
     opacity: 1;
-    margin-top: 10px;
+    padding: 10px;
 }
 
-/* 4. Mudança de cor no título ao abrir */
-.cart-entrega-section:hover .label-entrega-toggle,
-.cart-contato-section:hover .label-contato-toggle {
-    background: var(--rosa-claro);
-    color: white;
-}
-/* Ajuste Mobile para o lado esquerdo */
-@media (max-width: 600px) {
-    .whatsapp-float { 
-        left: 15px; /* Mudado de right para left */
-        right: auto; /* Garante que o lado direito fique solto */
-    }
-}/* Estilo base da seta */
-.seta {
-    display: inline-block;
-    transition: transform 0.4s ease; /* Suaviza o giro */
-    margin-left: 5px;
-}
-
-/* Quando a seção de Entrega estiver aberta, a seta gira */
-.cart-entrega-section:hover .seta,
-.cart-entrega-section:focus-within .seta {
+.cart-entrega-section:hover .seta, .cart-contato-section:hover .seta {
     transform: rotate(180deg);
 }
 
-/* Quando a seção de Contato estiver aberta, a seta gira */
-.cart-contato-section:hover .seta,
-.cart-contato-section:focus-within .seta {
-    transform: rotate(180deg);
-}
-.cart-entrega-section, .cart-contato-section {
-    transition: all 0.3s ease;
-    border-radius: 10px;
-    padding: 5px;
-}
-
-.cart-entrega-section:hover, .cart-contato-section:hover {
-    background: #fffafa;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
-}
-/* --- SISTEMA DE MODAL UNIFICADO --- */
-.modal-cura {
-    display: none; 
-    position: fixed; 
-    z-index: 10000; 
-    left: 0; top: 0; 
+/* --- SISTEMA DE MODAL --- */
+.modal, .modal-cura {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0; top: 0;
     width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); 
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    justify-content: center; 
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    justify-content: center;
     align-items: center;
+    overflow-y: auto;
 }
 
 .modal-content {
-    background-color: #fff;
+    background-color: var(--card-bg);
+    color: var(--texto);
+    margin: 20px auto;
     padding: 25px;
-    width: 90%;
-    max-width: 750px;
+    width: 92%;
+    max-width: 800px;
     border-radius: 20px;
     position: relative;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-    animation: slideUp 0.4s ease;
+    box-shadow: 0 15px 40px var(--shadow);
+    border: 1px solid var(--border);
+    animation: slideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.modal-body { 
-    display: flex; 
-    gap: 25px; 
-    flex-wrap: wrap; 
+/* Galeria interna do Modal */
+#modal-img-principal {
+    width: 100%;
+    border-radius: 15px;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    background: var(--bg);
+    border: 1px solid var(--border);
 }
 
-/* Galeria e Imagens */
-.modal-galeria { flex: 1; min-width: 280px; }
-#modal-img-principal { 
-    width: 100%; 
-    border-radius: 15px; 
-    aspect-ratio: 1/1; 
-    object-fit: cover; 
-    border: 1px solid var(--rosa-claro);
-}
-
-.miniaturas { 
-    display: flex; 
-    gap: 8px; 
-    margin-top: 10px; 
-    overflow-x: auto; 
-    padding-bottom: 5px;
-}
-.mini-foto { 
-    width: 60px; height: 60px; 
-    object-fit: cover; 
-    border-radius: 8px; 
-    cursor: pointer; 
-    border: 2px solid transparent; 
+.mini-foto {
+    width: 55px; height: 55px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
     transition: 0.2s;
 }
-.mini-foto:hover { border-color: var(--rosa-seco); }
+.mini-foto:hover { border-color: var(--rosa-principal); }
 
-/* Informações do Produto */
-.modal-info { 
-    flex: 1.2; 
-    min-width: 280px; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 12px; 
-}
-.preco-destaque { 
-    font-size: 1.8rem; 
-    color: #d4a373; 
-    font-weight: bold; 
+.preco-destaque {
+    font-size: 1.6rem;
+    color: var(--rosa-principal);
+    font-weight: 800;
 }
 
-.modal-acoes { 
-    display: flex; 
-    gap: 10px; 
-    align-items: center; 
-    margin-top: 15px;
-}
-#modal-qtd { width: 70px; text-align: center; }
-
-@keyframes slideUp {
-    from { transform: translateY(30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-/* Fundo que escurece a tela */
-.modal {
-    display: none; 
-    position: fixed; 
-    z-index: 9999; /* Valor alto para ficar na frente de tudo */
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Preto com 50% de transparência */
-    backdrop-filter: blur(8px); /* Efeito de desfoque no fundo */
-    -webkit-backdrop-filter: blur(8px); /* Compatibilidade Safari */
-    overflow-y: auto; /* Permite rolar se o conteúdo for grande */
-}
-
-/* A caixa branca onde fica o produto */
-.modal-content {
-    background-color: #fff;
-    margin: 2% auto; /* Pequena margem no topo */
-    padding: 30px;
-    width: 90%;
-    max-width: 850px;
-    border-radius: 25px;
-    position: relative;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-    animation: slideUp 0.4s ease; /* Animação de subida */
-}
-
-/* Animação suave para o modal não aparecer "seco" */
-@keyframes slideUp {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-/* Ajuste para fechar no celular */
-@media (max-width: 600px) {
-    .modal-content {
-        margin: 5% auto;
-        padding: 15px;
-        width: 95%;
-    }
-}
-/* Efeito de pulso/brilho para quando atingir o frete grátis */
+/* --- BARRA DE PROGRESSO (FRETE) --- */
 .barra-cheia {
-    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+    background: #28a745 !important;
+    box-shadow: 0 0 12px rgba(40, 167, 69, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -455,20 +289,32 @@ input, select, textarea {
     top: 0; left: -100%;
     width: 100%; height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    animation: brilhoBarra 2s infinite;
+    animation: brilhoBarra 2.5s infinite;
 }
 
 @keyframes brilhoBarra {
     0% { left: -100%; }
     100% { left: 100%; }
 }
-/* --- CONTAINER DA FOTO AJUSTADO --- */
+
+@keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Ajuste Mobile */
+@media (max-width: 600px) {
+    .modal-content { padding: 15px; width: 95%; margin: 10px auto; }
+    .whatsapp-float { left: 15px; bottom: 15px; width: 50px; height: 50px; }
+    .tooltip-whatsapp { display: none; } /* Esconde tooltip no mobile para não tapar a tela */
+}
+/* --- CONTAINER DA FOTO E EFEITO HOVER --- */
 .container-foto {
     position: relative;
     width: 100%;
-    height: 160px; /* Ajustado para melhor proporção com 150px de largura */
+    height: 160px;
     overflow: hidden;
-    border-radius: 8px;
+    border-radius: 10px;
     margin-bottom: 8px;
     background-color: var(--input-bg);
 }
@@ -476,189 +322,128 @@ input, select, textarea {
 .container-foto img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Faz a foto preencher o espaço sem distorcer */
-   transition: opacity 0.5s ease-in-out, transform 0.5s ease;
-}
-/* Efeito extra: Zoom suave ao passar o mouse */
-.card-produto:hover .container-foto img {
-    transform: scale(1.05);
+    object-fit: cover;
+    transition: opacity 0.5s ease-in-out, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* A segunda foto fica por cima da primeira, mas invisível */
+/* Efeito de Troca de Imagem (Hover) */
 .img-hover {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 0; left: 0;
     opacity: 0;
 }
 
-/* Quando o mouse entra no card, troca a opacidade */
-.card-produto:hover .img-principal {
-    opacity: 0;
-}
+.card-produto:hover .container-foto img { transform: scale(1.08); }
+.card-produto:hover .img-principal { opacity: 0; }
+.card-produto:hover .img-hover { opacity: 1; }
 
-.card-produto:hover .img-hover {
-    opacity: 1;
-}
-/* --- TEXTOS E BOTÕES COMPACTOS --- */
+/* --- TEXTOS E BOTÕES DO CARD --- */
 .card-produto h3 {
-    font-size: 0.85rem; /* Um pouco menor para não quebrar tantas linhas */
+    font-size: 0.85rem;
+    color: var(--texto);
     margin: 8px 0 4px 0;
     line-height: 1.2;
-    height: 2.4em; /* Garante que títulos de 2 linhas fiquem alinhados */
+    height: 2.4em; /* Mantém alinhamento com títulos de 2 linhas */
     overflow: hidden;
+    font-weight: 600;
 }
 
 .card-produto p {
-    font-size: 0.8rem; 
-    margin: 4px 0;
-}
-/* Botões menores dentro da vitrine */
-.card-produto .btn-block {
-    padding: 8px; /* Menor que o padrão de 15px */
     font-size: 0.8rem;
+    color: var(--rosa-principal); /* Preço com a cor de destaque */
+    margin: 4px 0;
+    font-weight: 700;
+}
+
+/* Botões Compactos na Vitrine */
+.card-produto .btn-block {
+    padding: 8px;
+    font-size: 0.75rem;
     border-radius: 6px;
-}
-
-.card-produto .btn-secondary {
-    font-size: 0.7rem !important;
-    padding: 6px !important;
-}
-.banner-propaganda {
-    width: 100%;
-    margin: 30px 0;
-}
-.banner-propaganda img {
-    width: 100%;
-    height: auto;
-    display: block; /* Remove espaços vazios abaixo da imagem */
-}
-.titulo-secao {
-    margin: 40px 0 10px 20px;
-    font-size: 1.3rem;
-    color: var(--rosa-seco);
-    font-weight: bold;
-}
-/* Garante que o modal seja rolável em telas pequenas */
-#modal-produto {
-    align-items: flex-start; /* Alinha no topo para permitir rolar */
-    overflow-y: auto;        /* Ativa a rolagem vertical */
-    padding: 20px 10px;
-}
-
-.modal-content {
-    max-height: none;        /* Permite que o conteúdo cresça */
-    width: 95%;              /* Quase toda a largura no celular */
-    margin: auto;            /* Centraliza */
-    position: relative;
-}
-
-/* Ajuste específico para os campos de texto no celular */
-#av-comentario {
-    width: 100%;
-    min-height: 80px;        /* Garante altura mínima para digitar */
-    font-size: 16px;         /* Evita o zoom automático do iPhone ao clicar */
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 10px;
-}
-
-/* Garante que o botão de publicar seja visível e clicável */
-#btn-enviar-av {
-    width: 100%;
-    padding: 12px;
     margin-top: 5px;
-}
-/* Adicione isso para garantir uma folga no final do modal no celular */
-.modal-content {
-    margin-bottom: 50px; /* Evita que o botão de publicar fique colado na borda inferior */
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    text-transform: none; /* Deixa mais amigável */
 }
 
-/* Deixa a imagem do modal proporcional no celular */
-#modal-img-principal {
-    width: 100%;
-    max-height: 250px;
-    object-fit: contain;
-    background: #f9f9f9;
-    border-radius: 10px;
-}
-.form-scroll-ajuste {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding-bottom: 30px; /* Dá espaço para o teclado não cobrir o botão */
+/* --- BANNER E SEÇÕES --- */
+.banner-propaganda { width: 100%; margin: 30px 0; border-radius: 12px; overflow: hidden; }
+.banner-propaganda img { width: 100%; height: auto; display: block; }
+
+/* Garanta que o título utilize a variável e tenha um peso forte */
+.titulo-secao {
+    margin: 30px 0 15px 15px;
+    font-size: 1.35rem; /* Aumentei um pouquinho */
+    color: var(--rosa-principal);
+    font-weight: 800; /* Deixa a letra mais 'gordinha' e visível */
+    border-left: 5px solid var(--rosa-principal); /* Borda lateral mais grossa */
+    padding-left: 12px;
+    text-transform: uppercase; /* Opcional: Deixa o título em maiúsculo para mais impacto */
+    letter-spacing: 0.5px; /* Espaçamento entre letras para elegância */
 }
 
-.form-scroll-ajuste input {
-    width: 100%;
-    height: 45px; /* Altura ideal para o dedo no celular */
-    font-size: 16px !important; /* Impede o zoom forçado no iPhone */
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-}
-
-/* Ajuste para o Modal que contém esse formulário */
-#modal-produto, #page-agendamento {
-    overflow-y: auto; 
-    -webkit-overflow-scrolling: touch; /* Rolagem suave no iPhone */
-}
-#vitrine-depoimentos {
-    display: flex;
-    overflow-x: auto; /* Permite rolar para o lado */
-    gap: 15px;
+/* --- AJUSTES DE MODAL E FORMULÁRIOS MOBILE --- */
+#modal-produto {
+    align-items: flex-start;
+    overflow-y: auto;
     padding: 20px 10px;
-    scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
 }
 
-#vitrine-depoimentos::-webkit-scrollbar {
-    height: 4px;
-}
-
-#vitrine-depoimentos::-webkit-scrollbar-thumb {
-    background: #d4a373;
-    border-radius: 10px;
-}   
-/* Correção para aparência no iOS (iPhone/Safari) */
-input, 
-select, 
-textarea, 
-button {
-    -webkit-appearance: none; /* Remove o estilo padrão do iOS */
+/* Evitar zoom automático no iPhone e melhorar digitação */
+input, select, textarea {
+    -webkit-appearance: none;
     appearance: none;
-    border-radius: 8px; /* Garante que as bordas arredondadas funcionem */
+    font-size: 16px !important; /* Tamanho mágico para evitar zoom no iOS */
+    background-color: var(--input-bg);
+    color: var(--texto);
+    border: 1px solid var(--border);
+    padding: 12px;
 }
 
-/* Impede o zoom automático ao clicar em campos no iPhone */
-@media screen and (max-width: 768px) {
-    input, 
-    select, 
-    textarea {
-        font-size: 16px !important; /* iOS dá zoom se a fonte for menor que 16px */
-    }
+/* Estilização específica para o campo de avaliação */
+#av-comentario {
+    width: 100%;
+    min-height: 90px;
+    border-radius: 10px;
+    resize: none;
 }
 
-/* Restaura a setinha do select que o 'appearance: none' remove */
+/* Espaçamento extra no final para o teclado mobile não cobrir o botão */
+.form-scroll-ajuste {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-bottom: 60px; 
+}
+
+/* --- VITRINE DE DEPOIMENTOS --- */
+#vitrine-depoimentos {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding: 20px 10px;
+    scroll-behavior: smooth;
+}
+
+#vitrine-depoimentos::-webkit-scrollbar { height: 4px; }
+#vitrine-depoimentos::-webkit-scrollbar-thumb {
+    background: var(--rosa-principal);
+    border-radius: 10px;
+}
+
+/* --- HEADER INFO (STATUS SYNC) --- */
+#boas-vindas, #status-sync, .header-info {
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+}
+
+.header-container span { color: var(--fundo-creme); }
+
+/* Ajuste do Select (Seta) que o appearance:none remove */
 select {
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23b8737a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
-    background-size: 1em;
-    padding-right: 40px;
-}
-/* Alvo: O texto de boas-vindas e o horário de sincronização */
-#boas-vindas, #status-sync, .header-info {
-    color: #ffffff !important; /* Cor branca para destacar no fundo escuro/rosa */
-    font-weight: 500;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Sombra leve para dar leitura */
-}
-
-/* Caso o texto esteja dentro de um span ou pequeno parágrafo na barra */
-.header-container span {
-    color: #fdf6f0; /* Um tom creme bem claro, combina com a Cura & Cuidado */
+    background-size: 1.1em;
 }
