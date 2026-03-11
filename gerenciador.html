@@ -1,203 +1,150 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Painel Administrativo - Cura & Cuidado</title>
-    <style>
-        body { background-color: #fdf6f0; font-family: 'Segoe UI', sans-serif; padding: 20px; color: #5a5a5a; }
-        .admin-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .titulo { color: #d4a373; text-align: center; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .form-group { margin-bottom: 10px; }
-        .full-width { grid-column: span 2; }
-        label { display: block; color: #d69ea2; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #e8b4b8; border-radius: 8px; box-sizing: border-box; }
-        .btn-salvar { width: 100%; padding: 15px; background: #d4a373; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-salvar:disabled { background: #ccc; }
-        
-        /* Estilos da Tabela */
-        .tabela-container { margin-top: 40px; border-top: 2px solid #fdf6f0; padding-top: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85em; }
-        th { background-color: #fdf6f0; color: #d69ea2; padding: 12px; text-align: left; border-bottom: 2px solid #e8b4b8; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
-        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
-        .status-disponivel { background: #e7f9ee; color: #2ecc71; }
-        .status-ocupado { background: #ffebee; color: #e74c3c; }
-        /* Adicione apenas este estilo para o botão de cancelar */
-    .btn-cancelar {
-        background: #ffebee;
-        color: #e74c3c;
-        border: 1px solid #e74c3c;
-        padding: 5px 10px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 0.8em;
-        transition: 0.3s;
-    }
-    .btn-cancelar:hover {
-        background: #e74c3c;
-        color: white;
-    }
-    </style>
+  <meta charset="UTF-8">
+  <title>Painel Administrativo - Cura & Cuidado</title>
+  <style>
+    body { background-color: #fdf6f0; font-family: 'Segoe UI', sans-serif; padding: 20px; color: #5a5a5a; }
+    .admin-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .titulo { color: #d4a373; text-align: center; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    .form-group { margin-bottom: 10px; }
+    .full-width { grid-column: span 2; }
+    label { display: block; color: #d69ea2; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #e8b4b8; border-radius: 8px; box-sizing: border-box; }
+    .btn-salvar { width: 100%; padding: 15px; background: #d4a373; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    .btn-salvar:disabled { background: #ccc; }
+    .msg { text-align: center; margin-top: 10px; padding: 10px; border-radius: 8px; }
+    .msg-sucesso { background: #e7f9ee; color: #2ecc71; }
+    .msg-erro { background: #ffebee; color: #e74c3c; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85em; }
+    th { background-color: #fdf6f0; color: #d69ea2; padding: 12px; text-align: left; border-bottom: 2px solid #e8b4b8; }
+    td { padding: 10px; border-bottom: 1px solid #eee; }
+    .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
+    .status-disponivel { background: #e7f9ee; color: #2ecc71; }
+    .status-ocupado { background: #ffebee; color: #e74c3c; }
+    .btn-cancelar { background: #ffebee; color: #e74c3c; border: 1px solid #e74c3c; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8em; transition: 0.3s; }
+    .btn-cancelar:hover { background: #e74c3c; color: white; }
+  </style>
 </head>
 <body>
-
 <div class="admin-container">
-    <h2 class="titulo">Gerenciador de Agenda 🌸</h2>
-    
-    <div class="form-grid">
-        <div class="form-group full-width">
-            <label>Serviço:</label>
-            <select id="servico">
-                <option value="DOULA">DOULA</option>
-                <option value="Aleitamento Materno">Aleitamento Materno</option>
-                <option value="Consultoria">Consultoria</option>
-                <option value="Tratamento com Laser">Tratamento com Laser</option>
-                <option value="Preparacao para o Parto">Preparacao para o Parto</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>Profissional:</label>
-            <input type="text" id="profissional" placeholder="Ex: Ana Souza">
-        </div>
-
-        <div class="form-group">
-            <label>Valor (R$):</label>
-            <input type="number" id="valor" placeholder="150.00">
-        </div>
-
-        <div class="form-group">
-            <label>Data do Atendimento:</label>
-            <input type="date" id="dataAgenda">
-        </div>
-
-        <div class="form-group">
-            <label>Horário:</label>
-            <input type="time" id="hora">
-        </div>
+  <h2 class="titulo">Gerenciador de Agenda 🌸</h2>
+  
+  <div class="form-grid">
+    <div class="form-group full-width">
+      <label>Serviço:</label>
+      <select id="servico">
+        <option value="DOULA">DOULA</option>
+        <option value="Aleitamento Materno">Aleitamento Materno</option>
+        <option value="Consultoria">Consultoria</option>
+        <option value="Tratamento com Laser">Tratamento com Laser</option>
+        <option value="Preparacao para o Parto">Preparacao para o Parto</option>
+      </select>
     </div>
+    <div class="form-group"><label>Profissional:</label><input type="text" id="profissional"></div>
+    <div class="form-group"><label>Valor (R$):</label><input type="number" id="valor"></div>
+    <div class="form-group"><label>Data:</label><input type="date" id="dataAgenda"></div>
+    <div class="form-group"><label>Hora:</label><input type="time" id="hora"></div>
+  </div>
 
-    <button class="btn-salvar" id="btnSalvar" onclick="salvarHorario()">Disponibilizar Horário ✨</button>
-    <p id="msg" style="text-align: center; margin-top: 10px;"></p>
+  <button class="btn-salvar" id="btnSalvar" onclick="salvarHorario()">Disponibilizar Horário ✨</button>
+  <p id="msg"></p>
 
-    <div class="tabela-container">
-        <h3 style="color: #d4a373;">Próximos Horários na Planilha</h3>
-        <table id="tabelaHorarios">
-            <thead>
-                <tr>
-        <th>Data</th>
-        <th>Hora</th>
-        <th>Serviço</th>
-        <th>Status</th>
-        <th>Ação</th> </tr>
-            </thead>
-            <tbody id="corpoTabela">
-                <tr><td colspan="4" style="text-align:center;">Carregando agenda...</td></tr>
-            </tbody>
-        </table>
-    </div>
+  <h3 style="color: #d4a373;">Próximos Horários</h3>
+  <table>
+    <thead><tr><th>Data</th><th>Hora</th><th>Serviço</th><th>Status</th><th>Ação</th></tr></thead>
+    <tbody id="corpoTabela"><tr><td colspan="5" style="text-align:center;">Carregando agenda...</td></tr></tbody>
+  </table>
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbyrqHCXtP99cGGH8KvVBLmY_9ElgkTtbK2JgFqecgszbeXCurJobZcrbe6BOy2bpHXm/exec";
+const URL_API = "SUA_URL_AQUI";
 
-    // 1. CARREGAR TABELA AO ABRIR
-    window.onload = buscarAgenda;
+window.onload = buscarAgenda;
 
-   async function buscarAgenda() {
-    const corpo = document.getElementById("corpoTabela");
-    try {
-        const resposta = await fetch(`${URL_API}?acao=listarAgendamentos`);
-        const dados = await resposta.json();
-        
-        dados.sort((a, b) => new Date(a.DataAgenda + 'T' + a.Hour) - new Date(b.DataAgenda + 'T' + b.Hour));
-
-        corpo.innerHTML = "";
-        dados.slice(0, 15).forEach(item => { 
-            const statusClass = item.Status === "Ocupado" ? "status-ocupado" : "status-disponivel";
-            
-            // Aqui o sistema decide: se estiver Ocupado, mostra o botão Liberar
-            const botaoAcao = item.Status === "Ocupado" 
-                ? `<button class="btn-cancelar" onclick="cancelarAgendamento('${item.ID}')">Liberar 🔓</button>` 
-                : `-`;
-
-            corpo.innerHTML += `
-                <tr>
-                    <td>${item.DataAgenda.split('-').reverse().join('/')}</td>
-                    <td>${item.Hour}</td>
-                    <td>${item.Servico || '-'}</td>
-                    <td><span class="status-badge ${statusClass}">${item.Status}</span></td>
-                    <td>${botaoAcao}</td>
-                </tr>
-            `;
-        });
-    } catch (e) {
-        corpo.innerHTML = "<tr><td colspan='5'>Erro ao atualizar lista.</td></tr>";
-    }
+function mostrarMensagem(texto, tipo="sucesso") {
+  const msg = document.getElementById("msg");
+  msg.className = "msg " + (tipo === "erro" ? "msg-erro" : "msg-sucesso");
+  msg.textContent = texto;
 }
 
-// COLE TAMBÉM ESTA FUNÇÃO LOGO ABAIXO DA BUSCARAGENDA
-async function cancelarAgendamento(idRecebido) {
-    if (!confirm("Deseja cancelar este agendamento e tornar o horário disponível novamente?")) return;
-
-    const payload = {
-        acao: "executarPlanilha",
-        subAcao: "salvar",
-        aba: "Agendamentos",
-        id: String(idRecebido),
-        payload: {
-            "9": "Disponível",    // Coluna I (Status)
-            "10": "",             // Coluna J (Cliente) - Limpa o nome
-            "11": "",             // Coluna K (Telefone) - Limpa o tel
-            "12": "Disponível"    // Coluna L (Vaga) - Faz reaparecer no site
-        }
-    };
-
-    try {
-        await fetch(URL_API, { 
-            method: 'POST', 
-            mode: 'no-cors', 
-            body: JSON.stringify(payload) 
-        });
-        alert("Horário liberado! ✨");
-        buscarAgenda(); // Recarrega a tabela para você ver a mudança
-    } catch (e) {
-        alert("Erro ao conectar.");
-    }
+async function buscarAgenda() {
+  const corpo = document.getElementById("corpoTabela");
+  corpo.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Carregando...</td></tr>";
+  try {
+    const resposta = await fetch(`${URL_API}?acao=listarAgendamentos`);
+    const dados = await resposta.json();
+    dados.sort((a,b)=> new Date(a.DataAgenda+'T'+a.Hour) - new Date(b.DataAgenda+'T'+b.Hour));
+    corpo.innerHTML = "";
+    dados.slice(0,15).forEach(item=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${item.DataAgenda.split('-').reverse().join('/')}</td>
+        <td>${item.Hour}</td>
+        <td>${item.Servico||'-'}</td>
+        <td><span class="status-badge ${item.Status==="Ocupado"?"status-ocupado":"status-disponivel"}">${item.Status}</span></td>
+        <td>${item.Status==="Ocupado"?`<button class="btn-cancelar" onclick="cancelarAgendamento('${item.ID}')">Liberar 🔓</button>`:"-"}</td>`;
+      corpo.appendChild(tr);
+    });
+  } catch(e) {
+    corpo.innerHTML = "<tr><td colspan='5'>Erro ao carregar.</td></tr>";
+    mostrarMensagem("Erro ao conectar com a agenda.","erro");
+  }
 }
 
-    // 2. FUNÇÃO SALVAR (AJUSTADA)
-   async function salvarHorario() {
-    const data = document.getElementById("dataAgenda").value; 
-    const hora = document.getElementById("hora").value;        
-    const servico = document.getElementById("servico").value;
-    const profissional = document.getElementById("profissional").value;
-    const valor = document.getElementById("valor").value;
-    
-    if (!data || !hora) { alert("Preencha Data e Hora!"); return; }
-
-    const payload = {
-        acao: "executarPlanilha",
-        subAcao: "salvar",
-        aba: "Agendamentos",
-        payload: {
-           "1": `'${Date.now()}`,        // ID como texto
-           "2": `'${new Date().toLocaleDateString('pt-BR')}`,
-           "4": servico,
-           "5": profissional,
-           "6": valor,
-           "7": `'${data}`,             // DATA como texto (ex: '2026-03-11)
-           "8": `'${hora}`,             // HORA como texto (ex: '14:00)
-           "9": "Disponível",
-           "12": "Disponível",
-           "13": `'${data}`             // DATA AGENDA como texto
-        }
-    };
-
-    await fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-    alert("Horário Disponibilizado! ✨");
+async function cancelarAgendamento(id) {
+  if(!confirm("Deseja cancelar este agendamento?")) return;
+  const payload = { acao:"executarPlanilha", subAcao:"salvar", aba:"Agendamentos", id:String(id),
+    payload:{"9":"Disponível","10":"","11":"","12":"Disponível"} };
+  try {
+    await fetch(URL_API,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
+    mostrarMensagem("Horário liberado! ✨");
     buscarAgenda();
+  } catch(e) { mostrarMensagem("Erro ao liberar horário.","erro"); }
+}
+
+async function salvarHorario() {
+  const data=document.getElementById("dataAgenda").value;
+  const hora=document.getElementById("hora").value;
+  const servico=document.getElementById("servico").value;
+  const profissional=document.getElementById("profissional").value.trim();
+  const valor=document.getElementById("valor").value;
+
+  // Validação completa
+  if(!data||!hora||!profissional||!valor){ 
+    mostrarMensagem("Preencha todos os campos!","erro"); 
+    return; 
+  }
+
+  // Geração de ID mais seguro
+  const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+
+  const payload={
+    acao:"executarPlanilha",
+    subAcao:"salvar",
+    aba:"Agendamentos",
+    payload:{
+      "1":id,
+      "2":new Date().toLocaleDateString('pt-BR'),
+      "4":servico,
+      "5":profissional,
+      "6":valor,
+      "7":data,
+      "8":hora,
+      "9":"Disponível",
+      "12":"Disponível",
+      "13":data
+    }
+  };
+
+  try {
+    await fetch(URL_API,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
+    mostrarMensagem("Horário disponibilizado com sucesso! ✨");
+    buscarAgenda();
+  } catch(e) {
+    mostrarMensagem("Erro ao salvar horário.","erro");
+  }
 }
 </script>
 </body>
