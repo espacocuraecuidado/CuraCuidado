@@ -454,7 +454,7 @@ async function liberarHorarioNoSite() {
             }
         };
 
-        const resposta = await fetch(URL_API, {
+        const resposta = await fetch(API_URL, {
             method: 'POST',
             body: JSON.stringify(payload)
         });
