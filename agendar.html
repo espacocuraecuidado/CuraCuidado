@@ -65,7 +65,6 @@
         const resposta = await fetch(`${URL_API}?acao=listarAgendamentos&t=${new Date().getTime()}`);
         const dados = await resposta.json();
 
-        // Filtra pelo Status (Coluna I) - Ignora maiúsculas/minúsculas
         const disponiveisParaMostrar = dados.filter(item => {
             const st = String(item.Status || "").trim().toLowerCase();
             return st === "disponível" || st === "disponivel";
@@ -79,29 +78,29 @@
         let botoesHtml = "";
         disponiveisParaMostrar.forEach(h => {
             // --- TRATAMENTO DA DATA (Coluna G) ---
-            let dataRaw = String(h.DataAgenda || "");
             let dataBR = "Data n/d";
-            
-            if (dataRaw.includes("T")) dataRaw = dataRaw.split("T");
-            if (dataRaw.includes("-")) {
-                const p = dataRaw.split("-");
-                if(p.length === 3) dataBR = `${p}/${p}/${p}`;
-            } else {
-                dataBR = dataRaw;
-            }
+            try {
+                let d = new Date(h.DataAgenda);
+                // Se a data for válida, formatamos para PT-BR
+                if (!isNaN(d)) {
+                    dataBR = d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+                }
+            } catch (e) { dataBR = String(h.DataAgenda).substring(0, 10); }
 
             // --- TRATAMENTO DA HORA (Coluna H) ---
-            let horaRaw = String(h.Hour || "");
             let horaBR = "00:00";
-            
-            if (horaRaw.includes("T")) {
-                // Correção aqui: primeiro pegamos a parte da hora, depois cortamos os minutos
-                let parteHora = horaRaw.split("T"); 
-                horaBR = parteHora.substring(0, 5);
-            } else {
-                // Se não tiver T, apenas pegamos os primeiros 5 caracteres (HH:mm)
-                horaBR = horaRaw.substring(0, 5);
-            }
+            try {
+                let hRaw = h.Hour;
+                
+                // Se for um objeto de data do Google
+                if (hRaw instanceof Date || !isNaN(Date.parse(hRaw))) {
+                    let dHora = new Date(hRaw);
+                    horaBR = dHora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                } else {
+                    // Se for apenas um texto (ex: "09:00")
+                    horaBR = String(hRaw).substring(0, 5);
+                }
+            } catch (e) { horaBR = "00:00"; }
 
             botoesHtml += `
                 <button type="button" class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
@@ -113,7 +112,7 @@
         container.innerHTML = botoesHtml;
 
     } catch (erro) {
-        console.error("Erro ao carregar:", erro);
+        console.error("Erro detalhado:", erro);
         container.innerHTML = "<p>Erro ao conectar com a planilha. 🌸</p>";
     }
 }
