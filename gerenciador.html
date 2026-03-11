@@ -168,73 +168,36 @@ async function cancelarAgendamento(idRecebido) {
 }
 
     // 2. FUNÇÃO SALVAR (AJUSTADA)
-    async function salvarHorario() {
-    const data = document.getElementById("dataAgenda").value; // Ex: 2026-03-22
-    const hora = document.getElementById("hora").value;       // Ex: 14:00
+   async function salvarHorario() {
+    const data = document.getElementById("dataAgenda").value; 
+    const hora = document.getElementById("hora").value;        
     const servico = document.getElementById("servico").value;
     const profissional = document.getElementById("profissional").value;
     const valor = document.getElementById("valor").value;
     
-    const msg = document.getElementById("msg");
-    const btn = document.getElementById("btnSalvar");
+    if (!data || !hora) { alert("Preencha Data e Hora!"); return; }
 
-    if (!data || !hora) {
-        msg.style.color = "red";
-        msg.innerText = "Preencha Data e Hora! ⚠️";
-        return;
-    }
+    const payload = {
+        acao: "executarPlanilha",
+        subAcao: "salvar",
+        aba: "Agendamentos",
+        payload: {
+           "1": `'${Date.now()}`,        // ID como texto
+           "2": `'${new Date().toLocaleDateString('pt-BR')}`,
+           "4": servico,
+           "5": profissional,
+           "6": valor,
+           "7": `'${data}`,             // DATA como texto (ex: '2026-03-11)
+           "8": `'${hora}`,             // HORA como texto (ex: '14:00)
+           "9": "Disponível",
+           "12": "Disponível",
+           "13": `'${data}`             // DATA AGENDA como texto
+        }
+    };
 
-    btn.disabled = true;
-    msg.style.color = "#d4a373";
-    msg.innerText = "Disponibilizando vaga na planilha... ⏳";
-
-    // O SEGREDO: Mapeamento Numérico para o Script v4.0
-   // Trecho revisado do seu salvarHorario
-const payload = {
-    acao: "executarPlanilha",
-    subAcao: "salvar",
-    aba: "Agendamentos",
-    payload: {
-        "1": `'${Date.now()}`,       // Coluna A: ID (Texto Puro)
-        "2": `'${new Date().toLocaleDateString('pt-BR')}`, // Coluna B: Registro
-        "3": "ADMIN",
-        "4": servico,
-        "5": profissional,
-        "6": valor,
-        "7": `'${data}`,            // Coluna G: Data (Texto Puro)
-        "8": `'${hora}`,            // Coluna H: Hour (Texto Puro)
-        "9": "Disponível",
-        "10": "",
-        "11": "",
-        "12": "Disponível",
-        "13": `'${data}`            // Coluna M: DataAgenda (Texto Puro)
-    }
-};
-
-    try {
-        await fetch(URL_API, { 
-            method: 'POST', 
-            mode: 'no-cors', 
-            body: JSON.stringify(payload) 
-        });
-
-        msg.style.color = "#25d366";
-        msg.innerText = "Horário publicado com sucesso! 🌸";
-        
-        // Limpa campos e atualiza a lista visual
-        setTimeout(() => {
-            document.getElementById("dataAgenda").value = "";
-            document.getElementById("hora").value = "";
-            buscarAgenda(); 
-            msg.innerText = "";
-        }, 2000);
-
-    } catch (e) {
-        msg.style.color = "red";
-        msg.innerText = "Erro ao conectar com a planilha. ❌";
-    } finally {
-        btn.disabled = false;
-    }
+    await fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+    alert("Horário Disponibilizado! ✨");
+    buscarAgenda();
 }
 </script>
 </body>
