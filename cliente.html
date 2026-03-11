@@ -133,7 +133,7 @@
         }
     }
 
-    async function carregarAgendamentos(cliente) {
+   async function carregarAgendamentos(cliente) {
         const container = document.getElementById("lista-agendamentos");
         try {
             const res = await fetch(`${URL_API}?acao=listarAgendamentos`);
@@ -149,14 +149,37 @@
                 return;
             }
 
-            container.innerHTML = minhaAgenda.map(a => `
-                <div class="pedido-card" style="border-left-color: #e8b4b8;">
-                    <span class="status-badge pago">Confirmado</span>
-                    <strong>📅 ${a.DataAgenda} às ${a.Hour}</strong><br>
-                    <p style="margin-top:5px;"><strong>Serviço:</strong> Atendimento Cura e Cuidado</p>
-                    <p><strong>Local:</strong> ${a.Endereco || 'A combinar'}</p>
-                </div>
-            `).join('');
+            container.innerHTML = minhaAgenda.map(a => {
+                // --- TRATAMENTO DE DATA ---
+                // Se a data vier estranha ou formatada com traço (2024-03-20), invertemos para o padrão BR
+                let dataLimpa = a.DataAgenda || "";
+                if (dataLimpa.includes("-")) {
+                    dataLimpa = dataLimpa.split('-').reverse().join('/');
+                } else if (dataLimpa.includes("T")) {
+                    // Se vier no formato ISO (2024-03-20T00:00:00), pegamos só a data
+                    dataLimpa = dataLimpa.split('T')[0].split('-').reverse().join('/');
+                }
+
+                // --- TRATAMENTO DE HORA ---
+                // Se a hora vier como objeto de data (1899...), pegamos apenas os caracteres de hora (HH:mm)
+                let horaLimpa = String(a.Hour || "");
+                if (horaLimpa.includes(" ")) {
+                    // Se vier "30/12/1899 14:00", pega a parte após o espaço
+                    horaLimpa = horaLimpa.split(" ")[1].substring(0, 5);
+                } else {
+                    // Garante que mostre apenas HH:mm
+                    horaLimpa = horaLimpa.substring(0, 5);
+                }
+
+                return `
+                    <div class="pedido-card" style="border-left-color: #e8b4b8;">
+                        <span class="status-badge pago">Confirmado</span>
+                        <strong>📅 ${dataLimpa} às ${horaLimpa}</strong><br>
+                        <p style="margin-top:5px;"><strong>Serviço:</strong> Atendimento Cura e Cuidado</p>
+                        <p><strong>Local:</strong> ${a.Endereco || 'A confirmar'}</p>
+                    </div>
+                `;
+            }).join('');
         } catch (e) {
             container.innerHTML = "<p style='text-align:center; color:red;'>Erro ao carregar agenda.</p>";
         }
