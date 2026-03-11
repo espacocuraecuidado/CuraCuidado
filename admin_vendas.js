@@ -414,29 +414,28 @@ async function abrirPopUpRastreio(idPedido) {
     }
 }
 // 1. Função para enviar o novo horário para a planilha
-// 1. Função para enviar o novo horário para a planilha
 async function liberarHorarioNoSite() {
-    const msg = document.getElementById("msg");
-    const btn = document.querySelector(".btn-salvar");
+    const msg = document.getElementById("msg"); // Certifique-se que existe um id="msg" em algum lugar
+    const btn = document.getElementById("btnLiberar");
 
     try {
-        // Capturando os valores dos inputs do formulário
-        const valorDoInputServico = document.getElementById("servico").value;
-        const valorDoInputProf = document.getElementById("profissional").value;
-        const valorDoInputPreco = document.getElementById("valor").value;
-        const valorDoInputData = document.getElementById("dataAgenda").value;
-        const valorDoInputHora = document.getElementById("hora").value;
+        // 1. AJUSTE DOS IDs PARA BATER COM O SEU HTML
+        const valorDoInputData = document.getElementById("adminDataAgenda").value;
+        const valorDoInputHora = document.getElementById("adminHoraAgenda").value;
 
-        // Validação básica para não enviar vazio
+        // Como o seu HTML não tem esses campos ainda, vamos definir valores padrão
+        // para evitar o erro de "null"
+        const valorDoInputServico = "Serviço Geral"; 
+        const valorDoInputProf = "Equipe Cura & Cuidado";
+        const valorDoInputPreco = "0.00";
+
         if (!valorDoInputData || !valorDoInputHora) {
-            if(msg) msg.innerText = "Preencha Data e Hora! ⚠️";
+            alert("Preencha Data e Hora! ⚠️");
             return;
         }
 
         if(btn) btn.disabled = true;
-        if(msg) msg.innerText = "Enviando para a planilha... ⏳";
-
-        // Montando o payload para as colunas A até K
+        
         const payload = {
             acao: "agendar",
             aba: "Agendamentos",
@@ -455,34 +454,20 @@ async function liberarHorarioNoSite() {
             }
         };
 
-        // ENVIANDO OS DADOS
         const resposta = await fetch(URL_API, {
             method: 'POST',
             body: JSON.stringify(payload)
         });
 
         if (resposta.ok) {
-            if(msg) {
-                msg.style.color = "#25d366";
-                msg.innerText = "Horário liberado com sucesso! 🌸";
-            }
-            // Limpa os campos de data e hora para o próximo cadastro
-            document.getElementById("dataAgenda").value = "";
-            document.getElementById("hora").value = "";
-            
-            // Se você tiver a função de atualizar a tabela, chama ela aqui:
-            if (typeof buscarAgenda === "function") buscarAgenda();
-            
-        } else {
-            throw new Error("Erro no servidor");
+            alert("Horário liberado com sucesso! 🌸");
+            document.getElementById("adminDataAgenda").value = "";
+            document.getElementById("adminHoraAgenda").value = "";
         }
 
     } catch (erro) {
         console.error("Erro:", erro);
-        if(msg) {
-            msg.style.color = "red";
-            msg.innerText = "Erro ao conectar com o sistema. ❌";
-        }
+        alert("Erro ao conectar com o sistema. ❌");
     } finally {
         if(btn) btn.disabled = false;
     }
