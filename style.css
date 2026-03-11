@@ -1,162 +1,664 @@
 :root {
-    /* CORES DE IDENTIDADE - Rosa Vibrante Selecionado */
-    --rosa-principal: #ff4d8d;  
-    --rosa-suave: #fce4ec;      
-    --rosa-hover: #e91e63;      
+    /* Cores Fixas */
+    --rosa-seco: #e8b4b8;
+    --rosa-claro: #f3d6d8;
     
-    /* VARIÁVEIS MODO CLARO */
+    /* Cores Modo Claro (Padrão) */
     --bg: #fffafb;
     --card-bg: #ffffff;
-    --texto: #2d2d2d;           
-    --texto-suave: #5a5a5a;     
+    --texto: #4a4a4a;
+    --texto-suave: #888888;
     --input-bg: #ffffff;
     --border: #f3d6d8;
-    --shadow: rgba(0, 0, 0, 0.08);
+    --sidebar-bg: #ffffff;
 }
 
-/* MODO ESCURO */
+/* Força o Modo Escuro quando a classe .dark-mode estiver no body */
 body.dark-mode {
     --bg: #1a1617; 
     --card-bg: #251f20; 
-    --texto: #fceeee;           
+    --texto: #f3e5e6; 
     --texto-suave: #b5a4a5;
     --input-bg: #2d2627;
     --border: #4a3a3b;
-    --shadow: rgba(0, 0, 0, 0.4);
+    --sidebar-bg: #211b1c;
 }
 
-/* --- BASE --- */
 body {
-    background-color: var(--bg);
-    color: var(--texto);
+    background-color: var(--bg); /* Usa a variável */
+    color: var(--texto);         /* Usa a variável */
     transition: background 0.3s, color 0.3s;
     margin: 0;
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.6;
+    font-family: sans-serif;
 }
 
-/* Containers Padronizados */
+/* Ajuste nos elementos para usarem as variáveis */
 .card-produto, .sidebar, .form-container {
     background-color: var(--card-bg) !important;
     color: var(--texto) !important;
-    border: 1px solid var(--border) !important;
+    border-color: var(--border) !important;
 }
 
-/* --- HEADER E STATUS --- */
+.nav-link {
+    color: var(--texto);
+    border-bottom: 1px solid var(--border);
+}
+/* --- HEADER --- */
 header { 
-    background: var(--rosa-principal); 
+    background: var(--rosa-seco); 
     color: white; 
-    padding: 15px 20px; 
+    padding: 15px; 
     display: flex; 
     justify-content: space-between; 
     align-items: center;
-    box-shadow: 0 2px 10px var(--shadow); 
-    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+    position: sticky; 
+    top: 0; 
+    z-index: 100;
 }
 
-#boas-vindas, #status-sync, .header-info {
-    color: #ffffff !important;
-    font-weight: 600;
-    font-size: 0.85rem;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+/* --- VITRINE --- */
+.vitrine-wrapper { 
+    position: relative;
+    padding: 5px;
+    overflow: hidden;
+    }
+/* Criando o efeito de "esfumaçado" nas pontas */
+/* O código que você enviou deve vir logo abaixo */
+.vitrine-wrapper::before {
+    content: ""; /* CRUCIAL: sem o content o elemento não aparece */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60px; /* Largura da sombra esquerda */
+    height: 100%;
+    z-index: 2; /* Fica acima dos produtos */
+    background: linear-gradient(to right, var(--bg), transparent);
+    pointer-events: none; /* Permite clicar/rolar através da sombra */
 }
 
-/* --- TÍTULOS DE SEÇÃO (VIBRANTES) --- */
-.titulo-secao {
-    margin: 40px 0 20px 20px;
-    font-size: 1.4rem;
-    color: var(--rosa-principal);
-    font-weight: 800;
-    border-left: 6px solid var(--rosa-principal);
-    padding-left: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+.vitrine-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px; /* Largura da sombra direita */
+    height: 100%;
+    z-index: 2;
+    background: linear-gradient(to left, var(--bg), transparent);
+    pointer-events: none;
 }
-
-/* --- VITRINES E CARDS --- */
-.vitrine-wrapper { position: relative; padding: 10px 5px; overflow: hidden; }
-
 .vitrine-deslizante { 
-    display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px;
-    scroll-snap-type: x proximity; scroll-behavior: smooth;
+    display: flex; 
+    overflow-x: auto; 
+    -webkit-overflow-scrolling: touch; 
+    gap: 20px; 
+    padding-bottom: 15px;
+    /* Mude de 'mandatory' para 'proximity' ou comente a linha abaixo para testar */
+    scroll-snap-type: x proximity; 
+    scroll-behavior: smooth; 
+}
+/* Esconde a barra de rolagem mas mantém a função */
+.vitrine-deslizante::-webkit-scrollbar { display: block; /* Garante que ela apareça */
+    height: 8px;    /* Espessura da barra horizontal */
+}
+/* 2. Estiliza o fundo da barra (trilho) */
+.vitrine-deslizante::-webkit-scrollbar-track {
+    background: var(--bg);
+    border-radius: 10px;
 }
 
+/* 3. Estiliza a parte que desliza (o "puxador") */
+.vitrine-deslizante::-webkit-scrollbar-thumb {
+    background: var(--rosa-seco);
+    padding-bottom: 15px;
+    border-radius: 10px;
+    border: 2px solid var(--bg); /* Cria um espaçamento visual */
+}
+
+/* 4. Efeito ao passar o mouse */
+.vitrine-deslizante::-webkit-scrollbar-thumb:hover {
+    background: #d69ea2; /* Um tom de rosa levemente mais escuro */
+}
+
+/* --- CARD REDUZIDO --- */
 .card-produto { 
-    min-width: 160px; max-width: 180px;
-    border-radius: 12px; padding: 12px;
-    text-align: center; scroll-snap-align: start;
-    box-shadow: 0 4px 8px var(--shadow);
-}
-
-/* Efeito de Foto Hover */
-.container-foto {
-    position: relative; width: 100%; height: 160px;
-    overflow: hidden; border-radius: 10px; margin-bottom: 8px;
-    background-color: var(--input-bg);
-}
-
-.container-foto img {
-    width: 100%; height: 100%; object-fit: cover;
-    transition: opacity 0.4s ease, transform 0.4s ease;
-}
-
-.img-hover { position: absolute; top: 0; left: 0; opacity: 0; }
-.card-produto:hover .img-principal { opacity: 0; }
-.card-produto:hover .img-hover { opacity: 1; }
-.card-produto:hover .container-foto img { transform: scale(1.08); }
-
-/* --- BOTÕES E INPUTS --- */
-.btn-block { 
-    background: var(--rosa-principal); color: white; border: none; 
-    width: 100%; padding: 12px; border-radius: 8px; 
-    cursor: pointer; font-weight: 700; transition: 0.2s;
-}
-
-.btn-block:hover { background: var(--rosa-hover); }
-
-input, select, textarea { 
-    width: 100%; padding: 12px; margin: 8px 0;
-    background-color: var(--input-bg);
+    min-width: 150px; 
+    max-width: 180px; /* Evita que o card cresça demais em telas médias */
+    background: var(--card-bg); 
+    border-radius: 12px; 
+    padding: 12px; /* Reduzido de 15px */
+    border: 1px solid var(--rosa-claro); 
+    text-align: center; 
+    scroll-snap-align: start;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
     color: var(--texto);
+}
+
+
+/* --- SIDEBARS (CARRINHO E MENU) --- */
+.sidebar {
+    position: fixed; 
+    top: 0; 
+    width: 380px; 
+    height: 100%; 
+    background: white;
+    
+    /* 1. CORREÇÃO: Escrita correta de box-sizing */
+    box-sizing: border-box; 
+    
+    /* 2. AJUSTE: O padding que afasta a letra da borda */
+    padding: 25px; 
+    
+    box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+    transition: 0.3s ease-in-out; 
+    z-index: 1000;
+    
+    /* 3. ADICIONAL: Garante que se tiver muitos itens, apareça a rolagem */
+    overflow-y: auto;
+}
+.sidebar.left { left: -380px; }
+.sidebar.right { right: -380px; }
+
+/* Correção para abrir apenas a respectiva sidebar */
+.sidebar.left.active { left: 0; }
+.sidebar.right.active { right: 0; }
+
+.close-btn {
+    background: none; border: none; font-size: 2rem; 
+    padding: 10px; cursor: pointer; color: var(--rosa-seco);
+}
+
+/* --- PÁGINAS --- */
+.page { display: none !important; padding: 20px; animation: fadeIn 0.3s; }
+.page.active { display: block !important; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* --- FORMULÁRIOS --- */
+.form-container { 
+    max-width: 500px; 
+    margin: auto; 
+    background: var(--card-bg); /* Mudado de white para variável */ 
+    padding: 25px; 
+    border-radius: 15px; 
     border: 1px solid var(--border); 
-    border-radius: 8px; box-sizing: border-box;
-    font-size: 16px !important; /* Mobile friendly */
+}
+input, select, textarea { 
+    width: 100%; padding: 12px; margin: 8px 0; 
+    border: 1px solid var(--rosa-claro); 
+    border-radius: 8px; 
+    box-sizing: border-box; 
 }
 
-/* --- WHATSAPP --- */
+.btn-block { 
+    background: var(--rosa-seco); color: white; border: none; 
+    width: 100%; padding: 15px; border-radius: 8px; 
+    cursor: pointer; font-weight: bold; 
+}
+.btn-icon { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+.nav-link { 
+    background: none; border: none; width: 100%; 
+    text-align: left; padding: 12px; 
+    border-bottom: 1px solid #eee; cursor: pointer; 
+    color: var(--texto); 
+}
+
+/* --- BOTÃO FLUTUANTE WHATSAPP (LADO ESQUERDO) --- */
 .whatsapp-float {
-    position: fixed; width: 55px; height: 55px;
-    bottom: 25px; left: 20px;
-    background-color: #25d366; color: #FFF;
-    border-radius: 50%; display: flex;
-    align-items: center; justify-content: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9999;
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    bottom: 20px;
+    left: 20px; /* Mudado de right: 20px para left: 20px */
+    background-color: #25d366;
+    color: #FFF;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 5px 15px rgba(0,0,0,0.2);
+    z-index: 10000;
     text-decoration: none;
+    transition: transform 0.3s ease;
 }
 
-/* --- MODAIS --- */
-.modal, .modal-cura {
-    display: none; position: fixed; z-index: 10000;
-    left: 0; top: 0; width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(6px); justify-content: center; align-items: center;
+/* Ajuste da legenda (tooltip) para abrir para a direita agora */
+.tooltip-whatsapp {
+    position: absolute;
+    left: 75px; /* Mudado de right: 75px para left: 75px */
+    background: white;
+    color: var(--texto);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    white-space: nowrap;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: 1px solid var(--rosa-claro);
+    pointer-events: none;
+}
+
+/* --- ESTILO PARA AS SEÇÕES RETRÁTEIS (ENTREGA E DADOS) --- */
+
+/* 1. Esconde os campos por padrão */
+.cart-entrega-campos, 
+.cart-dados-campos {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out, opacity 0.3s ease;
+    opacity: 0;
+    margin-top: 0;
+}
+
+/* 2. Estilo dos títulos (Botões de revelação) */
+.label-entrega-toggle, 
+.label-contato-toggle {
+    font-size: 0.85em;
+    color: var(--rosa-seco);
+    display: block;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    background: #fffafa;
+    border-radius: 8px;
+    border: 1px solid var(--rosa-claro);
+    transition: 0.3s;
+}
+
+/* 3. Efeito de REVELAR ao passar o mouse ou focar no campo */
+.cart-entrega-section:hover .cart-entrega-campos,
+.cart-entrega-section:focus-within .cart-entrega-campos,
+.cart-contato-section:hover .cart-dados-campos,
+.cart-contato-section:focus-within .cart-dados-campos {
+    max-height: 250px; /* Espaço suficiente para os inputs/select */
+    opacity: 1;
+    margin-top: 10px;
+}
+
+/* 4. Mudança de cor no título ao abrir */
+.cart-entrega-section:hover .label-entrega-toggle,
+.cart-contato-section:hover .label-contato-toggle {
+    background: var(--rosa-claro);
+    color: white;
+}
+/* Ajuste Mobile para o lado esquerdo */
+@media (max-width: 600px) {
+    .whatsapp-float { 
+        left: 15px; /* Mudado de right para left */
+        right: auto; /* Garante que o lado direito fique solto */
+    }
+}/* Estilo base da seta */
+.seta {
+    display: inline-block;
+    transition: transform 0.4s ease; /* Suaviza o giro */
+    margin-left: 5px;
+}
+
+/* Quando a seção de Entrega estiver aberta, a seta gira */
+.cart-entrega-section:hover .seta,
+.cart-entrega-section:focus-within .seta {
+    transform: rotate(180deg);
+}
+
+/* Quando a seção de Contato estiver aberta, a seta gira */
+.cart-contato-section:hover .seta,
+.cart-contato-section:focus-within .seta {
+    transform: rotate(180deg);
+}
+.cart-entrega-section, .cart-contato-section {
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.cart-entrega-section:hover, .cart-contato-section:hover {
+    background: #fffafa;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+}
+/* --- SISTEMA DE MODAL UNIFICADO --- */
+.modal-cura {
+    display: none; 
+    position: fixed; 
+    z-index: 10000; 
+    left: 0; top: 0; 
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); 
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    justify-content: center; 
+    align-items: center;
 }
 
 .modal-content {
-    background-color: var(--card-bg);
-    padding: 25px; width: 90%; max-width: 800px;
-    border-radius: 20px; border: 1px solid var(--border);
+    background-color: #fff;
+    padding: 25px;
+    width: 90%;
+    max-width: 750px;
+    border-radius: 20px;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
     animation: slideUp 0.4s ease;
 }
+
+.modal-body { 
+    display: flex; 
+    gap: 25px; 
+    flex-wrap: wrap; 
+}
+
+/* Galeria e Imagens */
+.modal-galeria { flex: 1; min-width: 280px; }
+#modal-img-principal { 
+    width: 100%; 
+    border-radius: 15px; 
+    aspect-ratio: 1/1; 
+    object-fit: cover; 
+    border: 1px solid var(--rosa-claro);
+}
+
+.miniaturas { 
+    display: flex; 
+    gap: 8px; 
+    margin-top: 10px; 
+    overflow-x: auto; 
+    padding-bottom: 5px;
+}
+.mini-foto { 
+    width: 60px; height: 60px; 
+    object-fit: cover; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    border: 2px solid transparent; 
+    transition: 0.2s;
+}
+.mini-foto:hover { border-color: var(--rosa-seco); }
+
+/* Informações do Produto */
+.modal-info { 
+    flex: 1.2; 
+    min-width: 280px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+}
+.preco-destaque { 
+    font-size: 1.8rem; 
+    color: #d4a373; 
+    font-weight: bold; 
+}
+
+.modal-acoes { 
+    display: flex; 
+    gap: 10px; 
+    align-items: center; 
+    margin-top: 15px;
+}
+#modal-qtd { width: 70px; text-align: center; }
 
 @keyframes slideUp {
     from { transform: translateY(30px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+/* Fundo que escurece a tela */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 9999; /* Valor alto para ficar na frente de tudo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Preto com 50% de transparência */
+    backdrop-filter: blur(8px); /* Efeito de desfoque no fundo */
+    -webkit-backdrop-filter: blur(8px); /* Compatibilidade Safari */
+    overflow-y: auto; /* Permite rolar se o conteúdo for grande */
+}
 
-/* --- RESPONSIVIDADE --- */
+/* A caixa branca onde fica o produto */
+.modal-content {
+    background-color: #fff;
+    margin: 2% auto; /* Pequena margem no topo */
+    padding: 30px;
+    width: 90%;
+    max-width: 850px;
+    border-radius: 25px;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    animation: slideUp 0.4s ease; /* Animação de subida */
+}
+
+/* Animação suave para o modal não aparecer "seco" */
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Ajuste para fechar no celular */
 @media (max-width: 600px) {
-    .titulo-secao { font-size: 1.1rem; margin: 25px 0 15px 15px; }
-    .whatsapp-float { left: 15px; bottom: 15px; }
-    .modal-content { width: 95%; padding: 15px; }
+    .modal-content {
+        margin: 5% auto;
+        padding: 15px;
+        width: 95%;
+    }
+}
+/* Efeito de pulso/brilho para quando atingir o frete grátis */
+.barra-cheia {
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.barra-cheia::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: brilhoBarra 2s infinite;
+}
+
+@keyframes brilhoBarra {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+/* --- CONTAINER DA FOTO AJUSTADO --- */
+.container-foto {
+    position: relative;
+    width: 100%;
+    height: 160px; /* Ajustado para melhor proporção com 150px de largura */
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background-color: var(--input-bg);
+}
+
+.container-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Faz a foto preencher o espaço sem distorcer */
+   transition: opacity 0.5s ease-in-out, transform 0.5s ease;
+}
+/* Efeito extra: Zoom suave ao passar o mouse */
+.card-produto:hover .container-foto img {
+    transform: scale(1.05);
+}
+
+/* A segunda foto fica por cima da primeira, mas invisível */
+.img-hover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+}
+
+/* Quando o mouse entra no card, troca a opacidade */
+.card-produto:hover .img-principal {
+    opacity: 0;
+}
+
+.card-produto:hover .img-hover {
+    opacity: 1;
+}
+/* --- TEXTOS E BOTÕES COMPACTOS --- */
+.card-produto h3 {
+    font-size: 0.85rem; /* Um pouco menor para não quebrar tantas linhas */
+    margin: 8px 0 4px 0;
+    line-height: 1.2;
+    height: 2.4em; /* Garante que títulos de 2 linhas fiquem alinhados */
+    overflow: hidden;
+}
+
+.card-produto p {
+    font-size: 0.8rem; 
+    margin: 4px 0;
+}
+/* Botões menores dentro da vitrine */
+.card-produto .btn-block {
+    padding: 8px; /* Menor que o padrão de 15px */
+    font-size: 0.8rem;
+    border-radius: 6px;
+}
+
+.card-produto .btn-secondary {
+    font-size: 0.7rem !important;
+    padding: 6px !important;
+}
+.banner-propaganda {
+    width: 100%;
+    margin: 30px 0;
+}
+.banner-propaganda img {
+    width: 100%;
+    height: auto;
+    display: block; /* Remove espaços vazios abaixo da imagem */
+}
+.titulo-secao {
+    margin: 40px 0 10px 20px;
+    font-size: 1.3rem;
+    color: var(--rosa-seco);
+    font-weight: bold;
+}
+/* Garante que o modal seja rolável em telas pequenas */
+#modal-produto {
+    align-items: flex-start; /* Alinha no topo para permitir rolar */
+    overflow-y: auto;        /* Ativa a rolagem vertical */
+    padding: 20px 10px;
+}
+
+.modal-content {
+    max-height: none;        /* Permite que o conteúdo cresça */
+    width: 95%;              /* Quase toda a largura no celular */
+    margin: auto;            /* Centraliza */
+    position: relative;
+}
+
+/* Ajuste específico para os campos de texto no celular */
+#av-comentario {
+    width: 100%;
+    min-height: 80px;        /* Garante altura mínima para digitar */
+    font-size: 16px;         /* Evita o zoom automático do iPhone ao clicar */
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+/* Garante que o botão de publicar seja visível e clicável */
+#btn-enviar-av {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+}
+/* Adicione isso para garantir uma folga no final do modal no celular */
+.modal-content {
+    margin-bottom: 50px; /* Evita que o botão de publicar fique colado na borda inferior */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Deixa a imagem do modal proporcional no celular */
+#modal-img-principal {
+    width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+    background: #f9f9f9;
+    border-radius: 10px;
+}
+.form-scroll-ajuste {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 30px; /* Dá espaço para o teclado não cobrir o botão */
+}
+
+.form-scroll-ajuste input {
+    width: 100%;
+    height: 45px; /* Altura ideal para o dedo no celular */
+    font-size: 16px !important; /* Impede o zoom forçado no iPhone */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+/* Ajuste para o Modal que contém esse formulário */
+#modal-produto, #page-agendamento {
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; /* Rolagem suave no iPhone */
+}
+#vitrine-depoimentos {
+    display: flex;
+    overflow-x: auto; /* Permite rolar para o lado */
+    gap: 15px;
+    padding: 20px 10px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+#vitrine-depoimentos::-webkit-scrollbar {
+    height: 4px;
+}
+
+#vitrine-depoimentos::-webkit-scrollbar-thumb {
+    background: #d4a373;
+    border-radius: 10px;
+}   
+/* Correção para aparência no iOS (iPhone/Safari) */
+input, 
+select, 
+textarea, 
+button {
+    -webkit-appearance: none; /* Remove o estilo padrão do iOS */
+    appearance: none;
+    border-radius: 8px; /* Garante que as bordas arredondadas funcionem */
+}
+
+/* Impede o zoom automático ao clicar em campos no iPhone */
+@media screen and (max-width: 768px) {
+    input, 
+    select, 
+    textarea {
+        font-size: 16px !important; /* iOS dá zoom se a fonte for menor que 16px */
+    }
+}
+
+/* Restaura a setinha do select que o 'appearance: none' remove */
+select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 1em;
+    padding-right: 40px;
+}
+/* Alvo: O texto de boas-vindas e o horário de sincronização */
+#boas-vindas, #status-sync, .header-info {
+    color: #ffffff !important; /* Cor branca para destacar no fundo escuro/rosa */
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Sombra leve para dar leitura */
+}
+
+/* Caso o texto esteja dentro de um span ou pequeno parágrafo na barra */
+.header-container span {
+    color: #fdf6f0; /* Um tom creme bem claro, combina com a Cura & Cuidado */
 }
