@@ -166,67 +166,65 @@
     }
 
     async function salvarHorario() {
-    // Captura os valores dos campos do seu formulário
-    const dataInput = document.getElementById("dataAgenda").value; // Ex: 2026-03-22
-    const horaInput = document.getElementById("hora").value;       // Ex: 13:00
-    const servico = document.getElementById("servico").value;
-    const profissional = document.getElementById("profissional").value;
-    const valor = document.getElementById("valor").value;
-    
-    const msg = document.getElementById("msg");
-    const btn = document.getElementById("btnSalvar");
+        const data = document.getElementById("dataAgenda").value;
+        const hora = document.getElementById("hora").value;
+        const msg = document.getElementById("msg");
+        const btn = document.getElementById("btnSalvar");
 
-    if (!dataInput || !horaInput) {
-        msg.innerText = "Data e Hora são obrigatórios! ⚠️";
-        return;
-    }
-
-    btn.disabled = true;
-    msg.innerText = "Criando nova linha na planilha... ⏳";
-
-    // MONTAGEM DO PAYLOAD (Mapeamento A até M)
-    const payload = {
-        acao: "executarPlanilha",
-        subAcao: "salvar", 
-        aba: "Agendamentos",
-        payload: {
-            "1": Date.now(),                            // Coluna A: ID Único (Novo a cada clique)
-            "2": new Date().toLocaleDateString('pt-BR'),// Coluna B: Data de Registro
-            "4": servico,                               // Coluna D: Serviço
-            "5": profissional,                          // Coluna E: Profissional
-            "6": valor,                                 // Coluna F: Valor
-            "7": dataInput,                             // Coluna G: Data (Uso interno)
-            "8": horaInput,                             // Coluna H: Hora
-            "9": "Disponível",                          // Coluna I: Status inicial
-            "12": "Disponível",                         // Coluna L: Vaga (Para o cliente ver)
-            "13": dataInput                             // Coluna M: DataAgenda (Para o perfil do cliente)
+        if (!data || !hora) {
+            msg.style.color = "red";
+            msg.innerText = "Preencha Data e Hora! ⚠️";
+            return;
         }
-    };
 
-    try {
-        // Enviamos para a API
-        await fetch(URL_API, { 
-            method: 'POST', 
-            mode: 'no-cors', 
-            body: JSON.stringify(payload) 
-        });
+        btn.disabled = true;
+        msg.style.color = "#d4a373";
+        msg.innerText = "Gravando na planilha... ⏳";
 
-        msg.innerText = "Horário disponibilizado com sucesso! 🌸";
-        
-        // Limpa e atualiza
-        setTimeout(() => {
-            document.getElementById("dataAgenda").value = "";
-            document.getElementById("hora").value = "";
-            msg.innerText = "";
-            buscarAgenda(); // Chama sua função que atualiza a tabela na tela
-        }, 2000);
+        const payload = {
+            acao: "executarPlanilha", // Usando o novo padrão universal
+            subAcao: "salvar",
+            aba: "Agendamentos",
+            payload: {
+                "1": Date.now(), // ID na Coluna A
+                "2": new Date().toLocaleDateString('pt-BR'), // Coluna B
+                "3": "ADMIN", // Coluna C
+                "4": document.getElementById("servico").value, // Coluna D
+                "5": document.getElementById("profissional").value, // Coluna E
+                "6": document.getElementById("valor").value, // Coluna F
+                "7": data, // Coluna G
+                "8": hora, // Coluna H
+                "9": "Disponível", // Coluna I
+                "10": "", // Coluna J
+                "11": "", // Coluna K
+                "12": "Disponível" // Coluna L (Vaga - Fundamental para o site ler)
+            }
+        };
 
-    } catch (e) {
-        msg.innerText = "Erro ao salvar. Verifique a conexão. ❌";
-    } finally {
-        btn.disabled = false;
+        try {
+            await fetch(URL_API, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: JSON.stringify(payload) 
+            });
+
+            msg.style.color = "#25d366";
+            msg.innerText = "Horário disponibilizado com sucesso! 🌸";
+            
+            setTimeout(() => {
+                document.getElementById("dataAgenda").value = "";
+                document.getElementById("hora").value = "";
+                buscarAgenda(); 
+                msg.innerText = "";
+            }, 3000);
+
+        } catch (e) {
+            msg.style.color = "red";
+            msg.innerText = "Erro na conexão. ❌";
+        } finally {
+            btn.disabled = false;
+        }
     }
-}
 </script>
 </body>
 </html>
