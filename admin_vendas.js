@@ -414,55 +414,77 @@ async function abrirPopUpRastreio(idPedido) {
     }
 }
 // 1. Função para enviar o novo horário para a planilha
+// 1. Função para enviar o novo horário para a planilha
 async function liberarHorarioNoSite() {
-    // 1. Você precisa capturar os valores dos inputs primeiro!
-    const valorDoInputNome = document.getElementById("nome").value; // ou o ID que você usa
-    const valorDoInputServico = document.getElementById("servico").value;
-    const valorDoInputProf = document.getElementById("profissional").value;
-    const valorDoInputPreco = document.getElementById("valor").value;
-    const valorDoInputData = document.getElementById("dataAgenda").value;
-    const valorDoInputHora = document.getElementById("hora").value;
-
-    // 2. Agora sim o payload vai encontrar as definições:
-    const payload = {
-        acao: "agendar",
-        aba: "Agendamentos",
-        payload: {
-            "ID": Date.now(),
-            "Data Registro": new Date().toLocaleDateString('pt-BR'),
-            "Nome": "ADMIN", // Ou usar a variável valorDoInputNome
-            "Servico": valorDoInputServico,
-            "Profissional": valorDoInputProf,
-            "Valor": valorDoInputPreco,
-            "DataAgenda": valorDoInputData,
-            "Hour": valorDoInputHora,
-            "Status": "Disponível",
-            "Cliente": "",
-            "Telefone": ""
-        }
-    };
-    
-    // ... restante do seu código fetch
-}
+    const msg = document.getElementById("msg");
+    const btn = document.querySelector(".btn-salvar");
 
     try {
-        // Certifique-se que a variável da URL da API é a mesma que você já usa no admin_vendas.js
-        const response = await fetch(API_URL, { 
-            method: 'POST', 
-            body: JSON.stringify(payload) 
-        });
-        
-        const res = await response.json();
-        if (res.status === "sucesso") {
-            alert("Horário liberado! ✨");
-            document.getElementById('adminHoraAgenda').value = ""; 
-            atualizarTabelaAgendamentos(); // Atualiza a lista abaixo
+        // Capturando os valores dos inputs do formulário
+        const valorDoInputServico = document.getElementById("servico").value;
+        const valorDoInputProf = document.getElementById("profissional").value;
+        const valorDoInputPreco = document.getElementById("valor").value;
+        const valorDoInputData = document.getElementById("dataAgenda").value;
+        const valorDoInputHora = document.getElementById("hora").value;
+
+        // Validação básica para não enviar vazio
+        if (!valorDoInputData || !valorDoInputHora) {
+            if(msg) msg.innerText = "Preencha Data e Hora! ⚠️";
+            return;
         }
-    } catch (error) {
-        alert("Erro ao salvar horário.");
+
+        if(btn) btn.disabled = true;
+        if(msg) msg.innerText = "Enviando para a planilha... ⏳";
+
+        // Montando o payload para as colunas A até K
+        const payload = {
+            acao: "agendar",
+            aba: "Agendamentos",
+            payload: {
+                "ID": Date.now(),
+                "Data Registro": new Date().toLocaleDateString('pt-BR'),
+                "Nome": "ADMIN", 
+                "Servico": valorDoInputServico,
+                "Profissional": valorDoInputProf,
+                "Valor": valorDoInputPreco,
+                "DataAgenda": valorDoInputData,
+                "Hour": valorDoInputHora,
+                "Status": "Disponível",
+                "Cliente": "",
+                "Telefone": ""
+            }
+        };
+
+        // ENVIANDO OS DADOS
+        const resposta = await fetch(URL_API, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        if (resposta.ok) {
+            if(msg) {
+                msg.style.color = "#25d366";
+                msg.innerText = "Horário liberado com sucesso! 🌸";
+            }
+            // Limpa os campos de data e hora para o próximo cadastro
+            document.getElementById("dataAgenda").value = "";
+            document.getElementById("hora").value = "";
+            
+            // Se você tiver a função de atualizar a tabela, chama ela aqui:
+            if (typeof buscarAgenda === "function") buscarAgenda();
+            
+        } else {
+            throw new Error("Erro no servidor");
+        }
+
+    } catch (erro) {
+        console.error("Erro:", erro);
+        if(msg) {
+            msg.style.color = "red";
+            msg.innerText = "Erro ao conectar com o sistema. ❌";
+        }
     } finally {
-        btn.disabled = false;
-        btn.innerText = "✨ Liberar Horário";
+        if(btn) btn.disabled = false;
     }
 }
 
