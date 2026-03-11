@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendar Atendimento - Cura & Cuidado</title>
-    <link rel="stylesheet" href="style.css">
-
     <style>
         body { background-color: #fdf6f0; font-family: 'Segoe UI', sans-serif; padding: 20px; }
         .agendar-container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .titulo { color: #d4a373; text-align: center; margin-bottom: 20px; }
-        
         .grid-horarios { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
         .btn-horario { 
             padding: 12px; border: 2px solid #e8b4b8; background: white; color: #d69ea2; 
@@ -18,32 +15,22 @@
             text-align: center; line-height: 1.4;
         }
         .btn-horario.selected { background: #e8b4b8; color: white; border-color: #d69ea2; }
-        .btn-horario:disabled { border-color: #eee; color: #ccc; cursor: not-allowed; }
-
         .btn-confirmar { 
             width: 100%; margin-top: 25px; padding: 15px; background: #25d366; 
             color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
-            transition: 0.3s;
+            display: none; /* Inicia escondido */
         }
-        .btn-confirmar:hover { background: #1eb954; transform: scale(1.02); }
     </style>
 </head>
 <body>
 
 <div class="agendar-container">
     <h2 class="titulo">Escolha seu Horário 🌸</h2>
-    <p style="text-align: center; font-size: 0.9em; color: #888;">Selecione uma das opções abaixo para realizar seu agendamento.</p>
-
     <div id="lista-horarios" class="grid-horarios">
         <p style="grid-column: span 2; text-align: center;">Buscando horários disponíveis... ⏳</p>
     </div>
 
-    // Exemplo de como montar o botão no agendar.html
-container.innerHTML += `
-    <button onclick="confirmarAgendamento('${item.ID}')">
-        ${item.DataAgenda} às ${item.Hour}
-    </button>
-`;
+    <button id="btnConfirmar" class="btn-confirmar" onclick="finalizarAgendamento()">Confirmar Agendamento ✨</button>
     
     <a href="cliente.html" style="display: block; text-align: center; margin-top: 15px; color: #999; text-decoration: none;">Voltar para minha conta</a>
 </div>
@@ -61,125 +48,87 @@ container.innerHTML += `
     };
 
     async function carregarHorarios() {
-    const container = document.getElementById("lista-horarios");
-    container.innerHTML = "Buscando horários... ⏳";
+        const container = document.getElementById("lista-horarios");
+        try {
+            const resposta = await fetch(`${URL_API}?acao=listarAgendamentos&t=${new Date().getTime()}`);
+            const dados = await resposta.json();
 
-    try {
-        const resposta = await fetch(`${URL_API}?acao=listarAgendamentos&t=${new Date().getTime()}`);
-        const dados = await resposta.json();
+            // Filtra pela Coluna L (Vaga)
+            const disponiveis = dados.filter(item => {
+                const statusVaga = String(item.Vaga || "").trim().toLowerCase();
+                return statusVaga === "disponível" || statusVaga === "disponivel";
+            });
 
-        // O Admin agora define a disponibilidade na Coluna L (Vaga)
-        const disponiveisParaMostrar = dados.filter(item => {
-            const statusVaga = String(item.Vaga || "").trim().toLowerCase();
-            return statusVaga === "disponível" || statusVaga === "disponivel";
-        });
+            if (disponiveis.length === 0) {
+                container.innerHTML = "<p style='grid-column: span 2; text-align:center;'>Nenhum horário disponível no momento. 🌸</p>";
+                return;
+            }
 
-        if (disponiveisParaMostrar.length === 0) {
-            container.innerHTML = "<p style='grid-column: span 2;'>Nenhum horário disponível. 🌸</p>";
-            return;
+            container.innerHTML = disponiveis.map(h => {
+                // Usa a Coluna M (DataAgenda) e Coluna H (Hour)
+                const dia = h.DataAgenda || h.Quando || "Data n/d";
+                const hora = h.Hour || h.Para || "00:00";
+                
+                return `
+                    <button type="button" class="btn-horario" onclick="selecionar(this, '${dia}', '${hora}', '${h.ID}')">
+                        ${dia}<br><b>${hora}</b>
+                    </button>
+                `;
+            }).join('');
+
+        } catch (erro) {
+            container.innerHTML = "<p>Erro ao carregar horários. 🌸</p>";
         }
-
-        let botoesHtml = "";
-        disponiveisParaMostrar.forEach(h => {
-            // Lemos o que o Admin escreveu em Quando (M) e Para (N)
-            const diaExibicao = h.Quando || "Data n/d";
-            const horaExibicao = h.Para || "00:00";
-
-            botoesHtml += `
-                <button type="button" class="btn-horario" onclick="selecionar(this, '${diaExibicao}', '${horaExibicao}', '${h.ID}')">
-                    ${diaExibicao}<br><b>${horaExibicao}</b>
-                </button>
-            `;
-        });
-
-        container.innerHTML = botoesHtml;
-    } catch (erro) {
-        container.innerHTML = "<p>Erro ao carregar dados. 🌸</p>";
-    }
-}
-    function selecionar(btn, data, hora) {
-        document.querySelectorAll('.btn-horario').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        horarioSelecionado = { data, hora };
-        document.getElementById("btnConfirmar").style.display = "block";
     }
 
-    // 1. CORRIGIDO: Agora recebe o parâmetro 'id'
     function selecionar(btn, data, hora, id) {
         document.querySelectorAll('.btn-horario').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         
-        // 2. CORRIGIDO: Agora salvamos o id para enviar depois
+        // Guardamos o ID que o administrador criou
         horarioSelecionado = { data, hora, id }; 
         document.getElementById("btnConfirmar").style.display = "block";
     }
 
     async function finalizarAgendamento() {
-    const btn = document.getElementById("btnConfirmar");
-    if (!horarioSelecionado) {
-        alert("Por favor, selecione um horário primeiro.");
-        return;
+        const btn = document.getElementById("btnConfirmar");
+        const usuario = localStorage.getItem("usuarioLogado");
+        const telefone = localStorage.getItem("tel_cliente") || "Não informado";
+
+        if (!horarioSelecionado) return;
+
+        btn.disabled = true;
+        btn.innerText = "Reservando... ⏳";
+
+        // MONTAGEM DO PAYLOAD PARA ATUALIZAR A LINHA EXISTENTE (Pelo ID)
+        const payload = {
+            acao: "executarPlanilha",
+            subAcao: "salvar",
+            aba: "Agendamentos",
+            id: String(horarioSelecionado.id), // Aqui está a mágica: ele busca o ID 1234568
+            payload: {
+                "9": "Ocupado",       // Coluna I (Status)
+                "10": usuario,        // Coluna J (Cliente)
+                "11": telefone,       // Coluna K (Telefone)
+                "12": "Ocupado"       // Coluna L (Vaga - faz sumir do site)
+            }
+        };
+
+        try {
+            await fetch(URL_API, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(payload)
+            });
+
+            alert("Agendamento Confirmado! ✨\nEsperamos por você.");
+            window.location.href = "cliente.html?secao=agenda";
+
+        } catch (error) {
+            alert("Erro ao confirmar. Tente novamente.");
+            btn.disabled = false;
+        }
     }
-
-    btn.disabled = true;
-    btn.innerText = "Processando Agendamento... 🌸";
-
-    // 1. CAPTURA DE GPS (Geolocalização)
-    // Tentamos capturar a localização. Mesmo que o cliente negue, o agendamento continua.
-    if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition((pos) => {
-            const dadosGps = {
-                acao: "processarLocalizacao",
-                payload: {
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude,
-                    usuario: localStorage.getItem("usuarioLogado") || "Cliente"
-                }
-            };
-            // Envio silencioso do GPS
-            fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dadosGps) });
-        }, (err) => {
-            console.warn("GPS não autorizado ou indisponível.");
-        });
-    }
-
-    // 2. MONTAGEM DO PAYLOAD (Poder Total - Colunas G até L)
-    // O Cliente PREENCHE o slot existente
-const payload = {
-    acao: "executarPlanilha",
-    subAcao: "salvar",
-    aba: "Agendamentos",
-    id: String(idDoHorarioEscolhido), // O sistema busca a linha 1234568
-    payload: {
-        "9": "Ocupado",       // Muda o status para não aparecer mais
-        "10": nomeCliente,    // Grava o nome na linha certa
-        "11": telCliente,     // Grava o telefone na linha certa
-        "12": "Ocupado"       // Esconde o horário do site para outros clientes
-    }
-};
-
-    // 3. ENVIO DOS DADOS PARA A PLANILHA
-    try {
-        await fetch(URL_API, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify(payload)
-        });
-
-        // Feedback de sucesso (com no-cors não lemos a resposta, então aguardamos um pouco)
-        alert("Agendamento realizado com sucesso! ✨\nSeu horário foi reservado.");
-        
-        setTimeout(() => {
-            window.location.href = "cliente.html";
-        }, 1500);
-
-    } catch (error) {
-        console.error("Erro no fetch:", error);
-        alert("Erro ao conectar com o servidor. Tente novamente.");
-        btn.disabled = false;
-        btn.innerText = "Confirmar Agendamento";
-    }
-}
 </script>
 </body>
 </html>

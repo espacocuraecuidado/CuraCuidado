@@ -136,41 +136,40 @@
    async function carregarAgendamentos(cliente) {
     const container = document.getElementById("lista-agendamentos");
     try {
-        const res = await fetch(`${URL_API}?acao=listarAgendamentos`);
+        // Adicionamos um timestamp para evitar cache do navegador e sempre pegar a agenda atualizada
+        const res = await fetch(`${URL_API}?acao=listarAgendamentos&t=${new Date().getTime()}`);
         const dados = await res.json();
 
-        // Filtra apenas o que pertence ao cliente logado e está ocupado
+        // Filtra apenas os agendamentos que estão Ocupados e pertencem ao cliente logado
         const minhaAgenda = dados.filter(a => 
-            a.Status === "Ocupado" && 
+            (String(a.Status).toLowerCase() === "ocupado" || String(a.Vaga).toLowerCase() === "ocupado") && 
             a.Cliente && String(a.Cliente).toLowerCase() === String(cliente).toLowerCase()
         );
 
         if (minhaAgenda.length === 0) {
-            container.innerHTML = "<p style='text-align:center;'>Você não possui agendamentos. 📅</p>";
+            container.innerHTML = "<p style='text-align:center;'>Você não possui agendamentos ativos. 📅</p>";
             return;
         }
 
         container.innerHTML = minhaAgenda.map(a => {
-            // --- BUSCA NA COLUNA M ---
-            // No JSON do Google Apps Script, os campos herdam o nome do cabeçalho.
-            // Se a Coluna M na sua planilha se chamar "Data_Final" ou "Vaga", use esse nome.
-            // Abaixo, tentamos capturar o valor da data que foi salva no momento do clique.
-            
+            // --- TRATAMENTO DA DATA (Prioridade para Coluna M: DataAgenda) ---
             let dataBruta = a.DataAgenda || a.Data || ""; 
+            let dataExibicao = "Data não definida";
             
-            // Ajuste de Data (Coluna M)
-            let dataExibicao = "Data não encontrada";
             if (dataBruta) {
+                // Remove qualquer resíduo de hora que venha junto da data (formato ISO ou string)
                 let apenasData = String(dataBruta).split('T')[0].split(' ')[0];
                 dataExibicao = apenasData.includes("-") 
                     ? apenasData.split('-').reverse().join('/') 
                     : apenasData;
             }
 
-            // Ajuste de Hora (Coluna H)
+            // --- TRATAMENTO DA HORA (Coluna H: Hour) ---
             let horaBruta = String(a.Hour || a.Hora || "");
             let horaExibicao = "--:--";
+            
             if (horaBruta) {
+                // Se o Google Sheets enviar a data de 1899 junto, limpamos aqui
                 horaExibicao = horaBruta.includes(" ") 
                     ? horaBruta.split(" ")[1].substring(0, 5) 
                     : horaBruta.substring(0, 5);
@@ -178,17 +177,22 @@
 
             return `
                 <div class="pedido-card" style="border-left-color: #e8b4b8;">
-                    <span class="status-badge pago">Confirmado</span>
+                    <div class="status-badge pago">Confirmado</div>
                     <strong>📅 ${dataExibicao} às ${horaExibicao}</strong><br>
-                    <p style="margin-top:10px;"><strong>Serviço:</strong> Atendimento Especializado</p>
-                    <p><strong>Profissional:</strong> ${a.Profissional || 'Equipe Cura e Cuidado'}</p>
-                    <small style="color: #999;">ID do Agendamento: ${a.ID}</small>
+                    <p style="margin-top:10px; margin-bottom:5px;">
+                        <strong>Serviço:</strong> ${a.Servico || 'Atendimento Cura e Cuidado'}
+                    </p>
+                    <p style="margin: 0; font-size: 0.9em; color: #666;">
+                        <strong>Profissional:</strong> ${a.Profissional || 'Equipe'}
+                    </p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">
+                    <small style="color: #999; font-size: 0.75em;">Ref: ${a.ID}</small>
                 </div>
             `;
         }).join('');
     } catch (e) {
-        console.error("Erro ao carregar Coluna M:", e);
-        container.innerHTML = "<p style='text-align:center; color:red;'>Erro ao carregar agenda.</p>";
+        console.error("Erro ao carregar agenda:", e);
+        container.innerHTML = "<p style='text-align:center; color:red;'>Não foi possível carregar sua agenda no momento.</p>";
     }
 }
 
