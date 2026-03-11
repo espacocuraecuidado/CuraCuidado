@@ -118,17 +118,16 @@
     btn.disabled = true;
     btn.innerText = "Agendando... 🌸";
 
-    const payload = {
+    // Dentro da função finalizarAgendamento()
+const payload = {
     acao: "agendar",
-    aba: "Agendamentos",
-    id: horarioSelecionado.id,        // Algumas versões buscam aqui
-    idPedido: horarioSelecionado.id,  // Outras versões buscam aqui
+    id: String(horarioSelecionado.id), // Garante que o ID vá no primeiro nível
     payload: {
-        "ID": horarioSelecionado.id,  // E outras dentro do payload
+        "ID": String(horarioSelecionado.id),
+        "DataAgenda": horarioSelecionado.data,
+        "Hour": horarioSelecionado.hora,
         "Cliente": localStorage.getItem("usuarioLogado"),
-        "Telefone": localStorage.getItem("tel_cliente") || "Não informado",
-        "Status": "Ocupado",
-        "Vaga": "Ocupado"
+        "Telefone": localStorage.getItem("tel_cliente") || "Não informado"
     }
 };
 
