@@ -23,6 +23,21 @@
         .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
         .status-disponivel { background: #e7f9ee; color: #2ecc71; }
         .status-ocupado { background: #ffebee; color: #e74c3c; }
+
+        .btn-cancelar {
+            background: #ffebee;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: 0.3s;
+        }
+        .btn-cancelar:hover {
+            background: #e74c3c;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -75,19 +90,19 @@
                     <th>Hora</th>
                     <th>Serviço</th>
                     <th>Status</th>
+                    <th>Ação</th> 
                 </tr>
             </thead>
             <tbody id="corpoTabela">
-                <tr><td colspan="4" style="text-align:center;">Carregando agenda...</td></tr>
+                <tr><td colspan="5" style="text-align:center;">Carregando agenda...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbykGVYEl2MSwtEj0nUU_FS7e1QusXZ3jlJn1ffNFpWQQwKLH8wiaQ259LBTySvgvPUZ/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbyrqHCXtP99cGGH8KvVBLmY_9ElgkTtbK2JgFqecgszbeXCurJobZcrbe6BOy2bpHXm/exec";
 
-    // 1. CARREGAR TABELA AO ABRIR
     window.onload = buscarAgenda;
 
     async function buscarAgenda() {
@@ -96,27 +111,60 @@
             const resposta = await fetch(`${URL_API}?acao=listarAgendamentos`);
             const dados = await resposta.json();
             
-            // Ordenar por data e hora (mais recentes primeiro)
             dados.sort((a, b) => new Date(a.DataAgenda + 'T' + a.Hour) - new Date(b.DataAgenda + 'T' + b.Hour));
 
             corpo.innerHTML = "";
-            dados.slice(0, 10).forEach(item => { // Mostra os 10 primeiros
+            dados.slice(0, 15).forEach(item => { 
                 const statusClass = item.Status === "Ocupado" ? "status-ocupado" : "status-disponivel";
+                
+                const botaoAcao = item.Status === "Ocupado" 
+                    ? `<button class="btn-cancelar" onclick="cancelarAgendamento('${item.ID}')">Liberar 🔓</button>` 
+                    : `-`;
+
                 corpo.innerHTML += `
                     <tr>
                         <td>${item.DataAgenda.split('-').reverse().join('/')}</td>
                         <td>${item.Hour}</td>
                         <td>${item.Servico || '-'}</td>
                         <td><span class="status-badge ${statusClass}">${item.Status}</span></td>
+                        <td>${botaoAcao}</td>
                     </tr>
                 `;
             });
         } catch (e) {
-            corpo.innerHTML = "<tr><td colspan="4">Erro ao atualizar lista.</td></tr>";
+            corpo.innerHTML = "<tr><td colspan='5'>Erro ao atualizar lista.</td></tr>";
         }
     }
 
-    // 2. FUNÇÃO SALVAR (AJUSTADA)
+    async function cancelarAgendamento(idRecebido) {
+        if (!confirm("Deseja cancelar este agendamento e tornar o horário disponível novamente?")) return;
+
+        const payload = {
+            acao: "executarPlanilha",
+            subAcao: "salvar",
+            aba: "Agendamentos",
+            id: String(idRecebido),
+            payload: {
+                "9": "Disponível",    // Coluna I (Status)
+                "10": "",             // Coluna J (Cliente)
+                "11": "",             // Coluna K (Telefone)
+                "12": "Disponível"    // Coluna L (Vaga)
+            }
+        };
+
+        try {
+            await fetch(URL_API, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: JSON.stringify(payload) 
+            });
+            alert("Horário liberado! ✨");
+            buscarAgenda(); 
+        } catch (e) {
+            alert("Erro ao conectar.");
+        }
+    }
+
     async function salvarHorario() {
         const data = document.getElementById("dataAgenda").value;
         const hora = document.getElementById("hora").value;
@@ -134,47 +182,49 @@
         msg.innerText = "Gravando na planilha... ⏳";
 
         const payload = {
-            acao: "agendar",
+            acao: "executarPlanilha", // Usando o novo padrão universal
+            subAcao: "salvar",
             aba: "Agendamentos",
             payload: {
-                "ID": Date.now(),
-                "Data Registro": new Date().toLocaleDateString('pt-BR'),
-                "Nome": "ADMIN",
-                "Servico": document.getElementById("servico").value,
-                "Profissional": document.getElementById("profissional").value,
-                "Valor": document.getElementById("valor").value,
-                "DataAgenda": data,
-                "Hour": hora,
-                "Status": "Disponível",
-                "Cliente": "",
-                "Telefone": ""
+                "1": Date.now(), // ID na Coluna A
+                "2": new Date().toLocaleDateString('pt-BR'), // Coluna B
+                "3": "ADMIN", // Coluna C
+                "4": document.getElementById("servico").value, // Coluna D
+                "5": document.getElementById("profissional").value, // Coluna E
+                "6": document.getElementById("valor").value, // Coluna F
+                "7": data, // Coluna G
+                "8": hora, // Coluna H
+                "9": "Disponível", // Coluna I
+                "10": "", // Coluna J
+                "11": "", // Coluna K
+                "12": "Disponível" // Coluna L (Vaga - Fundamental para o site ler)
             }
         };
 
         try {
-        await fetch(URL_API, { 
-            method: 'POST', 
-            mode: 'no-cors', // Ignora a restrição de leitura do navegador
-            body: JSON.stringify(payload) 
-        });
+            await fetch(URL_API, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: JSON.stringify(payload) 
+            });
 
-        msg.style.color = "#25d366";
-        msg.innerText = "Comando enviado! A planilha será atualizada em breve. 🌸";
-        
-        // Limpa o formulário e recarrega a lista após 3 segundos
-        setTimeout(() => {
-            document.getElementById("dataAgenda").value = "";
-            document.getElementById("hora").value = "";
-            buscarAgenda(); 
-        }, 3000);
+            msg.style.color = "#25d366";
+            msg.innerText = "Horário disponibilizado com sucesso! 🌸";
+            
+            setTimeout(() => {
+                document.getElementById("dataAgenda").value = "";
+                document.getElementById("hora").value = "";
+                buscarAgenda(); 
+                msg.innerText = "";
+            }, 3000);
 
-    } catch (e) {
-        msg.style.color = "red";
-        msg.innerText = "Erro na conexão. ❌";
-    } finally {
-        btn.disabled = false;
+        } catch (e) {
+            msg.style.color = "red";
+            msg.innerText = "Erro na conexão. ❌";
+        } finally {
+            btn.disabled = false;
+        }
     }
-}
 </script>
 </body>
 </html>

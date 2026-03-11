@@ -6,7 +6,7 @@
  */
 
 // --- CONFIGURAÇÕES GLOBAIS ---
-const API_URL = "https://script.google.com/macros/s/AKfycbykGVYEl2MSwtEj0nUU_FS7e1QusXZ3jlJn1ffNFpWQQwKLH8wiaQ259LBTySvgvPUZ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyrqHCXtP99cGGH8KvVBLmY_9ElgkTtbK2JgFqecgszbeXCurJobZcrbe6BOy2bpHXm/exec";
 const REFRESH_TIME = 30000; // 30 segundos
 const MAX_FOTOS = 7;
 
@@ -509,5 +509,36 @@ async function atualizarTabelaAgendamentos() {
         `).join('');
     } catch (e) {
         console.error("Erro agenda:", e);
+    }
+}
+async function cancelarAgendamento(idAgendamento) {
+    if (!confirm("Tem certeza que deseja cancelar este agendamento e liberar a vaga?")) return;
+
+    const payload = {
+        acao: "executarPlanilha",
+        subAcao: "salvar",
+        aba: "Agendamentos",
+        id: String(idAgendamento), // Localiza a linha pelo ID
+        payload: {
+            "7": "",              // Limpa Coluna G (Data)
+            "8": "",              // Limpa Coluna H (Hora)
+            "9": "Disponível",    // Coluna I volta a ser Disponível
+            "10": "",             // Limpa Coluna J (Cliente)
+            "11": "",             // Limpa Coluna K (Telefone)
+            "12": "Disponível"    // Coluna L volta a ser Disponível (Kill Switch resetado)
+        }
+    };
+
+    try {
+        await fetch(URL_API, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(payload)
+        });
+
+        alert("Agendamento cancelado e vaga liberada! 🔓");
+        location.reload(); // Recarrega para atualizar a lista
+    } catch (error) {
+        alert("Erro ao tentar cancelar.");
     }
 }

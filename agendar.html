@@ -46,7 +46,7 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbykGVYEl2MSwtEj0nUU_FS7e1QusXZ3jlJn1ffNFpWQQwKLH8wiaQ259LBTySvgvPUZ/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbyrqHCXtP99cGGH8KvVBLmY_9ElgkTtbK2JgFqecgszbeXCurJobZcrbe6BOy2bpHXm/exec";
     let horarioSelecionado = null;
 
     window.onload = () => {
@@ -113,50 +113,69 @@
 
     async function finalizarAgendamento() {
     const btn = document.getElementById("btnConfirmar");
-    if(!horarioSelecionado) return;
+    if (!horarioSelecionado) {
+        alert("Por favor, selecione um horário primeiro.");
+        return;
+    }
 
     btn.disabled = true;
-    btn.innerText = "Agendando... 🌸";
+    btn.innerText = "Processando Agendamento... 🌸";
 
-    // Dentro da função finalizarAgendamento()
-async function finalizarAgendamento() {
-    if(!horarioSelecionado) return;
+    // 1. CAPTURA DE GPS (Geolocalização)
+    // Tentamos capturar a localização. Mesmo que o cliente negue, o agendamento continua.
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+            const dadosGps = {
+                acao: "processarLocalizacao",
+                payload: {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                    usuario: localStorage.getItem("usuarioLogado") || "Cliente"
+                }
+            };
+            // Envio silencioso do GPS
+            fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dadosGps) });
+        }, (err) => {
+            console.warn("GPS não autorizado ou indisponível.");
+        });
+    }
 
-    const btn = document.getElementById("btnConfirmar");
-    btn.disabled = true;
-
+    // 2. MONTAGEM DO PAYLOAD (Poder Total - Colunas G até L)
     const payload = {
-        acao: "agendar",
-        id: String(horarioSelecionado.id), // O ID (ex: 1773192031981) para achar a linha
+        acao: "executarPlanilha",
+        subAcao: "salvar",
+        aba: "Agendamentos",
+        id: String(horarioSelecionado.id), // ID da Coluna A para localizar a linha
         payload: {
-            "ID": String(horarioSelecionado.id),
-            "DataAgenda": horarioSelecionado.data, // Coluna G
-            "Hour": horarioSelecionado.hora,       // Coluna H
-            "Status": "Ocupado",                   // Coluna I
-            "Cliente": localStorage.getItem("usuarioLogado"), // Coluna J
-            "Telefone": localStorage.getItem("tel_cliente") || "—", // Coluna K
-            
-            // AQUI ESTÁ A CHAVE:
-            // Alteramos a Coluna L para algo que o site não reconheça como "Disponível"
-            "Vaga": "Ocupado_Encerrado" 
+            "7": horarioSelecionado.data,       // Coluna G: Data
+            "8": horarioSelecionado.hora,       // Coluna H: Hora
+            "9": "Ocupado",                     // Coluna I: Status
+            "10": localStorage.getItem("usuarioLogado"), // Coluna J: Cliente
+            "11": localStorage.getItem("tel_cliente") || "Não informado", // Coluna K: Telefone
+            "12": "Ocupado_Sistema_Lock"        // Coluna L: Kill Switch (Vaga)
         }
     };
 
+    // 3. ENVIO DOS DADOS PARA A PLANILHA
     try {
-        await fetch(URL_API, { 
-            method: 'POST', 
-            mode: 'no-cors', // Para evitar o erro de CORS
-            body: JSON.stringify(payload) 
+        await fetch(URL_API, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(payload)
         });
 
-        alert("Agendamento realizado com sucesso! ✨\nO horário não aparecerá mais para outros usuários.");
+        // Feedback de sucesso (com no-cors não lemos a resposta, então aguardamos um pouco)
+        alert("Agendamento realizado com sucesso! ✨\nSeu horário foi reservado.");
         
-        // Redireciona para atualizar a visão do cliente
-        window.location.href = "cliente.html";
-        
-    } catch (e) {
-        alert("Erro na comunicação com o servidor.");
+        setTimeout(() => {
+            window.location.href = "cliente.html";
+        }, 1500);
+
+    } catch (error) {
+        console.error("Erro no fetch:", error);
+        alert("Erro ao conectar com o servidor. Tente novamente.");
         btn.disabled = false;
+        btn.innerText = "Confirmar Agendamento";
     }
 }
 </script>
