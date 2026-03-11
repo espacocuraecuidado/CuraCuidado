@@ -355,4 +355,76 @@ input, select, textarea, button {
 }
 #vitrine-depoimentos::-webkit-scrollbar-thumb { background: var(--rosa-vibrante); }
 
-/* ... (Todas as outras linhas do seu arquivo original seguem aqui) ... */
+/* --- SIDEBARS (CARRINHO E MENU) --- */
+.sidebar {
+    position: fixed; 
+    top: 0; 
+    width: 320px; /* Largura levemente reduzida para melhor estética */
+    height: 100%; 
+    background-color: var(--card-bg) !important; /* Força o uso da cor do tema */
+    box-sizing: border-box; 
+    padding: 0; /* Removemos o padding geral para os links encostarem nas bordas se necessário */
+    box-shadow: 5px 0 20px rgba(0,0,0,0.1); 
+    transition: 0.3s ease-in-out; 
+    z-index: 1000;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+}
+
+/* Cabeçalho interno da Sidebar */
+.sidebar-header {
+    padding: 20px;
+    background: var(--bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.close-btn {
+    background: none; 
+    border: none; 
+    font-size: 1.8rem; 
+    cursor: pointer; 
+    color: var(--rosa-vibrante);
+    line-height: 1;
+}
+
+/* --- LINKS DO MENU --- */
+.nav-link { 
+    background: none; 
+    border: none; 
+    width: 100%; 
+    text-align: left; 
+    padding: 15px 25px; /* Mais espaço nas laterais para o texto "respirar" */
+    border-bottom: 1px solid var(--border); 
+    cursor: pointer; 
+    color: var(--texto); 
+    font-size: 1rem;
+    font-weight: 500;
+    display: block;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    background-color: var(--rosa-claro);
+    color: var(--rosa-vibrante);
+    padding-left: 30px; /* Efeito de deslocamento ao passar o mouse */
+}
+
+/* Ajuste específico para os ícones dentro dos links, se houver */
+.nav-link i {
+    margin-right: 10px;
+    color: var(--rosa-vibrante);
+}
+
+/* --- CORREÇÃO DE POSICIONAMENTO --- */
+.sidebar.left { left: -320px; }
+.sidebar.right { right: -320px; }
+.sidebar.left.active { left: 0; }
+.sidebar.right.active { right: 0; }
+
+/* Ajuste para o conteúdo que não é link dentro da sidebar */
+.sidebar-content {
+    padding: 20px;
+}
