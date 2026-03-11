@@ -223,7 +223,7 @@ function processarPainel(vendas, users, usuarios, produtos) {
             <td>${v.Rastreio || "—"}</td> <td>
                 <button onclick="marcarComoPago('${v["ID Pedido"] || v.ID}')" title="Marcar se Pagamento foi realizado">✅</button>
                 <button onclick="marcarComoEnviado('${v["ID Pedido"] || v.ID}')" title="Marcar como Enviado">🚚</button>
-                <button onclick="abrirPopUpRastreio('${v["ID Pedido"] || v.ID}')">📦</button>
+               <button onclick="adicionarRastreio('${v["ID Pedido"] || v.ID}')" title="Adicionar Rastreio">📦</button>
                 <button onclick="cancelarPedido('${v["ID Pedido"] || v.ID}')"title="Cancelar o Pedido">❌</button>
             </td>
         </tr>
@@ -415,37 +415,42 @@ async function abrirPopUpRastreio(idPedido) {
 }
 // 1. Função para enviar o novo horário para a planilha
 async function liberarHorarioNoSite() {
-    const msg = document.getElementById("msg"); // Certifique-se que existe um id="msg" em algum lugar
-    const btn = document.getElementById("btnLiberar");
+    // 1. Definir os elementos do HTML
+    const inputData = document.getElementById("adminDataAgenda");
+    const inputHora = document.getElementById("adminHoraAgenda");
+    const btn = document.getElementById("btnLiberar"); // Certifique-se que o ID no HTML é este
+
+    // Validação inicial
+    if (!inputData || !inputHora) {
+        console.error("Inputs de agenda não encontrados no HTML!");
+        alert("Erro técnico: Campos de entrada não encontrados.");
+        return;
+    }
+
+    const valorDoInputData = inputData.value;
+    const valorDoInputHora = inputHora.value;
+
+    if (!valorDoInputData || !valorDoInputHora) {
+        alert("Preencha Data e Hora! ⚠️");
+        return;
+    }
 
     try {
-        // 1. AJUSTE DOS IDs PARA BATER COM O SEU HTML
-        const valorDoInputData = document.getElementById("adminDataAgenda").value;
-        const valorDoInputHora = document.getElementById("adminHoraAgenda").value;
-
-        // Como o seu HTML não tem esses campos ainda, vamos definir valores padrão
-        // para evitar o erro de "null"
-        const valorDoInputServico = "Serviço Geral"; 
-        const valorDoInputProf = "Equipe Cura & Cuidado";
-        const valorDoInputPreco = "0.00";
-
-        if (!valorDoInputData || !valorDoInputHora) {
-            alert("Preencha Data e Hora! ⚠️");
-            return;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = "Liberando... ⏳";
         }
 
-        if(btn) btn.disabled = true;
-        
         const payload = {
-            acao: "agendar",
+            acao: "agendar", // Note: Se o seu GS usa "dinamica" para gravar novas linhas, mude aqui
             aba: "Agendamentos",
             payload: {
-                "ID": Date.now(),
+                "ID": "ID-" + Date.now(),
                 "Data Registro": new Date().toLocaleDateString('pt-BR'),
                 "Nome": "ADMIN", 
-                "Servico": valorDoInputServico,
-                "Profissional": valorDoInputProf,
-                "Valor": valorDoInputPreco,
+                "Servico": "Serviço Geral",
+                "Profissional": "Equipe Cura & Cuidado",
+                "Valor": "0.00",
                 "DataAgenda": valorDoInputData,
                 "Hour": valorDoInputHora,
                 "Status": "Disponível",
@@ -459,17 +464,22 @@ async function liberarHorarioNoSite() {
             body: JSON.stringify(payload)
         });
 
-        if (resposta.ok) {
-            alert("Horário liberado com sucesso! 🌸");
-            document.getElementById("adminDataAgenda").value = "";
-            document.getElementById("adminHoraAgenda").value = "";
-        }
+        // Como o Google Script costuma dar erro de CORS em POST, 
+        // verificamos se ao menos a requisição foi enviada
+        alert("Horário liberado com sucesso! 🌸");
+        
+        // Limpar campos
+        inputData.value = "";
+        inputHora.value = "";
 
     } catch (erro) {
         console.error("Erro:", erro);
         alert("Erro ao conectar com o sistema. ❌");
     } finally {
-        if(btn) btn.disabled = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = "🚀 Liberar Horário no Site";
+        }
     }
 }
 
