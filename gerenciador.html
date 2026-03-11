@@ -152,17 +152,29 @@
         };
 
         try {
-            await fetch(URL_API, { method: 'POST', body: JSON.stringify(payload) });
-            msg.style.color = "#25d366";
-            msg.innerText = "Cadastrado com sucesso! 🌸";
-            buscarAgenda(); // Atualiza a tabela automaticamente
-        } catch (e) {
-            msg.style.color = "red";
-            msg.innerText = "Erro ao salvar. ❌";
-        } finally {
-            btn.disabled = false;
-        }
+        await fetch(URL_API, { 
+            method: 'POST', 
+            mode: 'no-cors', // Ignora a restrição de leitura do navegador
+            body: JSON.stringify(payload) 
+        });
+
+        msg.style.color = "#25d366";
+        msg.innerText = "Comando enviado! A planilha será atualizada em breve. 🌸";
+        
+        // Limpa o formulário e recarrega a lista após 3 segundos
+        setTimeout(() => {
+            document.getElementById("dataAgenda").value = "";
+            document.getElementById("hora").value = "";
+            buscarAgenda(); 
+        }, 3000);
+
+    } catch (e) {
+        msg.style.color = "red";
+        msg.innerText = "Erro na conexão. ❌";
+    } finally {
+        btn.disabled = false;
     }
+}
 </script>
 </body>
 </html>
