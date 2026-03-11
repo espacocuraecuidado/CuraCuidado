@@ -119,16 +119,18 @@
     btn.innerText = "Agendando... 🌸";
 
     const payload = {
-        acao: "agendar",
-        id: horarioSelecionado.id,
-        payload: {
-            "DataAgenda": horarioSelecionado.data,
-            "Hour": horarioSelecionado.hora,
-            "Status": "Ocupado",
-            "Cliente": localStorage.getItem("usuarioLogado"),
-            "Telefone": localStorage.getItem("tel_cliente") || "Não informado"
-        }
-    };
+    acao: "agendar",
+    aba: "Agendamentos",
+    id: horarioSelecionado.id,        // Algumas versões buscam aqui
+    idPedido: horarioSelecionado.id,  // Outras versões buscam aqui
+    payload: {
+        "ID": horarioSelecionado.id,  // E outras dentro do payload
+        "Cliente": localStorage.getItem("usuarioLogado"),
+        "Telefone": localStorage.getItem("tel_cliente") || "Não informado",
+        "Status": "Ocupado",
+        "Vaga": "Ocupado"
+    }
+};
 
     try {
         // O modo 'no-cors' evita o erro de bloqueio
