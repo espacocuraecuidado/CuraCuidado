@@ -134,56 +134,66 @@
     }
 
    async function carregarAgendamentos(cliente) {
-        const container = document.getElementById("lista-agendamentos");
-        try {
-            const res = await fetch(`${URL_API}?acao=listarAgendamentos`);
-            const dados = await res.json();
+    const container = document.getElementById("lista-agendamentos");
+    try {
+        const res = await fetch(`${URL_API}?acao=listarAgendamentos`);
+        const dados = await res.json();
 
-            const minhaAgenda = dados.filter(a => 
-                a.Status === "Ocupado" && 
-                a.Cliente && String(a.Cliente).toLowerCase() === String(cliente).toLowerCase()
-            );
+        const minhaAgenda = dados.filter(a => 
+            a.Status === "Ocupado" && 
+            a.Cliente && String(a.Cliente).toLowerCase() === String(cliente).toLowerCase()
+        );
 
-            if (minhaAgenda.length === 0) {
-                container.innerHTML = "<p style='text-align:center;'>Você não possui agendamentos. 📅</p>";
-                return;
+        if (minhaAgenda.length === 0) {
+            container.innerHTML = "<p style='text-align:center;'>Você não possui agendamentos. 📅</p>";
+            return;
+        }
+
+        container.innerHTML = minhaAgenda.map(a => {
+            // --- TRATAMENTO DE DATA (BUSCA DINÂMICA) ---
+            // Tentamos pegar de 'DataAgenda' ou 'Data_Agenda' ou 'Data'
+            let dataBruta = a.DataAgenda || a.Data_Agenda || a.Data || "";
+            let dataExibicao = "Data pendente";
+
+            if (dataBruta) {
+                // Se for objeto de data completo (contém T ou espaço), isolamos a data
+                let apenasData = String(dataBruta).split('T')[0].split(' ')[0];
+                
+                // Se estiver no formato YYYY-MM-DD, invertemos
+                if (apenasData.includes("-")) {
+                    dataExibicao = apenasData.split('-').reverse().join('/');
+                } else {
+                    dataExibicao = apenasData;
+                }
             }
 
-            container.innerHTML = minhaAgenda.map(a => {
-                // --- TRATAMENTO DE DATA ---
-                // Se a data vier estranha ou formatada com traço (2024-03-20), invertemos para o padrão BR
-                let dataLimpa = a.DataAgenda || "";
-                if (dataLimpa.includes("-")) {
-                    dataLimpa = dataLimpa.split('-').reverse().join('/');
-                } else if (dataLimpa.includes("T")) {
-                    // Se vier no formato ISO (2024-03-20T00:00:00), pegamos só a data
-                    dataLimpa = dataLimpa.split('T')[0].split('-').reverse().join('/');
-                }
+            // --- TRATAMENTO DE HORA ---
+            let horaBruta = String(a.Hour || a.Hora || "");
+            let horaExibicao = "--:--";
 
-                // --- TRATAMENTO DE HORA ---
-                // Se a hora vier como objeto de data (1899...), pegamos apenas os caracteres de hora (HH:mm)
-                let horaLimpa = String(a.Hour || "");
-                if (horaLimpa.includes(" ")) {
-                    // Se vier "30/12/1899 14:00", pega a parte após o espaço
-                    horaLimpa = horaLimpa.split(" ")[1].substring(0, 5);
+            if (horaBruta) {
+                // Se vier com a data de 1899 junto, pega só a parte da hora
+                if (horaBruta.includes(" ")) {
+                    horaExibicao = horaBruta.split(" ")[1].substring(0, 5);
                 } else {
-                    // Garante que mostre apenas HH:mm
-                    horaLimpa = horaLimpa.substring(0, 5);
+                    horaExibicao = horaBruta.substring(0, 5);
                 }
+            }
 
-                return `
-                    <div class="pedido-card" style="border-left-color: #e8b4b8;">
-                        <span class="status-badge pago">Confirmado</span>
-                        <strong>📅 ${dataLimpa} às ${horaLimpa}</strong><br>
-                        <p style="margin-top:5px;"><strong>Serviço:</strong> Atendimento Cura e Cuidado</p>
-                        <p><strong>Local:</strong> ${a.Endereco || 'A confirmar'}</p>
-                    </div>
-                `;
-            }).join('');
-        } catch (e) {
-            container.innerHTML = "<p style='text-align:center; color:red;'>Erro ao carregar agenda.</p>";
-        }
+            return `
+                <div class="pedido-card" style="border-left-color: #e8b4b8;">
+                    <span class="status-badge pago">Confirmado</span>
+                    <strong>📅 ${dataExibicao} às ${horaExibicao}</strong><br>
+                    <p style="margin-top:10px;"><strong>Serviço:</strong> Atendimento Cura e Cuidado</p>
+                    <p><strong>Profissional:</strong> ${a.Profissional || 'Equipe'}</p>
+                </div>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = "<p style='text-align:center; color:red;'>Erro ao carregar agenda.</p>";
     }
+}
 
     function mostrarSecao(secao) {
         document.getElementById("secao-pedidos").style.display = secao === 'pedidos' ? 'block' : 'none';
