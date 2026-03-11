@@ -38,9 +38,12 @@
         <p style="grid-column: span 2; text-align: center;">Buscando horários disponíveis... ⏳</p>
     </div>
 
-    <button id="btnConfirmar" class="btn-confirmar" style="display: none;" onclick="finalizarAgendamento()">
-        Confirmar Agendamento ✨
+    // Exemplo de como montar o botão no agendar.html
+container.innerHTML += `
+    <button onclick="confirmarAgendamento('${item.ID}')">
+        ${item.DataAgenda} às ${item.Hour}
     </button>
+`;
     
     <a href="cliente.html" style="display: block; text-align: center; margin-top: 15px; color: #999; text-decoration: none;">Voltar para minha conta</a>
 </div>
@@ -141,20 +144,19 @@
     }
 
     // 2. MONTAGEM DO PAYLOAD (Poder Total - Colunas G até L)
-    const payload = {
-        acao: "executarPlanilha",
-        subAcao: "salvar",
-        aba: "Agendamentos",
-        id: String(horarioSelecionado.id), // ID da Coluna A para localizar a linha
-        payload: {
-            "7": horarioSelecionado.data,       // Coluna G: Data
-            "8": horarioSelecionado.hora,       // Coluna H: Hora
-            "9": "Ocupado",                     // Coluna I: Status
-            "10": localStorage.getItem("usuarioLogado"), // Coluna J: Cliente
-            "11": localStorage.getItem("tel_cliente") || "Não informado", // Coluna K: Telefone
-            "12": "Ocupado_Sistema_Lock"        // Coluna L: Kill Switch (Vaga)
-        }
-    };
+    // O Cliente PREENCHE o slot existente
+const payload = {
+    acao: "executarPlanilha",
+    subAcao: "salvar",
+    aba: "Agendamentos",
+    id: String(idDoHorarioEscolhido), // O sistema busca a linha 1234568
+    payload: {
+        "9": "Ocupado",       // Muda o status para não aparecer mais
+        "10": nomeCliente,    // Grava o nome na linha certa
+        "11": telCliente,     // Grava o telefone na linha certa
+        "12": "Ocupado"       // Esconde o horário do site para outros clientes
+    }
+};
 
     // 3. ENVIO DOS DADOS PARA A PLANILHA
     try {

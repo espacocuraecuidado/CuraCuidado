@@ -189,23 +189,19 @@
         acao: "executarPlanilha",
         subAcao: "salvar", // 'salvar' no v4.0 cria uma linha nova se não enviarmos um ID de busca
         aba: "Agendamentos",
-        payload: {
-            "1": Date.now(),      // Coluna A: ID Único
-            "2": new Date().toLocaleDateString('pt-BR'), // Coluna B: Registro
-            "3": "ADMIN",         // Coluna C: Origem
-            "4": servico,         // Coluna D: Serviço
-            "5": profissional,    // Coluna E: Profissional
-            "6": valor,           // Coluna F: Valor
-            "7": data,            // Coluna G: Data (Uso interno)
-            "8": hora,            // Coluna H: Hora
-            "9": "Disponível",    // Coluna I: Status
-            "10": "",             // Coluna J: Cliente (Vazio)
-            "11": "",             // Coluna K: Telefone (Vazio)
-            "12": "Disponível",    // Coluna L: Kill Switch (Vaga)
-            "13": data            // Coluna M: DataAgenda (A que o cliente lê!)
-        }
-    };
-
+        // O Admin CRIA o slot vazio
+const payload = {
+    acao: "executarPlanilha",
+    subAcao: "salvar",
+    aba: "Agendamentos",
+    payload: {
+        "1": Date.now(),      // Gera o ID único (ex: 1234568)
+        "8": hora,            // Coluna H
+        "9": "Disponível",    // Coluna I (Status)
+        "12": "Disponível",   // Coluna L (Vaga - faz aparecer no site)
+        "13": data            // Coluna M (DataAgenda)
+    }
+};
     try {
         await fetch(URL_API, { 
             method: 'POST', 
