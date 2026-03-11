@@ -120,23 +120,25 @@ async function salvarHorario() {
   // Geração de ID mais seguro
   const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
 
-  const payload={
-    acao:"executarPlanilha",
-    subAcao:"salvar",
-    aba:"Agendamentos",
-    payload:{
-      "1":id,
-      "2":new Date().toLocaleDateString('pt-BR'),
-      "4":servico,
-      "5":profissional,
-      "6":valor,
-      "7":data,
-      "8":hora,
-      "9":"Disponível",
-      "12":"Disponível",
-      "13":data
-    }
-  };
+  const payload = {
+  acao: "executarPlanilha",
+  subAcao: "salvar",
+  aba: "Agendamentos",
+  payload: {
+    "1": crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), // ID
+    "2": new Date().toLocaleDateString('pt-BR'), // Data Registro
+    "3": "ADMIN", // Origem
+    "4": servico, // Serviço
+    "5": profissional, // Profissional
+    "6": valor, // Valor
+    "7": data, // Data
+    "8": hora, // Hour
+    "9": "Disponível", // Status
+    "12": "Disponível", // Vaga
+    "13": data // DataAgenda
+  }
+};
+
 
   try {
     await fetch(URL_API,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
