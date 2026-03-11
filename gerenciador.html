@@ -57,9 +57,8 @@
     <tbody id="corpoTabela"><tr><td colspan="5" style="text-align:center;">Carregando agenda...</td></tr></tbody>
   </table>
 </div>
-
 <script>
-const URL_API = "SUA_URL_AQUI";
+const URL_API = "https://script.google.com/macros/s/AKfycbyrqHCXtP99cGGH8KvVBLmY_9ElgkTtbK2JgFqecgszbeXCurJobZcrbe6BOy2bpHXm/exec";
 
 window.onload = buscarAgenda;
 
@@ -111,43 +110,33 @@ async function salvarHorario() {
   const profissional=document.getElementById("profissional").value.trim();
   const valor=document.getElementById("valor").value;
 
-  // Validação completa
   if(!data||!hora||!profissional||!valor){ 
     mostrarMensagem("Preencha todos os campos!","erro"); 
     return; 
   }
 
-  // Geração de ID mais seguro
   const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
 
-  const payload = {
+ const payload = {
   acao: "executarPlanilha",
   subAcao: "salvar",
   aba: "Agendamentos",
   payload: {
-    "1": crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), // ID
-    "2": new Date().toLocaleDateString('pt-BR'), // Data Registro
-    "3": "ADMIN", // Origem
-    "4": servico, // Serviço
-    "5": profissional, // Profissional
-    "6": valor, // Valor
-    "7": data, // Data
-    "8": hora, // Hour
-    "9": "Disponível", // Status
-    "12": "Disponível", // Vaga
-    "13": data // DataAgenda
+    "1": id,                                // Coluna A - ID
+    "2": new Date().toLocaleDateString('pt-BR'), // Coluna B - Data Registro
+    "3": "ADMIN",                           // Coluna C - Origem
+    "4": servico,                           // Coluna D - Serviço
+    "5": profissional,                      // Coluna E - Profissional
+    "6": valor,                             // Coluna F - Valor
+    "7": data,                              // Coluna G - Data
+    "8": hora,                              // Coluna H - Hour
+    "9": "Disponível",                      // Coluna I - Status
+    "10": "",                               // Coluna J - Cliente (vazio ao criar)
+    "11": "",                               // Coluna K - Telefone (vazio ao criar)
+    "12": "Disponível",                     // Coluna L - Vaga
+    "13": data                              // Coluna M - DataAgenda
   }
 };
-
-
-  try {
-    await fetch(URL_API,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
-    mostrarMensagem("Horário disponibilizado com sucesso! ✨");
-    buscarAgenda();
-  } catch(e) {
-    mostrarMensagem("Erro ao salvar horário.","erro");
-  }
-}
 </script>
 </body>
 </html>
