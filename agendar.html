@@ -119,35 +119,43 @@
     btn.innerText = "Agendando... 🌸";
 
     // Dentro da função finalizarAgendamento()
-const payload = {
-    acao: "agendar",
-    id: String(horarioSelecionado.id), // Garante que o ID vá no primeiro nível
-    payload: {
-        "ID": String(horarioSelecionado.id),
-        "DataAgenda": horarioSelecionado.data,
-        "Hour": horarioSelecionado.hora,
-        "Cliente": localStorage.getItem("usuarioLogado"),
-        "Telefone": localStorage.getItem("tel_cliente") || "Não informado"
-    }
-};
+async function finalizarAgendamento() {
+    if(!horarioSelecionado) return;
+
+    const btn = document.getElementById("btnConfirmar");
+    btn.disabled = true;
+
+    const payload = {
+        acao: "agendar",
+        id: String(horarioSelecionado.id), // O ID (ex: 1773192031981) para achar a linha
+        payload: {
+            "ID": String(horarioSelecionado.id),
+            "DataAgenda": horarioSelecionado.data, // Coluna G
+            "Hour": horarioSelecionado.hora,       // Coluna H
+            "Status": "Ocupado",                   // Coluna I
+            "Cliente": localStorage.getItem("usuarioLogado"), // Coluna J
+            "Telefone": localStorage.getItem("tel_cliente") || "—", // Coluna K
+            
+            // AQUI ESTÁ A CHAVE:
+            // Alteramos a Coluna L para algo que o site não reconheça como "Disponível"
+            "Vaga": "Ocupado_Encerrado" 
+        }
+    };
 
     try {
-        // O modo 'no-cors' evita o erro de bloqueio
         await fetch(URL_API, { 
             method: 'POST', 
-            mode: 'no-cors', 
+            mode: 'no-cors', // Para evitar o erro de CORS
             body: JSON.stringify(payload) 
         });
 
-        // Como não podemos ler o JSON, avisamos o usuário e saímos
-        alert("Solicitação enviada! Verifique sua conta em instantes. ✨");
-        setTimeout(() => {
-            window.location.href = "cliente.html";
-        }, 2000);
-
+        alert("Agendamento realizado com sucesso! ✨\nO horário não aparecerá mais para outros usuários.");
+        
+        // Redireciona para atualizar a visão do cliente
+        window.location.href = "cliente.html";
+        
     } catch (e) {
-        console.error(e);
-        alert("Erro ao tentar enviar o agendamento.");
+        alert("Erro na comunicação com o servidor.");
         btn.disabled = false;
     }
 }
