@@ -62,14 +62,11 @@
     container.innerHTML = "Buscando horários... ⏳";
 
     try {
-        // Adicionamos um timestamp para evitar que o navegador use o "cache" (dados velhos)
         const resposta = await fetch(`${URL_API}?acao=listarAgendamentos&t=${new Date().getTime()}`);
         const dados = await resposta.json();
 
-        // Filtramos apenas o que está marcado EXATAMENTE como Disponível
-        // O .trim() remove espaços invisíveis que o Google Sheets às vezes coloca
         const disponiveisParaMostrar = dados.filter(item => 
-            String(item.Status).trim().toLowerCase() === "disponível"
+            String(item.Status || "").trim().toLowerCase() === "disponível"
         );
 
         if (disponiveisParaMostrar.length === 0) {
@@ -79,16 +76,28 @@
 
         let botoesHtml = "";
         disponiveisParaMostrar.forEach(h => {
-            // Tratamento simplificado de Data
-            let dataExibicao = h.DataAgenda;
-            if (dataExibicao.includes("T")) dataExibicao = dataExibicao.split("T");
-            const partesData = dataExibicao.split("-");
-            const dataBR = partesData.length === 3 ? `${partesData}/${partesData}/${partesData}` : dataExibicao;
+            // --- TRATAMENTO DA DATA (Transforma em String primeiro) ---
+            let dataExibicao = String(h.DataAgenda || ""); 
+            let dataBR = dataExibicao;
 
-            // Tratamento simplificado de Hora
-            let horaBR = h.Hour;
-            if (horaBR.includes("T")) horaBR = horaBR.split("T").substring(0, 5);
-            else if (horaBR.length > 5) horaBR = horaBR.substring(0, 5);
+            if (dataExibicao.includes("T")) {
+                dataExibicao = dataExibicao.split("T");
+            }
+
+            if (dataExibicao.includes("-")) {
+                const partesData = dataExibicao.split("-");
+                dataBR = `${partesData}/${partesData}/${partesData}`;
+            }
+
+            // --- TRATAMENTO DA HORA (Transforma em String primeiro) ---
+            let horaExibicao = String(h.Hour || "");
+            let horaBR = horaExibicao;
+
+            if (horaExibicao.includes("T")) {
+                horaBR = horaExibicao.split("T").substring(0, 5);
+            } else if (horaExibicao.length > 5) {
+                horaBR = horaExibicao.substring(0, 5);
+            }
 
             botoesHtml += `
                 <button type="button" class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
@@ -100,11 +109,10 @@
         container.innerHTML = botoesHtml;
 
     } catch (erro) {
-        console.error("Erro detalhes:", erro);
-        container.innerHTML = "<p>Erro ao carregar os dados. Tente atualizar a página. 🌸</p>";
+        console.error("Erro completo:", erro);
+        container.innerHTML = "<p>Erro ao processar horários. 🌸</p>";
     }
 }
-
     function selecionar(btn, data, hora) {
         document.querySelectorAll('.btn-horario').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
