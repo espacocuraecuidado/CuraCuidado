@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Administrativo - Cura & Cuidado</title>
+    <style>
+        body { background-color: #fdf6f0; font-family: 'Segoe UI', sans-serif; padding: 20px; color: #5a5a5a; }
+        .admin-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .titulo { color: #d4a373; text-align: center; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 10px; }
+        .full-width { grid-column: span 2; }
+        label { display: block; color: #d69ea2; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #e8b4b8; border-radius: 8px; box-sizing: border-box; }
+        .btn-salvar { width: 100%; padding: 15px; background: #d4a373; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-salvar:disabled { background: #ccc; }
+        
+        /* Estilos da Tabela */
+        .tabela-container { margin-top: 40px; border-top: 2px solid #fdf6f0; padding-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85em; }
+        th { background-color: #fdf6f0; color: #d69ea2; padding: 12px; text-align: left; border-bottom: 2px solid #e8b4b8; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
+        .status-disponivel { background: #e7f9ee; color: #2ecc71; }
+        .status-ocupado { background: #ffebee; color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+<div class="admin-container">
+    <h2 class="titulo">Gerenciador de Agenda 🌸</h2>
+    
+    <div class="form-grid">
+        <div class="form-group full-width">
+            <label>Serviço:</label>
+            <select id="servico">
+                <option value="DOULA">DOULA</option>
+                <option value="Aleitamento Materno">Aleitamento Materno</option>
+                <option value="Consultoria">Consultoria</option>
+                <option value="Tratamento com Laser">Tratamento com Laser</option>
+                <option value="Preparacao para o Parto">Preparacao para o Parto</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Profissional:</label>
+            <input type="text" id="profissional" placeholder="Ex: Ana Souza">
+        </div>
+
+        <div class="form-group">
+            <label>Valor (R$):</label>
+            <input type="number" id="valor" placeholder="150.00">
+        </div>
+
+        <div class="form-group">
+            <label>Data do Atendimento:</label>
+            <input type="date" id="dataAgenda">
+        </div>
+
+        <div class="form-group">
+            <label>Horário:</label>
+            <input type="time" id="hora">
+        </div>
+    </div>
+
+    <button class="btn-salvar" id="btnSalvar" onclick="salvarHorario()">Disponibilizar Horário ✨</button>
+    <p id="msg" style="text-align: center; margin-top: 10px;"></p>
+
+    <div class="tabela-container">
+        <h3 style="color: #d4a373;">Próximos Horários na Planilha</h3>
+        <table id="tabelaHorarios">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Hora</th>
+                    <th>Serviço</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="corpoTabela">
+                <tr><td colspan="4" style="text-align:center;">Carregando agenda...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const URL_API = "https://script.google.com/macros/s/AKfycby82CaoClGi9FBcYujgVbbDlamubXyxZkrEMs3uYFxtXgjs8qDSUed4XmHjpdKKTlw4/exec";
+
+    // 1. CARREGAR TABELA AO ABRIR
+    window.onload = buscarAgenda;
+
+    async function buscarAgenda() {
+        const corpo = document.getElementById("corpoTabela");
+        try {
+            const resposta = await fetch(`${URL_API}?acao=listarAgendamentos`);
+            const dados = await resposta.json();
+            
+            // Ordenar por data e hora (mais recentes primeiro)
+            dados.sort((a, b) => new Date(a.DataAgenda + 'T' + a.Hour) - new Date(b.DataAgenda + 'T' + b.Hour));
+
+            corpo.innerHTML = "";
+            dados.slice(0, 10).forEach(item => { // Mostra os 10 primeiros
+                const statusClass = item.Status === "Ocupado" ? "status-ocupado" : "status-disponivel";
+                corpo.innerHTML += `
+                    <tr>
+                        <td>${item.DataAgenda.split('-').reverse().join('/')}</td>
+                        <td>${item.Hour}</td>
+                        <td>${item.Servico || '-'}</td>
+                        <td><span class="status-badge ${statusClass}">${item.Status}</span></td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            corpo.innerHTML = "<tr><td colspan="4">Erro ao atualizar lista.</td></tr>";
+        }
+    }
+
+    // 2. FUNÇÃO SALVAR (AJUSTADA)
+    async function salvarHorario() {
+        const data = document.getElementById("dataAgenda").value;
+        const hora = document.getElementById("hora").value;
+        const msg = document.getElementById("msg");
+        const btn = document.getElementById("btnSalvar");
+
+        if (!data || !hora) {
+            msg.style.color = "red";
+            msg.innerText = "Preencha Data e Hora! ⚠️";
+            return;
+        }
+
+        btn.disabled = true;
+        msg.style.color = "#d4a373";
+        msg.innerText = "Gravando na planilha... ⏳";
+
+        const payload = {
+            acao: "agendar",
+            aba: "Agendamentos",
+            payload: {
+                "ID": Date.now(),
+                "Data Registro": new Date().toLocaleDateString('pt-BR'),
+                "Nome": "ADMIN",
+                "Servico": document.getElementById("servico").value,
+                "Profissional": document.getElementById("profissional").value,
+                "Valor": document.getElementById("valor").value,
+                "DataAgenda": data,
+                "Hour": hora,
+                "Status": "Disponível",
+                "Cliente": "",
+                "Telefone": ""
+            }
+        };
+
+        try {
+            await fetch(URL_API, { method: 'POST', body: JSON.stringify(payload) });
+            msg.style.color = "#25d366";
+            msg.innerText = "Cadastrado com sucesso! 🌸";
+            buscarAgenda(); // Atualiza a tabela automaticamente
+        } catch (e) {
+            msg.style.color = "red";
+            msg.innerText = "Erro ao salvar. ❌";
+        } finally {
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
