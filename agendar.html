@@ -62,31 +62,33 @@
     container.innerHTML = "Buscando horários... ⏳";
 
     try {
-        const resposta = await fetch(`${URL_API}?acao=listarAgendamentos`);
+        // Adicionamos um timestamp para evitar que o navegador use o "cache" (dados velhos)
+        const resposta = await fetch(`${URL_API}?acao=listarAgendamentos&t=${new Date().getTime()}`);
         const dados = await resposta.json();
 
-        // 1. Criamos um conjunto (Set) de todos os horários que já estão OCUPADOS
-        const ocupados = new Set(
-            dados.filter(item => String(item.Status).trim() === "Ocupado")
-                 .map(item => `${item.DataAgenda}|${item.Hour}`)
+        // Filtramos apenas o que está marcado EXATAMENTE como Disponível
+        // O .trim() remove espaços invisíveis que o Google Sheets às vezes coloca
+        const disponiveisParaMostrar = dados.filter(item => 
+            String(item.Status).trim().toLowerCase() === "disponível"
         );
 
-        // 2. Filtramos apenas os "Disponíveis" que NÃO estão na lista de ocupados
-        const disponiveisParaMostrar = dados.filter(item => {
-            const chave = `${item.DataAgenda}|${item.Hour}`;
-            const estaDisponivel = String(item.Status).trim() === "Disponível";
-            return estaDisponivel && !ocupados.has(chave);
-        });
-
         if (disponiveisParaMostrar.length === 0) {
-            container.innerHTML = "<p>Nenhum horário disponível no momento. 🌸</p>";
+            container.innerHTML = "<p style='grid-column: span 2;'>Nenhum horário disponível no momento. 🌸</p>";
             return;
         }
 
         let botoesHtml = "";
         disponiveisParaMostrar.forEach(h => {
-            const dataBR = h.DataAgenda.includes("T") ? h.DataAgenda.split("T").split("-").reverse().join("/") : h.DataAgenda;
-            const horaBR = h.Hour.includes("T") ? h.Hour.split("T").substring(0, 5) : h.Hour;
+            // Tratamento simplificado de Data
+            let dataExibicao = h.DataAgenda;
+            if (dataExibicao.includes("T")) dataExibicao = dataExibicao.split("T");
+            const partesData = dataExibicao.split("-");
+            const dataBR = partesData.length === 3 ? `${partesData}/${partesData}/${partesData}` : dataExibicao;
+
+            // Tratamento simplificado de Hora
+            let horaBR = h.Hour;
+            if (horaBR.includes("T")) horaBR = horaBR.split("T").substring(0, 5);
+            else if (horaBR.length > 5) horaBR = horaBR.substring(0, 5);
 
             botoesHtml += `
                 <button type="button" class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
@@ -98,7 +100,8 @@
         container.innerHTML = botoesHtml;
 
     } catch (erro) {
-        container.innerHTML = "<p>Erro ao carregar os dados. 🌸</p>";
+        console.error("Erro detalhes:", erro);
+        container.innerHTML = "<p>Erro ao carregar os dados. Tente atualizar a página. 🌸</p>";
     }
 }
 
