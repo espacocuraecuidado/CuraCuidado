@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-const GOOGLE_URL = 'https://script.google.com/macros/s/AKfycbwn7JIBHox0h7jM6dad9gyuhl6ApCQQ6yy8is0OkViToKmD6T6wwVLE7LTVh42XBrcE/exec';
+const GOOGLE_URL = 'https://script.google.com/macros/s/AKfycbykGVYEl2MSwtEj0nUU_FS7e1QusXZ3jlJn1ffNFpWQQwKLH8wiaQ259LBTySvgvPUZ/exec';
 
 // Rota GET: Lista produtos, vendas, depoimentos
 app.get('/api/get', async (req, res) => {

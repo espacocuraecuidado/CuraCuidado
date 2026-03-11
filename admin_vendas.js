@@ -6,7 +6,7 @@
  */
 
 // --- CONFIGURAÇÕES GLOBAIS ---
-const API_URL = "https://script.google.com/macros/s/AKfycby82CaoClGi9FBcYujgVbbDlamubXyxZkrEMs3uYFxtXgjs8qDSUed4XmHjpdKKTlw4/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbykGVYEl2MSwtEj0nUU_FS7e1QusXZ3jlJn1ffNFpWQQwKLH8wiaQ259LBTySvgvPUZ/exec";
 const REFRESH_TIME = 30000; // 30 segundos
 const MAX_FOTOS = 7;
 

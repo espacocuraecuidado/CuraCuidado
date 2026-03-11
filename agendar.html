@@ -46,7 +46,7 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycby82CaoClGi9FBcYujgVbbDlamubXyxZkrEMs3uYFxtXgjs8qDSUed4XmHjpdKKTlw4/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbykGVYEl2MSwtEj0nUU_FS7e1QusXZ3jlJn1ffNFpWQQwKLH8wiaQ259LBTySvgvPUZ/exec";
     let horarioSelecionado = null;
 
     window.onload = () => {
@@ -65,55 +65,33 @@
         const resposta = await fetch(`${URL_API}?acao=listarAgendamentos&t=${new Date().getTime()}`);
         const dados = await resposta.json();
 
+        // O Admin agora define a disponibilidade na Coluna L (Vaga)
         const disponiveisParaMostrar = dados.filter(item => {
-            const st = String(item.Status || "").trim().toLowerCase();
-            return st === "disponível" || st === "disponivel";
+            const statusVaga = String(item.Vaga || "").trim().toLowerCase();
+            return statusVaga === "disponível" || statusVaga === "disponivel";
         });
 
         if (disponiveisParaMostrar.length === 0) {
-            container.innerHTML = "<p style='grid-column: span 2;'>Nenhum horário disponível no momento. 🌸</p>";
+            container.innerHTML = "<p style='grid-column: span 2;'>Nenhum horário disponível. 🌸</p>";
             return;
         }
 
         let botoesHtml = "";
         disponiveisParaMostrar.forEach(h => {
-            // --- TRATAMENTO DA DATA (Coluna G) ---
-            let dataBR = "Data n/d";
-            try {
-                let d = new Date(h.DataAgenda);
-                // Se a data for válida, formatamos para PT-BR
-                if (!isNaN(d)) {
-                    dataBR = d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-                }
-            } catch (e) { dataBR = String(h.DataAgenda).substring(0, 10); }
-
-            // --- TRATAMENTO DA HORA (Coluna H) ---
-            let horaBR = "00:00";
-            try {
-                let hRaw = h.Hour;
-                
-                // Se for um objeto de data do Google
-                if (hRaw instanceof Date || !isNaN(Date.parse(hRaw))) {
-                    let dHora = new Date(hRaw);
-                    horaBR = dHora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                } else {
-                    // Se for apenas um texto (ex: "09:00")
-                    horaBR = String(hRaw).substring(0, 5);
-                }
-            } catch (e) { horaBR = "00:00"; }
+            // Lemos o que o Admin escreveu em Quando (M) e Para (N)
+            const diaExibicao = h.Quando || "Data n/d";
+            const horaExibicao = h.Para || "00:00";
 
             botoesHtml += `
-                <button type="button" class="btn-horario" onclick="selecionar(this, '${h.DataAgenda}', '${h.Hour}')">
-                    ${dataBR}<br><b>${horaBR}</b>
+                <button type="button" class="btn-horario" onclick="selecionar(this, '${diaExibicao}', '${horaExibicao}', '${h.ID}')">
+                    ${diaExibicao}<br><b>${horaExibicao}</b>
                 </button>
             `;
         });
 
         container.innerHTML = botoesHtml;
-
     } catch (erro) {
-        console.error("Erro detalhado:", erro);
-        container.innerHTML = "<p>Erro ao conectar com a planilha. 🌸</p>";
+        container.innerHTML = "<p>Erro ao carregar dados. 🌸</p>";
     }
 }
     function selecionar(btn, data, hora) {
@@ -124,49 +102,36 @@
     }
 
     async function finalizarAgendamento() {
-        const btn = document.getElementById("btnConfirmar");
-        const cliente = localStorage.getItem("usuarioLogado");
-        const telefone = localStorage.getItem("tel_cliente") || "Não informado";
+    const btn = document.getElementById("btnConfirmar");
+    if(!horarioSelecionado) return;
 
-        if(!horarioSelecionado) return;
+    btn.disabled = true;
+    btn.innerText = "Agendando... 🌸";
 
-        btn.disabled = true;
-        btn.innerText = "Processando... 🌸";
-
-        const payload = {
-            acao: "agendar", // Adicionado para seu Script saber o que fazer
-            aba: "Agendamentos",
-            payload: {
-                "DataAgenda": horarioSelecionado.data,
-                "Hour": horarioSelecionado.hora,
-                "Cliente": cliente,
-                "Telefone": telefone,
-                "Status": "Ocupado"
-            }
-        };
-
-        try {
-            // No Google Apps Script, o POST precisa ser enviado como texto
-            const res = await fetch(URL_API, { 
-                method: 'POST', 
-                body: JSON.stringify(payload) 
-            });
-            const r = await res.json();
-            
-            if (r.status === "sucesso") {
-                alert("Agendamento realizado com sucesso! Esperamos por você. ✨");
-                window.location.href = "cliente.html";
-            } else {
-                alert("Erro: " + (r.mensagem || "Erro desconhecido"));
-                btn.disabled = false;
-                btn.innerText = "Confirmar Agendamento ✨";
-            }
-        } catch (e) {
-            alert("Erro ao conectar com o servidor. Verifique sua internet.");
-            btn.disabled = false;
-            btn.innerText = "Confirmar Agendamento ✨";
+    const payload = {
+        acao: "agendar",
+        id: horarioSelecionado.id,
+        payload: {
+            "DataAgenda": horarioSelecionado.data, // Salva na G o que estava na M
+            "Hour": horarioSelecionado.hora,       // Salva na H o que estava na N
+            "Status": "Ocupado",                   // Salva na I
+            "Cliente": localStorage.getItem("usuarioLogado"),
+            "Telefone": localStorage.getItem("tel_cliente") || "Não informado"
         }
+    };
+
+    try {
+        const res = await fetch(URL_API, { method: 'POST', body: JSON.stringify(payload) });
+        const r = await res.json();
+        if (r.status === "sucesso") {
+            alert("Agendamento realizado! ✨");
+            window.location.href = "cliente.html";
+        }
+    } catch (e) {
+        alert("Erro na conexão.");
+        btn.disabled = false;
     }
+}
 </script>
 </body>
 </html>

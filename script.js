@@ -1,5 +1,5 @@
 // 0. INICIALIZAÇÃO E VARIÁVEIS GLOBAIS
-const URL_PLANILHA = "https://script.google.com/macros/s/AKfycby82CaoClGi9FBcYujgVbbDlamubXyxZkrEMs3uYFxtXgjs8qDSUed4XmHjpdKKTlw4/exec";
+const URL_PLANILHA = "https://script.google.com/macros/s/AKfycbykGVYEl2MSwtEj0nUU_FS7e1QusXZ3jlJn1ffNFpWQQwKLH8wiaQ259LBTySvgvPUZ/exec";
 window.carrinho = JSON.parse(localStorage.getItem('cura_carrinho')) || [];
 let descontoAtivo = 0;
 
