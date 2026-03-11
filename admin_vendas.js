@@ -415,36 +415,35 @@ async function abrirPopUpRastreio(idPedido) {
 }
 // 1. Função para enviar o novo horário para a planilha
 async function liberarHorarioNoSite() {
-    const dataInput = document.getElementById('adminDataAgenda').value;
-    const horaInput = document.getElementById('adminHoraAgenda').value;
-    const btn = document.getElementById('btnLiberar');
+    // 1. Você precisa capturar os valores dos inputs primeiro!
+    const valorDoInputNome = document.getElementById("nome").value; // ou o ID que você usa
+    const valorDoInputServico = document.getElementById("servico").value;
+    const valorDoInputProf = document.getElementById("profissional").value;
+    const valorDoInputPreco = document.getElementById("valor").value;
+    const valorDoInputData = document.getElementById("dataAgenda").value;
+    const valorDoInputHora = document.getElementById("hora").value;
 
-    if (!dataInput || !horaInput) {
-        alert("Selecione data e hora primeiro! 🌸");
-        return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = "Salvando...";
-
-    const dataFormatada = dataInput.split('-').reverse().join('/');
-
+    // 2. Agora sim o payload vai encontrar as definições:
     const payload = {
-    aba: "Agendamentos",
-    payload: {
-        "ID": Date.now(), // Gera um número único baseado no tempo (Coluna A)
-        "Data Registro": new Date().toLocaleDateString('pt-BR'), // Data de hoje (Coluna B)
-        "Nome": valorDoInputNome,        // (Coluna C)
-        "Servico": valorDoInputServico,    // (Coluna D)
-        "Profissional": valorDoInputProf, // (Coluna E)
-        "Valor": valorDoInputPreco,      // (Coluna F)
-        "DataAgenda": valorDoInputData,  // (Coluna G)
-        "Hour": valorDoInputHora,        // (Coluna H)
-        "Status": "Disponível",          // (Coluna I)
-        "Cliente": "",                   // (Coluna J - Vazio no Admin)
-        "Telefone": ""                   // (Coluna K - Vazio no Admin)
-    }
-};
+        acao: "agendar",
+        aba: "Agendamentos",
+        payload: {
+            "ID": Date.now(),
+            "Data Registro": new Date().toLocaleDateString('pt-BR'),
+            "Nome": "ADMIN", // Ou usar a variável valorDoInputNome
+            "Servico": valorDoInputServico,
+            "Profissional": valorDoInputProf,
+            "Valor": valorDoInputPreco,
+            "DataAgenda": valorDoInputData,
+            "Hour": valorDoInputHora,
+            "Status": "Disponível",
+            "Cliente": "",
+            "Telefone": ""
+        }
+    };
+    
+    // ... restante do seu código fetch
+}
 
     try {
         // Certifique-se que a variável da URL da API é a mesma que você já usa no admin_vendas.js
