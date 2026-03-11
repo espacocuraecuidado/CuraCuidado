@@ -189,26 +189,27 @@ async function cancelarAgendamento(idRecebido) {
     msg.innerText = "Disponibilizando vaga na planilha... ⏳";
 
     // O SEGREDO: Mapeamento Numérico para o Script v4.0
-    const payload = {
-        acao: "executarPlanilha",
-        subAcao: "salvar",
-        aba: "Agendamentos",
-        payload: {
-           "1": `'${Date.now()}`                          // Coluna A: ID (RG do Horário)
-           "2": `'${new Date().toLocaleDateString('pt-BR')}`,// Coluna B: Data Registro
-            "3": "ADMIN",                               // Coluna C: Nome/Origem
-            "4": servico,                               // Coluna D: Servico
-            "5": profissional,                          // Coluna E: Profissional
-            "6": valor,                                 // Coluna F: Valor
-            "7": `'${data}`,                                // Coluna G: Data (Uso interno)
-            "8": `'${hora}`,                                // Coluna H: Hour
-           "9": "Disponível",                        // Coluna I: Status
-            "10": "",                                   // Coluna J: Cliente (Vazio)
-            "11": "",                                   // Coluna K: Telefone (Vazio)
-            "12": "Disponível",                         // Coluna L: Vaga (LIBERA NO SITE)
-           "13": `'${data}`                             // Coluna M: DataAgenda (VÊ NO PERFIL)
-        }
-    };
+   // Trecho revisado do seu salvarHorario
+const payload = {
+    acao: "executarPlanilha",
+    subAcao: "salvar",
+    aba: "Agendamentos",
+    payload: {
+        "1": `'${Date.now()}`,       // Coluna A: ID (Texto Puro)
+        "2": `'${new Date().toLocaleDateString('pt-BR')}`, // Coluna B: Registro
+        "3": "ADMIN",
+        "4": servico,
+        "5": profissional,
+        "6": valor,
+        "7": `'${data}`,            // Coluna G: Data (Texto Puro)
+        "8": `'${hora}`,            // Coluna H: Hour (Texto Puro)
+        "9": "Disponível",
+        "10": "",
+        "11": "",
+        "12": "Disponível",
+        "13": `'${data}`            // Coluna M: DataAgenda (Texto Puro)
+    }
+};
 
     try {
         await fetch(URL_API, { 
