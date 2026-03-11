@@ -112,48 +112,44 @@
     }
 
     async function finalizarAgendamento() {
-        const btn = document.getElementById("btnConfirmar");
-        if(!horarioSelecionado) return;
+    const btn = document.getElementById("btnConfirmar");
+    if(!horarioSelecionado) return;
 
-        btn.disabled = true;
-        btn.innerText = "Agendando... 🌸";
+    btn.disabled = true;
+    btn.innerText = "Agendando... 🌸";
 
-        const payload = {
-            acao: "agendar",
-            id: horarioSelecionado.id, // Agora o ID não será mais undefined
-            payload: {
-                "DataAgenda": horarioSelecionado.data,
-                "Hour": horarioSelecionado.hora,
-                "Status": "Ocupado",
-                "Cliente": localStorage.getItem("usuarioLogado"),
-                "Telefone": localStorage.getItem("tel_cliente") || "Não informado"
-            }
-        };
-
-        try {
-            // Importante: O modo 'no-cors' não permite ler a resposta JSON. 
-            // Se o seu GS estiver configurado corretamente, o fetch padrão funciona.
-            const res = await fetch(URL_API, { 
-                method: 'POST', 
-                body: JSON.stringify(payload) 
-            });
-            const r = await res.json();
-            
-            if (r.status === "sucesso") {
-                alert("Agendamento realizado! ✨");
-                window.location.href = "cliente.html";
-            } else {
-                alert("Erro: " + r.mensagem);
-                btn.disabled = false;
-                btn.innerText = "Confirmar Agendamento ✨";
-            }
-        } catch (e) {
-            console.error(e);
-            alert("Erro na conexão ou no servidor.");
-            btn.disabled = false;
-            btn.innerText = "Confirmar Agendamento ✨";
+    const payload = {
+        acao: "agendar",
+        id: horarioSelecionado.id,
+        payload: {
+            "DataAgenda": horarioSelecionado.data,
+            "Hour": horarioSelecionado.hora,
+            "Status": "Ocupado",
+            "Cliente": localStorage.getItem("usuarioLogado"),
+            "Telefone": localStorage.getItem("tel_cliente") || "Não informado"
         }
+    };
+
+    try {
+        // O modo 'no-cors' evita o erro de bloqueio
+        await fetch(URL_API, { 
+            method: 'POST', 
+            mode: 'no-cors', 
+            body: JSON.stringify(payload) 
+        });
+
+        // Como não podemos ler o JSON, avisamos o usuário e saímos
+        alert("Solicitação enviada! Verifique sua conta em instantes. ✨");
+        setTimeout(() => {
+            window.location.href = "cliente.html";
+        }, 2000);
+
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao tentar enviar o agendamento.");
+        btn.disabled = false;
     }
+}
 </script>
 </body>
 </html>
