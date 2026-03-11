@@ -428,3 +428,55 @@ input, select, textarea, button {
 .sidebar-content {
     padding: 20px;
 }
+/* --- BOTÕES DO HEADER (Menu, Carrinho, Modo Noturno) --- */
+.btn-icon {
+    background: rgba(255, 255, 255, 0.15); /* Fundo branco bem transparente */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Borda sutil para dar forma */
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px; /* Cantos arredondados modernos */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: 8px; /* Espaço entre os botões */
+    position: relative;
+}
+
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.3); /* Brilha mais ao passar o mouse */
+    transform: translateY(-2px); /* Pequeno salto para cima */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-icon:active {
+    transform: scale(0.92); /* Efeito de "apertar" o botão */
+}
+
+/* Ajuste específico para o contador do carrinho (se você tiver o número sobre o ícone) */
+.cart-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ffffff;
+    color: var(--rosa-vibrante);
+    font-size: 0.7rem;
+    font-weight: 800;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border: 1px solid var(--rosa-vibrante);
+}
+
+/* Container que segura os botões para ficarem alinhados à direita */
+.header-actions {
+    display: flex;
+    align-items: center;
+}
