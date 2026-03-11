@@ -65,38 +65,38 @@
         const resposta = await fetch(`${URL_API}?acao=listarAgendamentos&t=${new Date().getTime()}`);
         const dados = await resposta.json();
 
-        const disponiveisParaMostrar = dados.filter(item => 
-            String(item.Status || "").trim().toLowerCase() === "disponível"
-        );
+        // IMPORTANTE: O nome da propriedade deve ser IGUAL ao cabeçalho da sua planilha
+        // Se na planilha estiver "Status" (coluna I), o JS lerá item.Status
+        const disponiveisParaMostrar = dados.filter(item => {
+            const status = String(item.Status || "").trim().toLowerCase();
+            return status === "disponível" || status === "disponivel";
+        });
 
         if (disponiveisParaMostrar.length === 0) {
-            container.innerHTML = "<p style='grid-column: span 2;'>Nenhum horário disponível no momento. 🌸</p>";
+            container.innerHTML = "<p style='grid-column: span 2;'>Nenhum horário disponível na aba Agendamentos. 🌸</p>";
             return;
         }
 
         let botoesHtml = "";
         disponiveisParaMostrar.forEach(h => {
-            // --- TRATAMENTO DA DATA (Transforma em String primeiro) ---
-            let dataExibicao = String(h.DataAgenda || ""); 
-            let dataBR = dataExibicao;
-
-            if (dataExibicao.includes("T")) {
-                dataExibicao = dataExibicao.split("T");
+            // Tratamento da DataAgenda (Coluna G)
+            let dataRaw = String(h.DataAgenda || "");
+            let dataBR = dataRaw;
+            
+            if (dataRaw.includes("T")) dataRaw = dataRaw.split("T");
+            if (dataRaw.includes("-")) {
+                const p = dataRaw.split("-");
+                dataBR = `${p}/${p}/${p}`;
             }
 
-            if (dataExibicao.includes("-")) {
-                const partesData = dataExibicao.split("-");
-                dataBR = `${partesData}/${partesData}/${partesData}`;
-            }
-
-            // --- TRATAMENTO DA HORA (Transforma em String primeiro) ---
-            let horaExibicao = String(h.Hour || "");
-            let horaBR = horaExibicao;
-
-            if (horaExibicao.includes("T")) {
-                horaBR = horaExibicao.split("T").substring(0, 5);
-            } else if (horaExibicao.length > 5) {
-                horaBR = horaExibicao.substring(0, 5);
+            // Tratamento do Hour (Coluna H)
+            let horaRaw = String(h.Hour || "");
+            let horaBR = horaRaw;
+            
+            if (horaRaw.includes("T")) {
+                horaBR = horaRaw.split("T").substring(0, 5);
+            } else {
+                horaBR = horaRaw.substring(0, 5);
             }
 
             botoesHtml += `
@@ -109,8 +109,8 @@
         container.innerHTML = botoesHtml;
 
     } catch (erro) {
-        console.error("Erro completo:", erro);
-        container.innerHTML = "<p>Erro ao processar horários. 🌸</p>";
+        console.error("Erro ao carregar:", erro);
+        container.innerHTML = "<p>Erro ao conectar com a planilha. 🌸</p>";
     }
 }
     function selecionar(btn, data, hora) {
