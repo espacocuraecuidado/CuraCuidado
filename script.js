@@ -713,9 +713,8 @@ async function carregarDepoimentosNoModal(nomeProduto) {
 // 10. SISTEMA DE AGENDAMENTO
 // ==========================================
 async function enviarAvaliacao() {
-    // 1. Captura os dados usando os IDs corretos do seu HTML
     const produto = document.getElementById('modal-nome').innerText;
-    const cliente = document.getElementById('nome-cliente')?.value || localStorage.getItem("usuarioLogado") || "Cliente";
+    const cliente = localStorage.getItem("usuarioLogado") || "Cliente Anônimo";
     const nota = document.getElementById('av-nota')?.value || "5";
     const comentario = document.getElementById('av-comentario')?.value;
 
@@ -723,8 +722,10 @@ async function enviarAvaliacao() {
         return alert("Por favor, escreva seu comentário antes de publicar. 🌸");
     }
 
-    // 2. Monta o objeto no formato que o seu Script da Planilha espera (POST)
-    const dadosVenda = {
+    const btn = document.getElementById('btn-enviar-av');
+    if(btn) { btn.innerText = "Publicando... ⏳"; btn.disabled = true; }
+
+    const dados = {
         aba: "Avaliacoes", 
         payload: {
             "Produto": produto,
@@ -736,30 +737,21 @@ async function enviarAvaliacao() {
     };
 
     try {
-        const btn = document.getElementById('btn-enviar-av');
-        if(btn) { btn.innerText = "Publicando... ⏳"; btn.disabled = true; }
-
-        // Envia para a planilha
         const res = await fetch(URL_PLANILHA, {
             method: 'POST',
-            body: JSON.stringify(dadosVenda)
+            body: JSON.stringify(dados)
         });
-        
         const r = await res.json();
-
+        
         if(r.status === "sucesso") {
-            alert("Avaliação publicada com sucesso! ✨");
-            // Limpa o campo e fecha o modal
-            document.getElementById('av-comentario').value = "";
-            fecharModal();
-            // Opcional: recarregar os depoimentos na tela
+            alert("Obrigada pela sua avaliação! ✨");
+            if(document.getElementById('av-comentario')) document.getElementById('av-comentario').value = "";
+            // Recarrega os depoimentos no modal para mostrar o novo
             carregarDepoimentosNoModal(produto);
         }
-    } catch (e) {
-        console.error("Erro ao publicar:", e);
-        alert("Erro de conexão. Verifique se você está logada.");
+    } catch(e) { 
+        alert("Erro ao enviar avaliação. Tente novamente."); 
     } finally {
-        const btn = document.getElementById('btn-enviar-av');
         if(btn) { btn.innerText = "Publicar Avaliação"; btn.disabled = false; }
     }
 }
