@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="style.css" />
 
     <style>
-      /* Estilos específicos para o Dashboard que não estão no style.css */
+      /* Estilos específicos para o Dashboard */
       body.admin-page { background: #fdf6f7; padding: 20px; font-family: 'Segoe UI', sans-serif; }
       .admin-container { max-width: 1200px; margin: 0 auto; }
       
@@ -24,13 +24,13 @@
       .stat-value { font-size: 2rem; font-weight: bold; color: #d69ea2; display: block; }
       .stat-label { font-size: 0.8rem; color: #888; text-transform: uppercase; }
 
-      /* Formulário de Produto */
+      /* Formulários */
       .form-section { background: #fff; padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #eee; }
       .form-group { margin-bottom: 15px; }
       .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
       .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
       
-      /* Progress Bar & Previews */
+      /* Progress & Previews */
       .progress-container { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin: 15px 0; overflow: hidden; display: block; }
       #uploadProgress { width: 0%; height: 100%; background: #e8b4b8; transition: width 0.4s; }
       #previewFotos { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
@@ -41,7 +41,6 @@
       .admin-table { width: 100%; border-collapse: collapse; }
       .admin-table th { background: #fdf6f7; color: #d69ea2; padding: 15px; text-align: left; border-bottom: 2px solid #e8b4b8; }
       .admin-table td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-      .btn-action { padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; color: white; margin-right: 5px; }
 
       /* Debug Panel */
       .debug-toggle { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; border: none; padding: 10px 15px; border-radius: 50px; cursor: pointer; opacity: 0.7; }
@@ -52,7 +51,10 @@
   <body class="admin-page">
 
     <div class="admin-container">
-      <a href="index.html" style="text-decoration: none; color: #d69ea2; font-weight: bold;">← Sair do Painel</a>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <a href="index.html" style="text-decoration: none; color: #d69ea2; font-weight: bold;">← Sair do Painel</a>
+          <a href="gerenciador.html" style="text-decoration: none; color: #d63384; font-weight: bold; background: #fff; padding: 5px 15px; border-radius: 20px; border: 1px solid #d63384;">📅 Abrir Agenda 🌸</a>
+      </div>
 
       <header class="admin-header">
         <h1 id="userGreeting">Carregando administrador...</h1>
@@ -131,43 +133,6 @@
         </form>
       </section>
 
-        <section class="form-section" style="border-left: 10px solid #d63384;">
-        <h2 style="color: #d63384;">🌸 Gerenciador de Agenda</h2>
-        <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">Libere novos horários para as clientes agendarem no site.</p>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: end;">
-          <div class="form-group">
-            <label>Data do Atendimento</label>
-            <input type="date" id="adminDataAgenda" required />
-          </div>
-          <div class="form-group">
-            <label>Horário</label>
-            <input type="time" id="adminHoraAgenda" required />
-          </div>
-          <button onclick="liberarHorarioNoSite()" id="btnLiberar" style="padding: 12px; background: #d63384; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 15px;">
-            ✨ Liberar Horário
-          </button>
-        </div>
-
-        <div class="table-wrapper" style="margin-top: 20px; box-shadow: none; border: 1px solid #eee;">
-          <h3 style="padding: 15px; font-size: 1rem; color: #d69ea2; background: #fffcfd;">📅 Próximos Atendimentos Confirmados</h3>
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Hora</th>
-                <th>Cliente</th>
-                <th>WhatsApp</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaAgendamentosConfirmados">
-              <tr><td colspan="5" style="text-align:center;">Carregando agenda...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-        
       <section class="table-wrapper">
         <h2 style="padding: 20px 20px 0 20px; color: #d69ea2;">💰 Vendas Recentes</h2>
         <table class="admin-table">
@@ -185,8 +150,7 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="tabelaVendas">
-            </tbody>
+          <tbody id="tabelaVendas"></tbody>
         </table>
       </section>
 
@@ -198,12 +162,11 @@
               <th>Usuário</th>
               <th>Nome Completo</th>
               <th>E-mail</th>
-              <th>endereco</th>
+              <th>Endereço</th>
               <th>Desde</th>
             </tr>
           </thead>
-          <tbody id="tabelaUsuarios">
-            </tbody>
+          <tbody id="tabelaUsuarios"></tbody>
         </table>
       </section>
 
