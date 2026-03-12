@@ -118,25 +118,25 @@ async function salvarHorario() {
   const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
 
  const payload = {
-  acao: "executarPlanilha",
-  subAcao: "salvar",
+  acao: "agendar",
   aba: "Agendamentos",
   payload: {
-    "1": id,                                // Coluna A - ID
-    "2": new Date().toLocaleDateString('pt-BR'), // Coluna B - Data Registro
-    "3": "ADMIN",                           // Coluna C - Origem
-    "4": servico,                           // Coluna D - Serviço
-    "5": profissional,                      // Coluna E - Profissional
-    "6": valor,                             // Coluna F - Valor
-    "7": data,                              // Coluna G - Data
-    "8": hora,                              // Coluna H - Hour
-    "9": "Disponível",                      // Coluna I - Status
-    "10": "",                               // Coluna J - Cliente (vazio ao criar)
-    "11": "",                               // Coluna K - Telefone (vazio ao criar)
-    "12": "Disponível",                     // Coluna L - Vaga
-    "13": data                              // Coluna M - DataAgenda
+    "ID": id,
+    "Data Registro": new Date().toLocaleDateString('pt-BR'),
+    "Origem": "ADMIN",
+    "Servico": servico,
+    "Profissional": profissional,
+    "Valor": valor,
+    "Data": data,
+    "Hour": hora,
+    "Status": "Disponível",
+    "Cliente": "",
+    "Telefone": "",
+    "Vaga": "Disponível",
+    "DataAgenda": data
   }
 };
+
 </script>
 </body>
 </html>
