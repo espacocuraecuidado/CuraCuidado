@@ -104,38 +104,49 @@ async function cancelarAgendamento(id) {
 }
 
 async function salvarHorario() {
-  const data=document.getElementById("dataAgenda").value;
-  const hora=document.getElementById("hora").value;
-  const servico=document.getElementById("servico").value;
-  const profissional=document.getElementById("profissional").value.trim();
-  const valor=document.getElementById("valor").value;
+  const data = document.getElementById("dataAgenda").value;
+  const hora = document.getElementById("hora").value;
+  const servico = document.getElementById("servico").value;
+  const profissional = document.getElementById("profissional").value.trim();
+  const valor = document.getElementById("valor").value;
 
-  if(!data||!hora||!profissional||!valor){ 
-    mostrarMensagem("Preencha todos os campos!","erro"); 
+  if (!data || !hora || !profissional || !valor) { 
+    mostrarMensagem("Preencha todos os campos!", "erro"); 
     return; 
   }
 
-  const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+  const id = String(Date.now()); // ID simplificado para evitar erros
 
- const payload = {
-  acao: "agendar",
-  aba: "Agendamentos",
-  payload: {
-    "ID": id,
-    "Data Registro": new Date().toLocaleDateString('pt-BR'),
-    "Origem": "ADMIN",
-    "Servico": servico,
-    "Profissional": profissional,
-    "Valor": valor,
-    "Data": data,
-    "Hour": hora,
-    "Status": "Disponível",
-    "Cliente": "",
-    "Telefone": "",
-    "Vaga": "Disponível",
-    "DataAgenda": data
+  const payload = {
+    acao: "executarPlanilha", // Comando correto para o Script v4.0
+    subAcao: "salvar",
+    aba: "Agendamentos",
+    payload: {
+      "1": `'${id}`,                                     // Coluna A
+      "2": `'${new Date().toLocaleDateString('pt-BR')}`,// Coluna B
+      "3": "ADMIN",                                     // Coluna C
+      "4": servico,                                     // Coluna D
+      "5": profissional,                                // Coluna E
+      "6": valor,                                       // Coluna F
+      "7": `'${data}`,                                  // Coluna G
+      "8": `'${hora}`,                                  // Coluna H
+      "9": "Disponível",                                // Coluna I
+      "12": "Disponível",                               // Coluna L
+      "13": `'${data}`                                  // Coluna M
+    }
+  };
+
+  try {
+    // Usamos 'no-cors' para evitar erros de segurança do navegador, 
+    // embora o dado chegue na planilha.
+    await fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+    
+    mostrarMensagem("Horário publicado com sucesso! ✨");
+    setTimeout(buscarAgenda, 2000); // Recarrega a lista após 2 segundos
+  } catch (e) {
+    mostrarMensagem("Erro ao conectar com a planilha.", "erro");
   }
-};
+}
 
 </script>
 </body>

@@ -415,52 +415,24 @@ async function abrirPopUpRastreio(idPedido) {
 }
 // 1. Função para enviar o novo horário para a planilha
 async function liberarHorarioNoSite() {
-    const inputData = document.getElementById("adminDataAgenda");
-    const inputHora = document.getElementById("adminHoraAgenda");
-    const btn = document.getElementById("btnLiberar");
+    const data = document.getElementById("adminDataAgenda").value;
+    const hora = document.getElementById("adminHoraAgenda").value;
+    
+    if(!data || !hora) return alert("Selecione data e hora!");
 
-    if (!inputData || !inputHora) {
-        console.error("Inputs de agenda não encontrados no HTML!");
-        alert("Erro técnico: Campos de entrada não encontrados.");
-        return;
-    }
-
-    const valorDoInputData = inputData.value;
-    const valorDoInputHora = inputHora.value;
-
-    if (!valorDoInputData || !valorDoInputHora) {
-        alert("Preencha Data e Hora! ⚠️");
-        return;
-    }
-
-    try {
-        if (btn) {
-            btn.disabled = true;
-            btn.innerText = "Liberando... ⏳";
+    const payload = {
+        acao: "executarPlanilha",
+        subAcao: "salvar",
+        aba: "Agendamentos",
+        payload: {
+            "1": `'${Date.now()}`,
+            "7": `'${data}`,
+            "8": `'${hora}`,
+            "9": "Disponível",
+            "12": "Disponível",
+            "13": `'${data}`
         }
-
-        const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
-
-        const payload = {
-            acao: "executarPlanilha",   // mesmo padrão do gerenciador.html
-            subAcao: "salvar",
-            aba: "Agendamentos",
-            payload: {
-                "1": id,                                // Coluna A - ID
-                "2": new Date().toLocaleDateString('pt-BR'), // Coluna B - Data Registro
-                "3": "ADMIN",                           // Coluna C - Origem
-                "4": "Serviço Geral",                   // Coluna D - Serviço
-                "5": "Equipe Cura & Cuidado",           // Coluna E - Profissional
-                "6": "0.00",                            // Coluna F - Valor
-                "7": valorDoInputData,                  // Coluna G - Data
-                "8": valorDoInputHora,                  // Coluna H - Hour
-                "9": "Disponível",                      // Coluna I - Status
-                "10": "",                               // Coluna J - Cliente
-                "11": "",                               // Coluna K - Telefone
-                "12": "Disponível",                     // Coluna L - Vaga
-                "13": valorDoInputData                  // Coluna M - DataAgenda
-            }
-        };
+    };
 
         await fetch(API_URL, {
             method: 'POST',
