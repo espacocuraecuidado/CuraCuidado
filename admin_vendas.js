@@ -415,12 +415,10 @@ async function abrirPopUpRastreio(idPedido) {
 }
 // 1. Função para enviar o novo horário para a planilha
 async function liberarHorarioNoSite() {
-    // 1. Definir os elementos do HTML
     const inputData = document.getElementById("adminDataAgenda");
     const inputHora = document.getElementById("adminHoraAgenda");
-    const btn = document.getElementById("btnLiberar"); // Certifique-se que o ID no HTML é este
+    const btn = document.getElementById("btnLiberar");
 
-    // Validação inicial
     if (!inputData || !inputHora) {
         console.error("Inputs de agenda não encontrados no HTML!");
         alert("Erro técnico: Campos de entrada não encontrados.");
@@ -441,34 +439,37 @@ async function liberarHorarioNoSite() {
             btn.innerText = "Liberando... ⏳";
         }
 
+        const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+
         const payload = {
-            acao: "agendar", // Note: Se o seu GS usa "dinamica" para gravar novas linhas, mude aqui
+            acao: "executarPlanilha",   // mesmo padrão do gerenciador.html
+            subAcao: "salvar",
             aba: "Agendamentos",
             payload: {
-                "ID": "ID-" + Date.now(),
-                "Data Registro": new Date().toLocaleDateString('pt-BR'),
-                "Nome": "ADMIN", 
-                "Servico": "Serviço Geral",
-                "Profissional": "Equipe Cura & Cuidado",
-                "Valor": "0.00",
-                "DataAgenda": valorDoInputData,
-                "Hour": valorDoInputHora,
-                "Status": "Disponível",
-                "Cliente": "",
-                "Telefone": ""
+                "1": id,                                // Coluna A - ID
+                "2": new Date().toLocaleDateString('pt-BR'), // Coluna B - Data Registro
+                "3": "ADMIN",                           // Coluna C - Origem
+                "4": "Serviço Geral",                   // Coluna D - Serviço
+                "5": "Equipe Cura & Cuidado",           // Coluna E - Profissional
+                "6": "0.00",                            // Coluna F - Valor
+                "7": valorDoInputData,                  // Coluna G - Data
+                "8": valorDoInputHora,                  // Coluna H - Hour
+                "9": "Disponível",                      // Coluna I - Status
+                "10": "",                               // Coluna J - Cliente
+                "11": "",                               // Coluna K - Telefone
+                "12": "Disponível",                     // Coluna L - Vaga
+                "13": valorDoInputData                  // Coluna M - DataAgenda
             }
         };
 
-        const resposta = await fetch(API_URL, {
+        await fetch(API_URL, {
             method: 'POST',
+            mode: 'no-cors',
             body: JSON.stringify(payload)
         });
 
-        // Como o Google Script costuma dar erro de CORS em POST, 
-        // verificamos se ao menos a requisição foi enviada
         alert("Horário liberado com sucesso! 🌸");
-        
-        // Limpar campos
+
         inputData.value = "";
         inputHora.value = "";
 
@@ -482,6 +483,7 @@ async function liberarHorarioNoSite() {
         }
     }
 }
+
 
 // 2. Função para mostrar quem agendou
 async function atualizarTabelaAgendamentos() {
