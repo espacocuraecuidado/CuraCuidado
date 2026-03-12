@@ -370,11 +370,12 @@ function aplicarCupom() {
     renderCarrinho();
 }
 
-// 4. FINALIZAÇÃO E ENVIO
+// 4. FINALIZAÇÃO E ENVIO (Ajustado para Colunas N e O)
 async function finalizarPedidoPeloCarrinho() {
     const usuario = localStorage.getItem("usuarioLogado") || "Visitante";
     if (window.carrinho.length === 0) return alert("Carrinho vazio! 🛒");
     
+    // 1. Puxa os dados que foram salvos no perfil ou pelo cliente.html
     const dadosSalvos = JSON.parse(localStorage.getItem(`dados_entrega_${usuario}`)) || {};
     const whatsappFinal = document.getElementById('cart-whatsapp')?.value || dadosSalvos.whatsapp || "";
     
@@ -384,9 +385,12 @@ async function finalizarPedidoPeloCarrinho() {
         return;
     }
 
-    const enderecoFormatado = dadosSalvos.rua 
-        ? `${dadosSalvos.rua}, ${dadosSalvos.numero} - ${dadosSalvos.bairro}, ${dadosSalvos.cidade}. CEP: ${dadosSalvos.cep}`
-        : "Retirada no local ou endereço a combinar.";
+    // 2. Monta o endereço formatado para a Coluna O (Posição 15)
+    // Se o cliente salvou via cliente.html (campo único), usamos 'rua'. 
+    // Se salvou via Perfil detalhado, montamos a string completa.
+    const enderecoParaPlanilha = dadosSalvos.rua 
+        ? `${dadosSalvos.rua}${dadosSalvos.numero ? ', ' + dadosSalvos.numero : ''}${dadosSalvos.bairro ? ' - ' + dadosSalvos.bairro : ''}`
+        : "Endereço a combinar";
 
     const minhaChavePix = "85991561497"; 
     const confirmacaoPix = confirm("Confirmar pedido e copiar chave PIX?");
@@ -402,10 +406,11 @@ async function finalizarPedidoPeloCarrinho() {
     let mensagemZap = `*Novo Pedido - Espaço Cura e Cuidado* 🌸\n\n`;
     mensagemZap += `*Cliente:* ${usuario}\n`;
     mensagemZap += `*Itens:* ${window.carrinho.map(item => `${item.qtd}x ${item.nome}`).join(", ")}\n`;
-    mensagemZap += `*Entrega:* ${enderecoFormatado}\n`;
+    mensagemZap += `*Entrega:* ${enderecoParaPlanilha}\n`;
     mensagemZap += `*Total:* R$ ${totalFinal.toFixed(2)}\n\n`;
     mensagemZap += `✅ *PIX Realizado. Seguindo para enviar o comprovante.*`;
 
+    // 3. Objeto preparado para a Planilha (Colunas N=14 e O=15)
     const dadosVenda = {
         "ID Pedido": "PED-" + Math.floor(Math.random() * 1000000),
         "Data": new Date().toLocaleString('pt-BR'),
@@ -413,29 +418,31 @@ async function finalizarPedidoPeloCarrinho() {
         "Produto": window.carrinho.map(item => `${item.qtd}x ${item.nome}`).join(", "),
         "ValorTotal": totalFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
         "Entrega": document.getElementById('cart-delivery').options[document.getElementById('cart-delivery').selectedIndex].text,
-        "WhatsApp": whatsappFinal,
+        "14": whatsappFinal,        // Coluna N
+        "15": enderecoParaPlanilha, // Coluna O
         "Status_Pagamento": "Aguardando Pagamento"
     };
 
     const areaBotao = document.getElementById('cart-items-list');
-    areaBotao.innerHTML = `<p style="text-align:center;">Registrando seu pedido... ⏳</p>`;
+    if(areaBotao) areaBotao.innerHTML = `<p style="text-align:center;">Registrando seu pedido... ⏳</p>`;
 
     await enviarDinamico("Vendas", dadosVenda, "Pedido registrado com sucesso!");
 
-    areaBotao.innerHTML = `
-        <div style="text-align:center; padding:20px; border: 2px dashed #d4a373; border-radius: 15px;">
-            <p>✅ <b>Pedido Gerado!</b></p>
-            <a href="https://wa.me/5585991561497?text=${encodeURIComponent(mensagemZap)}" 
-               target="_blank" class="btn-block" style="background:#25d366; color:white; text-decoration:none; display:block; padding:15px; border-radius:8px;">
-                Enviar Comprovante via WhatsApp 📱
-            </a>
-        </div>
-    `;
+    if(areaBotao) {
+        areaBotao.innerHTML = `
+            <div style="text-align:center; padding:20px; border: 2px dashed #d4a373; border-radius: 15px;">
+                <p>✅ <b>Pedido Gerado!</b></p>
+                <a href="https://wa.me/5585991561497?text=${encodeURIComponent(mensagemZap)}" 
+                   target="_blank" class="btn-block" style="background:#25d366; color:white; text-decoration:none; display:block; padding:15px; border-radius:8px;">
+                    Enviar Comprovante via WhatsApp 📱
+                </a>
+            </div>
+        `;
+    }
     
     window.carrinho = [];
     salvarCarrinho();
 }
-
 async function enviarDinamico(aba, payload, msgSucesso) {
     try {
         const res = await fetch(URL_PLANILHA, {

@@ -58,16 +58,19 @@
     </div>
 
     <div id="secao-dados" style="display: none;">
-        <h3 style="color: #555;">Seus Dados de Entrega</h3>
-        <div class="form-container" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-            <label style="display:block; margin-bottom:5px;">Endereço completo:</label>
-            <input type="text" id="c-end" placeholder="Rua, número, bairro..." style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
-            
-            <label style="display:block; margin-bottom:5px;">WhatsApp:</label>
-            <input type="tel" id="c-tel" placeholder="(85) 99156-1497" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
-            
-            <button onclick="salvarLocalmente()" style="width: 100%; padding: 15px; background: #d4a373; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Salvar Alterações</button>
-        </div>
+    <h3 style="color: #555;">Seus Dados de Entrega</h3>
+    <div class="form-container" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+        
+        <label style="display:block; margin-bottom:5px;">Seu WhatsApp (com DDD):</label>
+        <input type="tel" id="c-tel" placeholder="Ex: 85999999999" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
+
+        <label style="display:block; margin-bottom:5px;">Endereço completo:</label>
+        <input type="text" id="c-end" placeholder="Rua, número, bairro..." style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
+
+        <button onclick="salvarDadosCliente()" style="width:100%; background:#d4a373; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:bold;">
+            💾 Salvar Alterações
+        </button>
+    </div>
     </div>
 
     <a href="index.html" class="btn-voltar">← Voltar para a loja</a>
@@ -206,6 +209,24 @@
         localStorage.setItem("end_cliente", document.getElementById("c-end").value);
         localStorage.setItem("tel_cliente", document.getElementById("c-tel").value);
         alert("Dados salvos com sucesso! ✨");
+    }
+    // Carregar o que já estiver salvo ao abrir a página
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("c-end").value = localStorage.getItem("end_cliente") || "";
+        document.getElementById("c-tel").value = localStorage.getItem("tel_cliente") || "";
+    });
+
+    function salvarDadosCliente() {
+        const endereco = document.getElementById("c-end").value;
+        const telefone = document.getElementById("c-tel").value;
+
+        if(!telefone) return alert("Por favor, informe seu WhatsApp.");
+
+        // Salva no navegador para uso posterior
+        localStorage.setItem("end_cliente", endereco);
+        localStorage.setItem("tel_cliente", telefone);
+        
+        alert("Dados atualizados com sucesso! 🌸");
     }
 </script>
 
