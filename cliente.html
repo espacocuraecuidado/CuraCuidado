@@ -216,18 +216,62 @@
         document.getElementById("c-tel").value = localStorage.getItem("tel_cliente") || "";
     });
 
-    function salvarDadosCliente() {
-        const endereco = document.getElementById("c-end").value;
-        const telefone = document.getElementById("c-tel").value;
+    async function salvarDadosCliente() {
+    const endereco = document.getElementById("c-end").value;
+    const telefone = document.getElementById("c-tel").value;
+    const usuarioLogado = localStorage.getItem("usuarioLogado");
 
-        if(!telefone) return alert("Por favor, informe seu WhatsApp.");
+    if(!telefone) return alert("Por favor, informe seu WhatsApp. 📱");
 
-        // Salva no navegador para uso posterior
-        localStorage.setItem("end_cliente", endereco);
-        localStorage.setItem("tel_cliente", telefone);
+    // 1. Salva no navegador (LocalStorage) para uso rápido no carrinho
+    localStorage.setItem("end_cliente", endereco);
+    localStorage.setItem("tel_cliente", telefone);
+    
+    // Também salva no formato que o seu script principal espera (opcional, para compatibilidade)
+    localStorage.setItem(`dados_entrega_${usuarioLogado}`, JSON.stringify({
+        whatsapp: telefone,
+        rua: endereco
+    }));
+
+    // 2. Envia para a Planilha do Google (Aba "Usuarios")
+    const btn = document.querySelector("#secao-dados button");
+    const textoOriginal = btn.innerText;
+    
+    try {
+        btn.innerText = "Salvando na Nuvem... ⏳";
+        btn.disabled = true;
+
+        const dadosParaEnviar = {
+            aba: "Usuarios", // Verifique se sua aba se chama "Usuarios" ou "Users"
+            payload: {
+                "Usuario": usuarioLogado,
+                "WhatsApp": telefone,
+                "Rua": endereco,
+                "Data_Atualizacao": new Date().toLocaleString('pt-BR')
+            }
+        };
+
+        const res = await fetch(URL_API, {
+            method: 'POST',
+            body: JSON.stringify(dadosParaEnviar)
+        });
+
+        const r = await res.json();
         
-        alert("Dados atualizados com sucesso! 🌸");
+        if (r.status === "sucesso") {
+            alert("Dados atualizados com sucesso na planilha! 🌸");
+        } else {
+            alert("Dados salvos apenas neste aparelho. (Erro: " + r.mensagem + ")");
+        }
+
+    } catch (e) {
+        console.error("Erro ao salvar:", e);
+        alert("Salvo localmente! Não conseguimos conectar com a planilha agora. ✨");
+    } finally {
+        btn.innerText = textoOriginal;
+        btn.disabled = false;
     }
+}
 </script>
 
 </body>
