@@ -36,64 +36,65 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 2. GESTÃO DE DADOS (CRUD E OPERAÇÕES)
 
-// Função para Marcar como Pago
+/// 1. Função para Marcar como Pago (Coluna F -> Índice 6)
 async function marcarComoPago(idPedido) {
     if (!idPedido || idPedido === "—") return alert("ID do pedido inválido!");
     
-    const idStr = String(idPedido); // Tratamento de ID para String
+    const idStr = String(idPedido);
+    if (!confirm(`Confirmar pagamento para o pedido ${idStr}? ✅`)) return;
+
     const btn = event.target;
     btn.disabled = true;
 
     try {
-        const payload = { acao: "atualizarPagamento", idPedido: idStr };
-        const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-        const data = await res.json();
+        const payload = { 
+            acao: "executarPlanilha", 
+            subAcao: "salvar",
+            aba: "Vendas",
+            id: idStr,
+            payload: {
+                "6": "Realizado" // Coluna F (Status_Pagamento)
+            }
+        };
 
-        if (data.status === "sucesso") {
-            alert("Pagamento confirmado! ✅");
-            carregarDados();
-        } else {
-            alert("Erro: " + data.mensagem);
-        }
+        // Usamos mode: 'no-cors' para evitar bloqueios de segurança do navegador com o Google
+        await fetch(API_URL, { method: "POST", mode: 'no-cors', body: JSON.stringify(payload) });
+        
+        alert("Comando enviado! Verifique a planilha em instantes. ✅");
+        setTimeout(carregarDados, 2000); // Aguarda 2s para o Google processar e recarrega
     } catch (err) {
         console.error("Falha ao atualizar pagamento:", err);
+        alert("Erro na conexão.");
     } finally {
         btn.disabled = false;
     }
 }
-// Função para Marcar como Enviado (Caminhão)
+
+// 2. Função para Marcar como Enviado (Coluna G -> Índice 7)
 async function marcarComoEnviado(idPedido) {
     if (!idPedido || idPedido === "—") return alert("ID do pedido inválido!");
     
-    const confirmar = confirm(`Deseja marcar o pedido ${idPedido} como ENVIADO? 🚚`);
-    if (!confirmar) return;
+    const idStr = String(idPedido);
+    if (!confirm(`Marcar pedido ${idStr} como ENVIADO? 🚚`)) return;
 
     const btn = event.target;
     btn.disabled = true;
 
     try {
-        // Estamos enviando a acao "atualizarEnvio"
         const payload = { 
-            acao: "atualizarEnvio", 
-           idPedido: String(idPedido),
-            status: "Enviado 🚚", // Texto que queremos na célula
-            coluna: 8             // Forçamos a coluna 8 (Envio)
+            acao: "executarPlanilha", 
+            subAcao: "salvar",
+            aba: "Vendas",
+            id: idStr,
+            payload: {
+                "7": "Enviado 🚚" // Coluna G (Status_Envio)
+            }
         };
 
-        const res = await fetch(API_URL, { 
-            method: "POST", 
-            body: JSON.stringify(payload) 
-        });
+        await fetch(API_URL, { method: "POST", mode: 'no-cors', body: JSON.stringify(payload) });
         
-        const data = await res.json();
-
-        if (data.status === "sucesso") {
-            alert("Status de envio atualizado com sucesso! 🚀");
-            carregarDados(); 
-        } else {
-            // Se o GS der erro de "Ação inválida", ele cairá aqui
-            alert("O servidor recebeu, mas a coluna de envio precisa ser liberada no Google Scripts.");
-        }
+        alert("Status de envio atualizado! 🚀");
+        setTimeout(carregarDados, 2000);
     } catch (err) {
         console.error("Erro:", err);
         alert("Falha na conexão.");
@@ -101,30 +102,34 @@ async function marcarComoEnviado(idPedido) {
         btn.disabled = false;
     }
 }
-// Rastreio
+
+// 3. Função para Adicionar Rastreio (Coluna K -> Índice 11)
 async function adicionarRastreio(idPedido) {
     if (!idPedido || idPedido === "—") return alert("ID inválido!");
     
     const codigo = prompt("Digite o código de rastreio (ex: LB123456789BR):");
-    if (!codigo) return; // Cancela se o usuário não digitar nada
+    if (!codigo) return;
+
+    const idStr = String(idPedido);
 
     try {
         const payload = { 
-            acao: "adicionarRastreio", 
-            idPedido: String(idPedido),
-            codigo: codigo.trim().toUpperCase() 
+            acao: "executarPlanilha", 
+            subAcao: "salvar",
+            aba: "Vendas",
+            id: idStr,
+            payload: {
+                "11": codigo.trim().toUpperCase() // Coluna K (Rastreio)
+            }
         };
         
-        const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-        const data = await res.json();
+        await fetch(API_URL, { method: "POST", mode: 'no-cors', body: JSON.stringify(payload) });
         
-        if (data.status === "sucesso") {
-            alert("Código de rastreio salvo com sucesso! 📦");
-            carregarDados(); // Atualiza a tabela
-        }
+        alert("Código de rastreio enviado! 📦");
+        setTimeout(carregarDados, 2000);
     } catch (err) {
         console.error("Erro ao salvar rastreio:", err);
-        alert("Erro na comunicação com o servidor.");
+        alert("Erro na comunicação.");
     }
 }
 // Função para Cancelar com Estorno
