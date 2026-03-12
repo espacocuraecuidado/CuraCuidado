@@ -87,37 +87,71 @@
 <script>
     const URL_API = "https://script.google.com/macros/s/AKfycbyrqHCXtP99cGGH8KvVBLmY_9ElgkTtbK2JgFqecgszbeXCurJobZcrbe6BOy2bpHXm/exec";
 
-    // 1. CARREGAR TABELA AO ABRIR
-    window.onload = buscarAgenda;
+// 1. INICIALIZAÇÃO
+window.onload = () => {
+    verificarAcesso();
+    buscarAgenda();
+};
 
-    async function buscarAgenda() {
-        const corpo = document.getElementById("corpoTabela");
-        try {
-            const resposta = await fetch(`${URL_API}?acao=listarAgendamentos`);
-            const dados = await resposta.json();
-            
-            // Ordenar por data e hora (mais recentes primeiro)
-            dados.sort((a, b) => new Date(a.DataAgenda + 'T' + a.Hour) - new Date(b.DataAgenda + 'T' + b.Hour));
-
-            corpo.innerHTML = "";
-            dados.slice(0, 10).forEach(item => { // Mostra os 10 primeiros
-                const statusClass = item.Status === "Ocupado" ? "status-ocupado" : "status-disponivel";
-                corpo.innerHTML += `
-                    <tr>
-                        <td>${item.DataAgenda.split('-').reverse().join('/')}</td>
-                        <td>${item.Hour}</td>
-                        <td>${item.Servico || '-'}</td>
-                        <td><span class="status-badge ${statusClass}">${item.Status}</span></td>
-                    </tr>
-                `;
-            });
-        } catch (e) {
-            corpo.innerHTML = "<tr><td colspan="4">Erro ao atualizar lista.</td></tr>";
-        }
+// Segurança básica (igual ao admin_vendas)
+function verificarAcesso() {
+    const tipo = localStorage.getItem("tipoUsuario");
+    if (tipo !== "admin") {
+        alert("Acesso restrito!");
+        window.location.href = "index.html";
     }
+}
 
-    // 2. FUNÇÃO SALVAR (AJUSTADA)
-    async function salvarHorario() {
+// 2. FUNÇÃO DE NORMALIZAÇÃO (O segredo da admin_vendas.js)
+function normalizeResponse(data) {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (data.data && Array.isArray(data.data)) return data.data;
+    if (data.values && Array.isArray(data.values)) return data.values;
+    return [];
+}
+
+// 3. BUSCAR DADOS DA PLANILHA
+async function buscarAgenda() {
+    const corpo = document.getElementById("corpoTabela");
+    try {
+        const resposta = await fetch(`${URL_API}?acao=listarAgendamentos`);
+        const resultadoBruto = await resposta.json();
+        
+        // Aplica a normalização para garantir que temos um Array
+        const dados = normalizeResponse(resultadoBruto);
+        
+        if (dados.length === 0) {
+            corpo.innerHTML = "<tr><td colspan='4' style='text-align:center;'>Nenhum horário encontrado.</td></tr>";
+            return;
+        }
+
+        // Ordenar por data e hora
+        dados.sort((a, b) => new Date(a.DataAgenda + 'T' + a.Hour) - new Date(b.DataAgenda + 'T' + b.Hour));
+
+        corpo.innerHTML = "";
+        // Mostra os últimos 15 registros
+        dados.slice(0, 15).forEach(item => { 
+            const statusClass = item.Status === "Ocupado" ? "status-ocupado" : "status-disponivel";
+            const dataFormatada = item.DataAgenda ? item.DataAgenda.split('-').reverse().join('/') : '---';
+            
+            corpo.innerHTML += `
+                <tr>
+                    <td>${dataFormatada}</td>
+                    <td>${item.Hour || '---'}</td>
+                    <td>${item.Servico || '-'}</td>
+                    <td><span class="status-badge ${statusClass}">${item.Status}</span></td>
+                </tr>
+            `;
+        });
+    } catch (e) {
+        console.error("Erro ao buscar:", e);
+        corpo.innerHTML = "<tr><td colspan='4'>Erro ao atualizar lista.</td></tr>";
+    }
+}
+
+// 4. SALVAR NOVO HORÁRIO
+async function salvarHorario() {
     const data = document.getElementById("dataAgenda").value;
     const hora = document.getElementById("hora").value;
     const servico = document.getElementById("servico").value;
@@ -136,23 +170,22 @@
     msg.style.color = "#d4a373";
     msg.innerText = "Gravando na planilha... ⏳";
 
-    // O PAYLOAD CORRETO: Usando números de colunas conforme o admin_vendas.js
     const payload = {
         acao: "executarPlanilha",
         subAcao: "salvar",
         aba: "Agendamentos",
         payload: {
-            "1": `'${Date.now()}`,       // Coluna A: ID
-            "2": `'${new Date().toLocaleDateString('pt-BR')}`, // Coluna B: Data Registro
-            "3": "ADMIN",                // Coluna C: Origem
-            "4": servico,                // Coluna D: Servico
-            "5": profissional,           // Coluna E: Profissional
-            "6": valor,                  // Coluna F: Valor
-            "7": `'${data}`,             // Coluna G: Data
-            "8": `'${hora}`,             // Coluna H: Hour
-            "9": "Disponível",           // Coluna I: Status
-            "12": "Disponível",          // Coluna L: Vaga (Obrigatório para o site ler)
-            "13": `'${data}`             // Coluna M: DataAgenda
+            "1": `'${Date.now()}`,       // ID único
+            "2": `'${new Date().toLocaleDateString('pt-BR')}`, 
+            "3": "ADMIN",                
+            "4": servico,                
+            "5": profissional,           
+            "6": valor,                  
+            "7": `'${data}`,             // Data do atendimento
+            "8": `'${hora}`,             // Hora
+            "9": "Disponível",           
+            "12": "Disponível",          // Coluna da Vaga para o site
+            "13": `'${data}`             // DataAgenda
         }
     };
 
@@ -166,10 +199,11 @@
         msg.style.color = "#25d366";
         msg.innerText = "Horário disponibilizado com sucesso! 🌸";
         
-        // Limpa campos e recarrega a lista
+        // Limpa campos e recarrega
         setTimeout(() => {
             document.getElementById("dataAgenda").value = "";
             document.getElementById("hora").value = "";
+            msg.innerText = "";
             buscarAgenda(); 
         }, 2000);
 
