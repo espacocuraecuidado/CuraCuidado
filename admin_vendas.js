@@ -135,24 +135,39 @@ async function adicionarRastreio(idPedido) {
 // Função para Cancelar com Estorno
 async function cancelarPedido(idPedido) {
     if (!idPedido || idPedido === "—") return;
-    const confirmar = confirm("Deseja realmente CANCELAR este pedido? O estoque será devolvido automaticamente. ❌");
-    
-    if (!confirmar) return;
+    if (!confirm("Deseja realmente CANCELAR este pedido? ❌")) return;
+
+    const btn = event.target;
+    btn.disabled = true;
 
     try {
-        const payload = { acao: "excluirPedido", idPedido: String(idPedido) };
-        const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-        const data = await res.json();
+        // Mudamos de 'excluirPedido' para 'salvar' com status Cancelado
+        const payload = { 
+            acao: "executarPlanilha", 
+            subAcao: "salvar",
+            aba: "Vendas",
+            id: String(idPedido),
+            payload: {
+                "6": "Cancelado ❌", // Muda pagamento para Cancelado
+                "7": "Cancelado ❌"  // Muda envio para Cancelado
+            }
+        };
 
-        if (data.status === "sucesso") {
-            alert("Pedido cancelado e estoque estornado!");
-            carregarDados();
-        }
+        await fetch(API_URL, { 
+            method: "POST", 
+            mode: 'no-cors', 
+            body: JSON.stringify(payload) 
+        });
+
+        alert("Pedido marcado como cancelado na planilha! ❌");
+        setTimeout(carregarDados, 2000);
     } catch (err) {
-        alert("Erro na comunicação com o servidor.");
+        console.error("Erro ao cancelar:", err);
+        alert("Falha na conexão.");
+    } finally {
+        btn.disabled = false;
     }
 }
-
 // 3. SINCRONIZAÇÃO E RESILIÊNCIA
 
 // Normalização para aceitar múltiplos formatos de JSON
