@@ -118,59 +118,64 @@
 
     // 2. FUNÇÃO SALVAR (AJUSTADA)
     async function salvarHorario() {
-        const data = document.getElementById("dataAgenda").value;
-        const hora = document.getElementById("hora").value;
-        const msg = document.getElementById("msg");
-        const btn = document.getElementById("btnSalvar");
+    const data = document.getElementById("dataAgenda").value;
+    const hora = document.getElementById("hora").value;
+    const servico = document.getElementById("servico").value;
+    const profissional = document.getElementById("profissional").value.trim();
+    const valor = document.getElementById("valor").value;
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("btnSalvar");
 
-        if (!data || !hora) {
-            msg.style.color = "red";
-            msg.innerText = "Preencha Data e Hora! ⚠️";
-            return;
+    if (!data || !hora || !profissional || !valor) {
+        msg.style.color = "red";
+        msg.innerText = "Preencha todos os campos! ⚠️";
+        return;
+    }
+
+    btn.disabled = true;
+    msg.style.color = "#d4a373";
+    msg.innerText = "Gravando na planilha... ⏳";
+
+    // O PAYLOAD CORRETO: Usando números de colunas conforme o admin_vendas.js
+    const payload = {
+        acao: "executarPlanilha",
+        subAcao: "salvar",
+        aba: "Agendamentos",
+        payload: {
+            "1": `'${Date.now()}`,       // Coluna A: ID
+            "2": `'${new Date().toLocaleDateString('pt-BR')}`, // Coluna B: Data Registro
+            "3": "ADMIN",                // Coluna C: Origem
+            "4": servico,                // Coluna D: Servico
+            "5": profissional,           // Coluna E: Profissional
+            "6": valor,                  // Coluna F: Valor
+            "7": `'${data}`,             // Coluna G: Data
+            "8": `'${hora}`,             // Coluna H: Hour
+            "9": "Disponível",           // Coluna I: Status
+            "12": "Disponível",          // Coluna L: Vaga (Obrigatório para o site ler)
+            "13": `'${data}`             // Coluna M: DataAgenda
         }
+    };
 
-        btn.disabled = true;
-        msg.style.color = "#d4a373";
-        msg.innerText = "Gravando na planilha... ⏳";
-
-        const payload = {
-            acao: "agendar",
-            aba: "Agendamentos",
-            payload: {
-                "ID": Date.now(),
-                "Data Registro": new Date().toLocaleDateString('pt-BR'),
-                "Nome": "ADMIN",
-                "Servico": document.getElementById("servico").value,
-                "Profissional": document.getElementById("profissional").value,
-                "Valor": document.getElementById("valor").value,
-                "DataAgenda": data,
-                "Hour": hora,
-                "Status": "Disponível",
-                "Cliente": "",
-                "Telefone": ""
-            }
-        };
-
-        try {
+    try {
         await fetch(URL_API, { 
             method: 'POST', 
-            mode: 'no-cors', // Ignora a restrição de leitura do navegador
+            mode: 'no-cors', 
             body: JSON.stringify(payload) 
         });
 
         msg.style.color = "#25d366";
-        msg.innerText = "Comando enviado! A planilha será atualizada em breve. 🌸";
+        msg.innerText = "Horário disponibilizado com sucesso! 🌸";
         
-        // Limpa o formulário e recarrega a lista após 3 segundos
+        // Limpa campos e recarrega a lista
         setTimeout(() => {
             document.getElementById("dataAgenda").value = "";
             document.getElementById("hora").value = "";
             buscarAgenda(); 
-        }, 3000);
+        }, 2000);
 
     } catch (e) {
         msg.style.color = "red";
-        msg.innerText = "Erro na conexão. ❌";
+        msg.innerText = "Erro ao conectar com a planilha. ❌";
     } finally {
         btn.disabled = false;
     }
