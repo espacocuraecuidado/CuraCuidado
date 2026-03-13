@@ -4,24 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minha Conta - Espaço Cura e Cuidado</title>
-    <link rel="stylesheet" href="style.css"> 
     <style>
-        body { background-color: #fdf6f0; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        body { background-color: #fdf6f0; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; color: #444; }
         .container-cliente { max-width: 600px; margin: 20px auto; padding: 15px; }
         .header-cliente { text-align: center; padding: 20px 0; color: #d4a373; }
         
         /* Menu Rápido */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .dash-btn { background: white; border: none; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; text-align: center; font-family: inherit; }
+        .dash-btn { background: white; border: none; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; text-align: center; font-family: inherit; font-weight: 600; color: #7a5c44; transition: transform 0.2s; }
+        .dash-btn:active { transform: scale(0.95); }
         .dash-btn i { font-size: 1.5em; display: block; margin-bottom: 5px; font-style: normal; }
 
-        /* Lista de Pedidos/Agenda */
-        .pedido-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #d4a373; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: relative; }
+        /* Cards */
+        .pedido-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #d4a373; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .status-badge { float: right; padding: 4px 10px; border-radius: 15px; font-size: 0.8em; font-weight: bold; }
         .pago { background: #d4edda; color: #155724; }
         .pendente { background: #fff3cd; color: #856404; }
         
-        .btn-voltar { display: block; text-align: center; margin-top: 20px; color: #999; text-decoration: none; font-size: 0.9em; }
+        /* Formulário */
+        .form-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        label { display: block; margin-bottom: 6px; font-size: 0.9em; font-weight: 600; color: #888; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+        
+        .btn-principal { width: 100%; padding: 15px; background: #e8b4b8; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(232, 180, 184, 0.3); font-size: 1em; }
+        .btn-salvar { background: #d4a373; margin-top: 10px; }
+        .btn-voltar { display: block; text-align: center; margin-top: 25px; color: #999; text-decoration: none; font-size: 0.9em; }
+        
+        hr { border: 0; border-top: 1px solid #eee; margin: 15px 0; }
     </style>
 </head>
 <body>
@@ -29,96 +38,138 @@
 <div class="container-cliente">
     <div class="header-cliente">
         <h2 id="nomeUsuario">Olá, bem-vinda! 🌸</h2>
-        <p>Acompanhe seus pedidos e agendamentos abaixo.</p>
+        <p>Gerencie seus atendimentos e dados abaixo.</p>
     </div>
 
     <div class="dash-grid">
-        <button class="dash-btn" onclick="mostrarSecao('pedidos')"><i>📦</i> Meus Pedidos</button>
-        <button class="dash-btn" onclick="mostrarSecao('agenda')"><i>📅</i> Minha Agenda</button>
-        <button class="dash-btn" onclick="mostrarSecao('dados')" style="grid-column: span 2;"><i>👤</i> Meus Dados de Entrega</button>
+        <button class="dash-btn" onclick="mostrarSecao('pedidos')"><i>📦</i> Pedidos</button>
+        <button class="dash-btn" onclick="mostrarSecao('agenda')"><i>📅</i> Agenda</button>
+        <button class="dash-btn" onclick="mostrarSecao('dados')" style="grid-column: span 2;"><i>👤</i> Dados de Entrega</button>
     </div>
 
-    <button onclick="window.location.href='agendar.html'" 
-            style="width: 100%; margin-bottom: 25px; padding: 15px; background: #e8b4b8; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(232, 180, 184, 0.3); font-family: inherit; font-size: 1em;">
+    <button onclick="window.location.href='agendar.html'" class="btn-principal">
         ✨ Agendar Novo Atendimento
     </button>
 
     <div id="secao-pedidos">
-        <h3 style="color: #555;">Meus Pedidos</h3>
-        <div id="lista-pedidos">
-            <p style="text-align:center;">Carregando pedidos... ⏳</p>
-        </div>
+        <h3 style="color: #555; margin-top: 25px;">Meus Pedidos</h3>
+        <div id="lista-pedidos"><p style="text-align:center;">⏳</p></div>
     </div>
 
     <div id="secao-agenda" style="display: none;">
-        <h3 style="color: #555;">Meus Agendamentos 🌸</h3>
-        <div id="lista-agendamentos">
-            <p style="text-align:center;">Carregando sua agenda... ⏳</p>
-        </div>
+        <h3 style="color: #555; margin-top: 25px;">Meus Agendamentos 🌸</h3>
+        <div id="lista-agendamentos"><p style="text-align:center;">⏳</p></div>
     </div>
 
     <div id="secao-dados" style="display: none;">
-    <h3 style="color: #555;">Seus Dados de Entrega</h3>
-    <div class="form-container" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-        <input type="tel" id="c-tel" placeholder="Ex: 85999999999" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
+        <h3 style="color: #555; margin-top: 25px;">Dados de Entrega</h3>
+        <div class="form-container">
+            <label for="c-tel">WhatsApp (com DDD):</label>
+            <input type="tel" id="c-tel" placeholder="Ex: 85999999999">
 
-        <label for="c-end" style="display:block; margin-bottom:5px;">Endereço completo:</label>
-        <input type="text" id="c-end" placeholder="Rua, número, bairro..." style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
+            <label for="c-end">Endereço Completo:</label>
+            <input type="text" id="c-end" placeholder="Rua, número, bairro...">
 
-        <button onclick="salvarDadosCliente()" style="width:100%; background:#d4a373; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:bold;">
-            💾 Salvar Alterações
-        </button>
+            <button onclick="salvarDadosCliente()" id="btnSalvar" class="btn-principal btn-salvar">
+                💾 Salvar Alterações
+            </button>
+        </div>
     </div>
-</div>
 
     <a href="index.html" class="btn-voltar">← Voltar para a loja</a>
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbyrqHCXtP99cGGH8KvVBLmY_9ElgkTtbK2JgFqecgszbeXCurJobZcrbe6BOy2bpHXm/exec"; 
+    const URL_API = "https://script.google.com/macros/s/AKfycbyrqHCXtP99cGGH8KvVBLmY_9ElgkTtbK2JgFqecgszbeXCurJobZcrbe6BOy2bpHXm/exec";
 
     window.onload = () => {
         const user = localStorage.getItem("usuarioLogado");
         if (!user) {
-            window.location.href = "login.html"; 
+            window.location.href = "login.html";
             return;
         }
         document.getElementById("nomeUsuario").innerText = `Olá, ${user} 🌸`;
         
-        // Carrega dados salvos localmente
+        // Preenche campos com o que estiver no LocalStorage
         document.getElementById("c-end").value = localStorage.getItem("end_cliente") || "";
         document.getElementById("c-tel").value = localStorage.getItem("tel_cliente") || "";
-
-        // Lógica de abas via URL (?secao=agenda)
-        const params = new URLSearchParams(window.location.search);
-        const secaoAlvo = params.get('secao');
-        
-        if (secaoAlvo) {
-            mostrarSecao(secaoAlvo);
-        } else {
-            mostrarSecao('pedidos'); // Padrão
-        }
 
         carregarPedidos(user);
         carregarAgendamentos(user);
     };
 
+    function mostrarSecao(secao) {
+        const secoes = ['pedidos', 'agenda', 'dados'];
+        secoes.forEach(s => {
+            document.getElementById(`secao-${s}`).style.display = (s === secao) ? 'block' : 'none';
+        });
+    }
+
+    async function salvarDadosCliente() {
+        const endereco = document.getElementById("c-end").value;
+        const telefone = document.getElementById("c-tel").value;
+        const usuarioLogado = localStorage.getItem("usuarioLogado");
+        const btn = document.getElementById("btnSalvar");
+
+        if(!telefone) return alert("Por favor, informe seu WhatsApp.");
+
+        try {
+            btn.innerText = "Salvando na Planilha... ⏳";
+            btn.disabled = true;
+
+            // De acordo com o seu código .gs, precisamos desse formato exato:
+            const dadosParaEnviar = {
+                acao: "executarPlanilha",
+                subAcao: "salvar",
+                aba: "Usuarios",
+                id: usuarioLogado, // O script vai procurar esse ID na Coluna 1
+                payload: {
+                    "14": telefone, // Whats_App (Coluna N)
+                    "15": endereco  // Endereço (Coluna O)
+                }
+            };
+
+            const res = await fetch(URL_API, {
+                method: 'POST',
+                body: JSON.stringify(dadosParaEnviar)
+            });
+
+            const r = await res.json();
+            
+            if (r.status === "sucesso") {
+                // Se deu certo na planilha, atualiza o LocalStorage também
+                localStorage.setItem("end_cliente", endereco);
+                localStorage.setItem("tel_cliente", telefone);
+                alert("Dados sincronizados com sucesso! ✨");
+            } else {
+                throw new Error(r.log || "Erro desconhecido");
+            }
+
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao conectar. Os dados foram salvos apenas neste aparelho.");
+            localStorage.setItem("end_cliente", endereco);
+            localStorage.setItem("tel_cliente", telefone);
+        } finally {
+            btn.innerText = "💾 Salvar Alterações";
+            btn.disabled = false;
+        }
+    }
+
+    // --- FUNÇÕES DE CARREGAMENTO (PEDIDOS E AGENDA) ---
     async function carregarPedidos(cliente) {
         const container = document.getElementById("lista-pedidos");
         try {
             const res = await fetch(`${URL_API}?acao=listarVendas`);
-            const todosOsDados = await res.json();
-
-            const meusPedidos = todosOsDados.filter(p => 
-                p.Cliente && String(p.Cliente).toLowerCase() === String(cliente).toLowerCase()
-            );
-
-            if (meusPedidos.length === 0) {
+            const dados = await res.json();
+            const meus = dados.filter(p => String(p.Cliente).toLowerCase() === cliente.toLowerCase());
+            
+            if (meus.length === 0) {
                 container.innerHTML = "<p style='text-align:center;'>Nenhum pedido encontrado. 🛒</p>";
                 return;
             }
 
-            container.innerHTML = meusPedidos.map(p => `
+            container.innerHTML = meus.map(p => `
                 <div class="pedido-card">
                     <span class="status-badge ${p.Status_Pagamento === 'Pagamento Realizado' ? 'pago' : 'pendente'}">
                         ${p.Status_Pagamento || 'Pendente'}
@@ -129,147 +180,34 @@
                     <p><strong>Valor:</strong> R$ ${p.Valor}</p>
                 </div>
             `).join('');
-        } catch (e) {
-            container.innerHTML = "<p style='text-align:center; color:red;'>Erro ao carregar pedidos.</p>";
-        }
+        } catch (e) { container.innerHTML = "Erro ao carregar."; }
     }
 
-   async function carregarAgendamentos(cliente) {
-    const container = document.getElementById("lista-agendamentos");
-    try {
-        // Adicionamos um timestamp para evitar cache do navegador e sempre pegar a agenda atualizada
-        const res = await fetch(`${URL_API}?acao=listarAgendamentos&t=${new Date().getTime()}`);
-        const dados = await res.json();
+    async function carregarAgendamentos(cliente) {
+        const container = document.getElementById("lista-agendamentos");
+        try {
+            const res = await fetch(`${URL_API}?acao=listarAgendamentos&t=${Date.now()}`);
+            const dados = await res.json();
+            const meus = dados.filter(a => 
+                (String(a.Status).toLowerCase() === "ocupado") && 
+                String(a.Cliente).toLowerCase() === cliente.toLowerCase()
+            );
 
-        // Filtra apenas os agendamentos que estão Ocupados e pertencem ao cliente logado
-        const minhaAgenda = dados.filter(a => 
-            (String(a.Status).toLowerCase() === "ocupado" || String(a.Vaga).toLowerCase() === "ocupado") && 
-            a.Cliente && String(a.Cliente).toLowerCase() === String(cliente).toLowerCase()
-        );
-
-        if (minhaAgenda.length === 0) {
-            container.innerHTML = "<p style='text-align:center;'>Você não possui agendamentos ativos. 📅</p>";
-            return;
-        }
-
-        container.innerHTML = minhaAgenda.map(a => {
-            // --- TRATAMENTO DA DATA (Prioridade para Coluna M: DataAgenda) ---
-            let dataBruta = a.DataAgenda || a.Data || ""; 
-            let dataExibicao = "Data não definida";
-            
-            if (dataBruta) {
-                // Remove qualquer resíduo de hora que venha junto da data (formato ISO ou string)
-                let apenasData = String(dataBruta).split('T')[0].split(' ')[0];
-                dataExibicao = apenasData.includes("-") 
-                    ? apenasData.split('-').reverse().join('/') 
-                    : apenasData;
+            if (meus.length === 0) {
+                container.innerHTML = "<p style='text-align:center;'>Sem agendamentos ativos. 📅</p>";
+                return;
             }
 
-            // --- TRATAMENTO DA HORA (Coluna H: Hour) ---
-            let horaBruta = String(a.Hour || a.Hora || "");
-            let horaExibicao = "--:--";
-            
-            if (horaBruta) {
-                // Se o Google Sheets enviar a data de 1899 junto, limpamos aqui
-                horaExibicao = horaBruta.includes(" ") 
-                    ? horaBruta.split(" ")[1].substring(0, 5) 
-                    : horaBruta.substring(0, 5);
-            }
-
-            return `
+            container.innerHTML = meus.map(a => `
                 <div class="pedido-card" style="border-left-color: #e8b4b8;">
                     <div class="status-badge pago">Confirmado</div>
-                    <strong>📅 ${dataExibicao} às ${horaExibicao}</strong><br>
-                    <p style="margin-top:10px; margin-bottom:5px;">
-                        <strong>Serviço:</strong> ${a.Servico || 'Atendimento Cura e Cuidado'}
-                    </p>
-                    <p style="margin: 0; font-size: 0.9em; color: #666;">
-                        <strong>Profissional:</strong> ${a.Profissional || 'Equipe'}
-                    </p>
-                    <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">
-                    <small style="color: #999; font-size: 0.75em;">Ref: ${a.ID}</small>
+                    <strong>📅 ${a.DataAgenda || a.Data} às ${a.Hour || a.Hora}</strong><br>
+                    <p><strong>Serviço:</strong> ${a.Servico || 'Cuidado'}</p>
+                    <small>Profissional: ${a.Profissional || 'Equipe'}</small>
                 </div>
-            `;
-        }).join('');
-    } catch (e) {
-        console.error("Erro ao carregar agenda:", e);
-        container.innerHTML = "<p style='text-align:center; color:red;'>Não foi possível carregar sua agenda no momento.</p>";
+            `).join('');
+        } catch (e) { container.innerHTML = "Erro ao carregar agenda."; }
     }
-}
-
-    function mostrarSecao(secao) {
-        document.getElementById("secao-pedidos").style.display = secao === 'pedidos' ? 'block' : 'none';
-        document.getElementById("secao-agenda").style.display = secao === 'agenda' ? 'block' : 'none';
-        document.getElementById("secao-dados").style.display = secao === 'dados' ? 'block' : 'none';
-    }
-
-    function salvarLocalmente() {
-        localStorage.setItem("end_cliente", document.getElementById("c-end").value);
-        localStorage.setItem("tel_cliente", document.getElementById("c-tel").value);
-        alert("Dados salvos com sucesso! ✨");
-    }
-    // Carregar o que já estiver salvo ao abrir a página
-    document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("c-end").value = localStorage.getItem("end_cliente") || "";
-        document.getElementById("c-tel").value = localStorage.getItem("tel_cliente") || "";
-    });
-
-    async function salvarDadosCliente() {
-    const endereco = document.getElementById("c-end").value;
-    const telefone = document.getElementById("c-tel").value;
-    const usuarioLogado = localStorage.getItem("usuarioLogado");
-
-    if(!telefone) return alert("Por favor, informe seu WhatsApp. 📱");
-
-    // 1. Salva no navegador (LocalStorage) para uso rápido no carrinho
-    localStorage.setItem("end_cliente", endereco);
-    localStorage.setItem("tel_cliente", telefone);
-    
-    // Também salva no formato que o seu script principal espera (opcional, para compatibilidade)
-    localStorage.setItem(`dados_entrega_${usuarioLogado}`, JSON.stringify({
-        whatsapp: telefone,
-        rua: endereco
-    }));
-
-    // 2. Envia para a Planilha do Google (Aba "Usuarios")
-    const btn = document.querySelector("#secao-dados button");
-    const textoOriginal = btn.innerText;
-    
-    try {
-        btn.innerText = "Salvando na Nuvem... ⏳";
-        btn.disabled = true;
-
-        const dadosParaEnviar = {
-            aba: "Usuarios", 
-            payload: {
-                "Usuario": usuarioLogado,
-                "14": telefone,   // Nome EXATO da coluna N
-                "15": endereco,    // Nome EXATO da coluna O
-                "Data_Atualizacao": new Date().toLocaleString('pt-BR')
-            }
-        };
-
-        const res = await fetch(URL_API, {
-            method: 'POST',
-            body: JSON.stringify(dadosParaEnviar)
-        });
-
-        const r = await res.json();
-        
-        if (r.status === "sucesso") {
-            alert("Dados atualizados com sucesso na planilha! 🌸");
-        } else {
-            alert("Dados salvos apenas neste aparelho. (Erro: " + r.mensagem + ")");
-        }
-
-    } catch (e) {
-        console.error("Erro ao salvar:", e);
-        alert("Salvo localmente! Não conseguimos conectar com a planilha agora. ✨");
-    } finally {
-        btn.innerText = textoOriginal;
-        btn.disabled = false;
-    }
-}
 </script>
 
 </body>
