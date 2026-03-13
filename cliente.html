@@ -61,20 +61,17 @@
     <h3 style="color: #555;">Seus Dados de Entrega</h3>
     <div class="form-container" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
         
-        <label style="display:block; margin-bottom:5px;">
-    Seu WhatsApp (com DDD):
-    <input type="tel" id="c-tel" placeholder="Ex: 85999999999" ...>
-</label>
+        <label for="c-tel" style="display:block; margin-bottom:5px;">Seu WhatsApp (com DDD):</label>
         <input type="tel" id="c-tel" placeholder="Ex: 85999999999" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
 
-        <label style="display:block; margin-bottom:5px;">Endereço completo:</label>
+        <label for="c-end" style="display:block; margin-bottom:5px;">Endereço completo:</label>
         <input type="text" id="c-end" placeholder="Rua, número, bairro..." style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
 
         <button onclick="salvarDadosCliente()" style="width:100%; background:#d4a373; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:bold;">
             💾 Salvar Alterações
         </button>
     </div>
-    </div>
+</div>
 
     <a href="index.html" class="btn-voltar">← Voltar para a loja</a>
 </div>
@@ -245,11 +242,11 @@
         btn.disabled = true;
 
         const dadosParaEnviar = {
-            aba: "Usuarios", // Verifique se sua aba se chama "Usuarios" ou "Users"
+            aba: "Usuarios", 
             payload: {
                 "Usuario": usuarioLogado,
-                "14": telefone,
-                "15": endereco,
+                "Whats_App": telefone,   // Nome EXATO da coluna N
+                "Endereço": endereco,    // Nome EXATO da coluna O
                 "Data_Atualizacao": new Date().toLocaleString('pt-BR')
             }
         };
