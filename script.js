@@ -851,3 +851,60 @@ function enviarAgendamento() {
     // Abre o WhatsApp em uma nova aba
     window.open(urlZap, '_blank');
 }
+// ==========================================
+// 12. IMAGENS
+// ==========================================
+/**
+ * Converte um link de compartilhamento do Google Drive em um link de imagem direta.
+ */
+function converterLinkDrive(link) {
+    if (link && link.includes('drive.google.com')) {
+        // Extrai o ID do arquivo do link do Drive
+        const id = link.match(/[-\w]{25,}/);
+        if (id) {
+            // Retorna o link direto para imagem que o navegador aceita
+            return `https://lh3.googleusercontent.com/u/0/d/${id}`;
+        }
+    }
+    return link; // Se não for link do Drive, retorna o original (ou placeholder)
+}
+function obterLinkImagemDireta(linkCompartilhado) {
+    if (!linkCompartilhado) return 'https://espacocuraecuidado.github.io/CuraCuidado/img/sem-foto.png';
+
+    // O padrão do ID de um arquivo no Google Drive
+    const regexId = /\/file\/d\/([a-zA-Z0-9_-]+)\//;
+    const match = linkCompartilhado.match(regexId);
+
+    if (match && match[1]) {
+        const idArquivo = match[1];
+        // Retorna o formato de link direto suportado pelos navegadores
+        return `https://lh3.googleusercontent.com/u/0/d/${idArquivo}`;
+    }
+
+    // Se o link não for do padrão do Drive, retorna-o como está (para outros tipos de links)
+    return linkCompartilhado;
+}
+
+// ... sua função de renderizar produtos ...
+
+// Exemplo de como usar a função na renderização (ajuste conforme seu código)
+container.innerHTML = produtos.map(p => {
+    const linkImagemValido = obterLinkImagemDireta(p.Imagem);
+    const imagemPadrao = 'https://espacocuraecuidado.github.io/CuraCuidado/img/sem-foto.png';
+
+    return `
+        <div class="produto-card">
+            <div class="produto-img-container" style="width:100%; height:180px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <img src="${linkImagemValido}" 
+                     alt="${p.Nome}" 
+                     onerror="this.onerror=null; this.src='${imagemPadrao}';" 
+                     style="max-width:100%; max-height:100%; object-fit:contain;">
+            </div>
+            <div class="produto-info">
+                <h3>${p.Nome}</h3>
+                <p>R$ ${parseFloat(p.Preco || 0).toFixed(2).replace('.', ',')}</p>
+                <button onclick="adicionarAoCarrinho('${p.ID}')" class="btn-block">Adicionar ✨</button>
+            </div>
+        </div>
+    `;
+}).join('');
