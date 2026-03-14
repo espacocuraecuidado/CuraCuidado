@@ -131,14 +131,16 @@ async function carregarProdutos() {
                         </div>
                     `;
                 }
-                return; // Pula a criação do card de produto para esta linha
+                return; 
             }
 
             // --- LÓGICA PARA PRODUTOS NORMAIS ---
             const precoExibicao = p.Valor || p.Preco || 0;
-            const fotos = p.Imagem ? p.Imagem.split(',') : ['https://via.placeholder.com/150'];
-            const foto1 = fotos[0].trim();
-            const foto2 = fotos[1] ? fotos[1].trim() : foto1;
+            const fotos = p.Imagem ? p.Imagem.split(',') : ['https://espacocuraecuidado.github.io/CuraCuidado/img/sem-foto.png'];
+            
+            // ALTERAÇÃO AQUI: Passando as fotos pela função de conversão do Drive
+            const foto1 = obterLinkImagemDireta(fotos[0].trim());
+            const foto2 = fotos[1] ? obterLinkImagemDireta(fotos[1].trim()) : foto1;
 
             let idAlvo = 'vitrine-produtos';
             if (categoria === 'bebe') idAlvo = 'vitrine-bebe';
@@ -156,8 +158,8 @@ async function carregarProdutos() {
             const htmlCard = `
                 <div class="card-produto">
                     <div class="container-foto">
-                        <img src="${foto1}" class="img-principal" alt="${p.Nome}">
-                        <img src="${foto2}" class="img-hover" alt="${p.Nome}">
+                        <img src="${foto1}" class="img-principal" alt="${p.Nome}" onerror="this.src='https://espacocuraecuidado.github.io/CuraCuidado/img/sem-foto.png'">
+                        <img src="${foto2}" class="img-hover" alt="${p.Nome}" onerror="this.src='https://espacocuraecuidado.github.io/CuraCuidado/img/sem-foto.png'">
                     </div>
                     <h3>${p.Nome}</h3>
                     <p><strong>${categoria === 'noticia' ? '' : 'R$ ' + Number(precoExibicao).toFixed(2)}</strong></p>
@@ -176,95 +178,6 @@ async function carregarProdutos() {
     } catch (e) { 
         console.error("Erro ao carregar produtos:", e); 
     }
-}
-async function carregarHorariosDisponiveis() {
-    const select = document.getElementById('ag-horario-selecionado');
-    if (!select) return;
-
-    try {
-        select.innerHTML = '<option value="">Buscando horários... ⏳</option>';
-
-        const res = await fetch(`${URL_PLANILHA}?acao=listarAgendamentos`);
-        const dados = await res.json();
-        
-        // 1. FILTRO: Busca pelo Status (Coluna I)
-        const disponiveis = dados.filter(h => {
-            const statusRaw = h.Status || ""; 
-            const statusLimpo = statusRaw.toString().toLowerCase().trim();
-            return statusLimpo === 'disponível' || statusLimpo === 'disponivel';
-        });
-
-        if (disponiveis.length === 0) {
-            select.innerHTML = '<option value="">Nenhum horário livre no momento 🌸</option>';
-            return;
-        }
-
-        select.innerHTML = '<option value="">Selecione um horário...</option>';
-        
-        disponiveis.forEach(h => {
-            // 1. DATA (Coluna G - DataAgenda)
-            let dataOriginal = h.DataAgenda ? h.DataAgenda.toString() : "";
-            let dataExibicao = "";
-            if (dataOriginal.includes('T')) {
-                dataExibicao = dataOriginal.split('T')[0].split('-').reverse().join('/');
-            } else {
-                dataExibicao = dataOriginal.split(' ')[0];
-            }
-
-            // 2. HORA (Coluna H - Hour) - TRATAMENTO ANTI-FUSO HORÁRIO
-            let horaBruta = h.Hour ? h.Hour.toString() : "";
-            let horaLimpa = "";
-
-            if (horaBruta.includes('T')) {
-                // Se o Google enviar o formato ISO, pegamos a parte após o 'T'
-                // e ignoramos qualquer deslocamento de fuso (Z ou -03:00)
-                horaLimpa = horaBruta.split('T')[1].substring(0, 5);
-            } else {
-                // Se vier como string, pegamos os primeiros 5 caracteres (HH:mm)
-                horaLimpa = horaBruta.trim().substring(0, 5);
-            }
-
-            // 3. VALOR PARA O SISTEMA (ISO)
-            let partes = dataExibicao.split('/');
-            let dataISO = `${partes[2]}-${partes[1]}-${partes[0]}`;
-            const valorISO = `${dataISO}T${horaLimpa}`;
-            
-            const option = document.createElement('option');
-            option.value = valorISO;
-            option.textContent = `${dataExibicao} às ${horaLimpa}`;
-            select.appendChild(option);
-        });
-
-    } catch (e) {
-        console.error("Erro ao carregar horários:", e);
-        select.innerHTML = '<option value="">Erro ao conectar com a planilha ❌</option>';
-    }
-}
-
-function configurarScrollExtremidades() {
-    const vitrine = document.querySelector('.vitrine-deslizante'); 
-    if (!vitrine) return;
-    let scrollInterval;
-    const velocidade = 10;
-    const margemAtivacao = 100;
-
-    window.addEventListener('mousemove', (e) => {
-        const larguraTela = window.innerWidth;
-        const xMouse = e.clientX;
-        clearInterval(scrollInterval);
-
-        if (xMouse > larguraTela - margemAtivacao) {
-            scrollInterval = setInterval(() => {
-                vitrine.scrollLeft += velocidade;
-            }, 10);
-        } else if (xMouse < margemAtivacao) {
-            scrollInterval = setInterval(() => {
-                vitrine.scrollLeft -= velocidade;
-            }, 10);
-        }
-    });
-    window.addEventListener('mouseleave', () => clearInterval(scrollInterval));
-    window.addEventListener('mousedown', () => clearInterval(scrollInterval));
 }
 
 // 3. CARRINHO
